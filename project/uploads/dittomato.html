@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dittomato 🍅</title>
+<style>
+  /* ── Tomato palette ────────────────────────────────────────────────────────
+     bg-deep:    #130C0A   warm near-black
+     bg-card:    #1C1210   dark red-tinted surface
+     bg-input:   #130C0A
+     bg-header:  #201512   card header
+     border:     #3D1F18   muted red-brown border
+     border-hi:  #C0392B   active / focus border (tomato red)
+     tomato:     #E03E1A   primary action red
+     tomato-hi:  #FF5733   hover
+     tomato-dim: #E03E1A22 tinted backgrounds
+     orange:     #FF6B35   secondary warm accent
+     text-hi:    #F5E6E3   near-white warm
+     text-mid:   #A8826F   muted warm
+     text-dim:   #5C3A30   very muted
+     green:      #2ECC71   success (kept neutral)
+     amber:      #F39C12   unsaved warning
+  ─────────────────────────────────────────────────────────────────────────── */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #130C0A;
+    color: #F5E6E3;
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+
+  .app { max-width: 720px; margin: 0 auto; }
+
+  /* Header */
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
+  .logo {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, #C0392B, #E03E1A, #FF6B35);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+    box-shadow: 0 4px 16px #E03E1A44;
+  }
+  header h1 { font-size: 20px; font-weight: 700; color: #F5E6E3; letter-spacing: -0.4px; }
+  header p  { font-size: 12px; color: #7A4A3A; margin-top: 2px; }
+
+  /* Cards */
+  .card {
+    background: #1C1210;
+    border: 1px solid #3D1F18;
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.9px;
+    color: #E03E1A;
+    margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+
+  /* Inputs */
+  label { display: block; font-size: 12px; font-weight: 500; color: #A8826F; margin-bottom: 6px; }
+
+  input, textarea, select {
+    width: 100%;
+    background: #130C0A;
+    border: 1px solid #3D1F18;
+    border-radius: 8px;
+    color: #F5E6E3;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: #C0392B;
+    box-shadow: 0 0 0 3px #E03E1A18;
+  }
+  input::placeholder, textarea::placeholder { color: #4A2018; }
+  textarea { resize: vertical; line-height: 1.5; }
+  select option { background: #1C1210; }
+
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .row { display: flex; gap: 10px; align-items: flex-start; }
+  .row input { flex: 1; }
+  .hint { font-size: 11px; color: #5C3A30; margin-top: 5px; }
+
+  .keys-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .keys-grid { grid-template-columns: 1fr; } }
+  .key-row { display: flex; gap: 8px; }
+  .key-row input { flex: 1; min-width: 0; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 18px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none;
+    transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
+  }
+  .btn-primary { background: #E03E1A; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #FF5733; box-shadow: 0 2px 12px #E03E1A55; }
+
+  .btn-ghost { background: #2A1510; color: #A8826F; border: 1px solid #3D1F18; }
+  .btn-ghost:hover:not(:disabled) { background: #3A1D12; color: #F5E6E3; border-color: #5C2E1E; }
+
+  .btn-magic {
+    background: linear-gradient(135deg, #C0392B, #E03E1A, #FF6B35);
+    color: #fff;
+    box-shadow: 0 2px 10px #E03E1A33;
+  }
+  .btn-magic:hover:not(:disabled) { filter: brightness(1.12); box-shadow: 0 2px 16px #E03E1A55; }
+
+  .btn-sm  { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+  .btn-xs  { padding: 4px 10px; font-size: 11px; border-radius: 5px; }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-full { width: 100%; justify-content: center; }
+
+  /* Results */
+  .results { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+
+  .result-item {
+    background: #130C0A;
+    border: 1px solid #3D1F18;
+    border-radius: 10px; padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .result-item:hover    { border-color: #C0392B; background: #1C1210; }
+  .result-item.selected { border-color: #E03E1A; background: #1C1210; box-shadow: 0 0 0 1px #E03E1A33; }
+
+  .result-id   { font-size: 11px; font-family: 'SF Mono','Fira Code',monospace; color: #E03E1A; margin-bottom: 3px; }
+  .result-name { font-size: 12px; color: #7A4A3A; margin-bottom: 3px; }
+  .result-text { font-size: 14px; color: #F5E6E3; margin-bottom: 4px; }
+  .result-meta { font-size: 11px; color: #5C3A30; }
+
+  .status-badge {
+    display: inline-block; padding: 2px 7px; border-radius: 4px;
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    background: #E03E1A22; color: #FF8060; margin-left: 6px;
+  }
+
+  .empty-state { text-align: center; padding: 24px; color: #5C3A30; font-size: 13px; }
+
+  /* Variant blocks */
+  .variant-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .variant-block {
+    background: #130C0A;
+    border: 1px solid #3D1F18;
+    border-radius: 10px; overflow: hidden;
+  }
+  .variant-block.base-block { border-color: #C0392B55; }
+
+  .variant-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 14px;
+    background: #1C1210;
+    border-bottom: 1px solid #2A1510;
+    gap: 10px;
+  }
+  .variant-label { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+  .variant-tag {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.6px; padding: 2px 8px; border-radius: 4px; flex-shrink: 0;
+  }
+  .variant-tag.base     { background: #E03E1A22; color: #FF8060; }
+  .variant-tag.has-text { background: #0E3A2F;   color: #2ECC71; }
+  .variant-tag.missing  { background: #3A2000;   color: #F39C12; }
+
+  .variant-name { font-size: 13px; color: #A8826F; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .variant-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+  .variant-body { padding: 10px 14px 0; }
+  .variant-textarea {
+    width: 100%; background: transparent; border: none;
+    color: #F5E6E3; font-family: inherit; font-size: 14px;
+    padding: 0; outline: none; resize: none; line-height: 1.6; min-height: 36px;
+  }
+  .variant-textarea.is-empty { color: #4A2018; }
+
+  @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+  .translating-shimmer {
+    background: linear-gradient(90deg, #2A1510 25%, #3D1F18 50%, #2A1510 75%);
+    background-size: 400px 100%; animation: shimmer 1.2s infinite;
+    border-radius: 4px; color: transparent !important; user-select: none; min-height: 20px;
+  }
+
+  .variant-footer { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; }
+  .char-count { font-size: 11px; color: #5C3A30; }
+
+  .save-indicator { font-size: 11px; display: flex; align-items: center; gap: 5px; }
+  .save-indicator.saved   { color: #2ECC71; }
+  .save-indicator.unsaved { color: #F39C12; }
+  .save-indicator.saving  { color: #A8826F; }
+
+  /* Magic bar */
+  .magic-bar {
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(135deg, #1C0A06, #1C1210);
+    border: 1px solid #C0392B44;
+    border-radius: 10px; padding: 12px 16px; margin-bottom: 10px;
+    box-shadow: inset 0 1px 0 #FF5A2008;
+  }
+  .magic-icon { font-size: 20px; flex-shrink: 0; }
+  .magic-info { flex: 1; min-width: 0; }
+  .magic-title { font-size: 13px; font-weight: 600; color: #FF8060; }
+  .magic-sub   { font-size: 11px; color: #7A4A3A; margin-top: 2px; }
+
+  /* Glossary */
+  .glossary-block {
+    background: #0E0806;
+    border: 1px solid #3D1F18;
+    border-radius: 10px; overflow: hidden; margin-bottom: 10px;
+  }
+  .glossary-hdr {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; background: #1C1210;
+    cursor: pointer; user-select: none;
+  }
+  .glossary-hdr-left { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #A8826F; }
+  .glossary-pill { font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 4px; background: #E03E1A22; color: #FF8060; }
+  .glossary-toggle-txt { font-size: 11px; color: #5C3A30; }
+  .glossary-body { display: none; padding: 12px 14px; max-height: 220px; overflow-y: auto; }
+  .glossary-body.open { display: block; }
+  .glossary-search { margin-bottom: 10px; }
+  .glossary-search input { font-size: 12px; padding: 7px 12px; }
+  .glossary-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .glossary-table th {
+    text-align: left; color: #5C3A30; font-weight: 700;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 4px 8px 8px; border-bottom: 1px solid #3D1F18;
+  }
+  .glossary-table td { padding: 5px 8px; border-bottom: 1px solid #1C1210; color: #A8826F; vertical-align: top; }
+  .glossary-table td:first-child { color: #F5E6E3; font-weight: 500; }
+  .glossary-table tr:last-child td { border-bottom: none; }
+  .glossary-table tr.hidden-row { display: none; }
+
+  /* Bulk actions */
+  .bulk-actions { display: flex; gap: 10px; align-items: center; padding: 16px 0 0; border-top: 1px solid #3D1F18; margin-top: 10px; }
+  .bulk-actions .spacer { flex: 1; }
+  .changes-summary { font-size: 12px; color: #7A4A3A; }
+  .changes-summary span { color: #F39C12; font-weight: 600; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    padding: 12px 20px; border-radius: 10px;
+    font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 100; max-width: 340px;
+  }
+  .toast.show    { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #0D2E1A; border: 1px solid #2ECC71; color: #7DFFB3; }
+  .toast.error   { background: #2A0A06; border: 1px solid #C0392B; color: #FF8060; }
+  .toast.info    { background: #1C0A06; border: 1px solid #E03E1A; color: #FF9070; }
+
+  .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.15); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; flex-shrink: 0; display: inline-block; }
+  .spinner-sm { width: 10px; height: 10px; border-width: 1.5px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-variants { display: flex; align-items: center; gap: 10px; padding: 20px; color: #7A4A3A; font-size: 13px; }
+
+  .collapsible.hidden { display: none; }
+  .collapse-toggle { font-size: 12px; color: #5C3A30; cursor: pointer; user-select: none; }
+  .collapse-toggle:hover { color: #A8826F; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #130C0A; }
+  ::-webkit-scrollbar-thumb { background: #3D1F18; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #C0392B; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">🍅</div>
+    <div>
+      <h1>Dittomato 🍅</h1>
+      <p>Your saucy Ditto string editor</p>
+    </div>
+  </header>
+
+  <!-- Keys -->
+  <div class="card">
+    <div class="card-title">
+      <span>API Keys</span>
+      <span class="collapse-toggle" onclick="toggleCollapse('keysBody', this)" data-open="true">▾ collapse</span>
+    </div>
+    <div id="keysBody">
+      <div class="keys-grid">
+        <div>
+          <label>Ditto API key</label>
+          <div class="key-row">
+            <input type="password" id="dittoKey" placeholder="Ditto key" />
+            <button class="btn btn-ghost btn-sm" onclick="toggleKeyVis('dittoKey',this)">Show</button>
+          </div>
+          <div class="hint">Search &amp; save → api.dittowords.com</div>
+        </div>
+        <div>
+          <label>Anthropic API key <span style="color:#E03E1A">🍅 magic translate</span></label>
+          <div class="key-row">
+            <input type="password" id="anthropicKey" placeholder="sk-ant-..." />
+            <button class="btn btn-ghost btn-sm" onclick="toggleKeyVis('anthropicKey',this)">Show</button>
+          </div>
+          <div class="hint">AI translation → api.anthropic.com</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="card">
+    <div class="card-title">Search Components</div>
+    <div class="field">
+      <label>Search by text content or developer ID</label>
+      <div class="row">
+        <input type="text" id="searchQuery" placeholder="e.g. Shared via e-mail" onkeydown="if(event.key==='Enter') doSearch()" />
+        <button class="btn btn-primary" id="searchBtn" onclick="doSearch()">Search</button>
+      </div>
+    </div>
+    <div id="results"></div>
+  </div>
+
+  <!-- Edit -->
+  <div class="card" id="editCard" style="display:none">
+    <div class="card-title" id="editCardTitle">Edit Component</div>
+    <div id="variantEditor"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API_DITTO     = 'https://api.dittowords.com/v2';
+  const API_ANTHROPIC = 'https://api.anthropic.com/v1/messages';
+
+  let GLOSSARY = [
+    { en: "Assignee",                       de: "Zugewiesene Person",               fr: "Personne assignée" },
+    { en: "Assets",                          de: "Inventar",                         fr: "Inventaire" },
+    { en: "Asset type",                      de: "Asset-Typ",                        fr: "" },
+    { en: "Backlog",                         de: "In Überlegung",                    fr: "" },
+    { en: "Condition Assessment",            de: "Zustandserfassung",                fr: "Diagnostic Routier" },
+    { en: "Cost Centers",                    de: "Kostenstellen",                    fr: "Services" },
+    { en: "Costs",                           de: "Buchhaltung",                      fr: "Comptabilité" },
+    { en: "Custom Properties",              de: "Benutzerdefinierte Eigenschaften",  fr: "" },
+    { en: "Damage Classes",                 de: "Schadensklassen",                   fr: "Classes de dégâts" },
+    { en: "Insights",                        de: "Berichte",                         fr: "Analyses" },
+    { en: "Layers",                          de: "Ebenen",                           fr: "Couches" },
+    { en: "Material",                        de: "Material",                         fr: "Matériel" },
+    { en: "Road Database",                   de: "Straßendatenbank",                 fr: "Base de donnée des routes" },
+    { en: "Road Safety",                     de: "Verkehrssicherheit",               fr: "Sécurité routière" },
+    { en: "Segments",                        de: "Abschnitte",                       fr: "Tronçons" },
+    { en: "Settings",                        de: "Einstellungen",                    fr: "Paramètres" },
+    { en: "Templates",                       de: "Vorlagen",                         fr: "Modèles" },
+    { en: "Time Tracking",                   de: "Zeiterfassung",                    fr: "Saisi des temps" },
+    { en: "Treatment",                       de: "Straßenbaumaßnahmen",              fr: "Réparations" },
+    { en: "Treatment Planning",             de: "Maßnahmenplanung",                  fr: "Planification des réparations" },
+    { en: "Treatment Type",                  de: "Maßnahmentyp",                     fr: "" },
+    { en: "Work Order",                      de: "Auftrag",                          fr: "Tâche" },
+    { en: "Work Order Type",                 de: "Kategorie",                        fr: "Catégorie" },
+  ].sort((a, b) => a.en.localeCompare(b.en));
+
+  let allVariants    = [];
+  let selectedComp   = null;
+  let variantData    = {};
+  let pendingChanges = {};
+
+  function getDittoKey()     { return document.getElementById('dittoKey').value.trim(); }
+  function getAnthropicKey() { return document.getElementById('anthropicKey').value.trim(); }
+
+  function toggleKeyVis(id, btn) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
+  }
+
+  function toggleCollapse(id, el) {
+    const open = el.dataset.open === 'true';
+    document.getElementById(id).classList.toggle('hidden', open);
+    el.dataset.open = String(!open);
+    el.textContent = open ? '▸ expand' : '▾ collapse';
+  }
+
+  function toast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span>${type==='success'?'✓':type==='info'?'🍅':'✕'}</span> ${msg}`;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function buildGlossaryPrompt() {
+    const lines = GLOSSARY.filter(g => g.de || g.fr)
+      .map(g => `- EN: "${g.en}" → DE: "${g.de||'?'}" | FR: "${g.fr||'?'}"`)
+      .join('\n');
+    return `\n\nYou MUST use these canonical Vialytics product terminology translations (do not deviate):\n${lines}`;
+  }
+
+  function glossaryTableHtml() {
+    const rows = GLOSSARY.map((g, i) => `
+      <tr id="grow-${i}">
+        <td>${esc(g.en)}</td>
+        <td>${esc(g.de)}</td>
+        <td>${esc(g.fr)}</td>
+      </tr>`).join('');
+    return `
+      <div class="glossary-block">
+        <div class="glossary-hdr" onclick="toggleGlossary(this)">
+          <div class="glossary-hdr-left">
+            📑 Vialytics Vocabulary
+            <span class="glossary-pill">${GLOSSARY.length} terms</span>
+          </div>
+          <span class="glossary-toggle-txt">▸ show</span>
+        </div>
+        <div class="glossary-body" id="glossaryBody">
+          <div class="glossary-search">
+            <input type="text" placeholder="Filter terms…" oninput="filterGlossary(this.value)" />
+          </div>
+          <table class="glossary-table">
+            <thead><tr><th>English</th><th>German</th><th>French</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  function toggleGlossary(hdr) {
+    const body = document.getElementById('glossaryBody');
+    const txt  = hdr.querySelector('.glossary-toggle-txt');
+    const open = body.classList.toggle('open');
+    txt.textContent = open ? '▾ hide' : '▸ show';
+  }
+
+  function filterGlossary(q) {
+    const lower = q.toLowerCase();
+    GLOSSARY.forEach((g, i) => {
+      const match = !q || g.en.toLowerCase().includes(lower) || g.de.toLowerCase().includes(lower) || g.fr.toLowerCase().includes(lower);
+      const row = document.getElementById(`grow-${i}`);
+      if (row) row.classList.toggle('hidden-row', !match);
+    });
+  }
+
+  async function ensureVariants() {
+    if (allVariants.length) return;
+    const res = await fetch(`${API_DITTO}/variants`, { headers: { Authorization: getDittoKey() } });
+    if (!res.ok) throw new Error('Could not fetch variants');
+    allVariants = await res.json();
+  }
+
+  async function doSearch() {
+    const q = document.getElementById('searchQuery').value.trim().toLowerCase();
+    if (!q) return;
+    const k = getDittoKey();
+    if (!k) { toast('Enter your Ditto API key first', 'error'); return; }
+
+    const btn = document.getElementById('searchBtn');
+    btn.innerHTML = '<div class="spinner"></div>';
+    btn.disabled = true;
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('editCard').style.display = 'none';
+
+    try {
+      await ensureVariants();
+      const res = await fetch(`${API_DITTO}/components`, { headers: { Authorization: k } });
+      if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message||`HTTP ${res.status}`); }
+      const comps = await res.json();
+      const matches = comps
+        .filter(c => !c.variantId)
+        .filter(c =>
+          (c.text && c.text.toLowerCase().includes(q)) ||
+          (c.id   && c.id.toLowerCase().includes(q))   ||
+          (c.name && c.name.toLowerCase().includes(q))
+        ).slice(0, 20);
+      renderResults(matches);
+    } catch(e) {
+      toast('Search failed: ' + e.message, 'error');
+    } finally {
+      btn.innerHTML = 'Search';
+      btn.disabled = false;
+    }
+  }
+
+  function renderResults(items) {
+    const el = document.getElementById('results');
+    if (!items.length) { el.innerHTML = '<div class="empty-state">No components found 🍅</div>'; return; }
+    window._results = items;
+    el.innerHTML = '<div class="results">' +
+      items.map((c, i) => `
+        <div class="result-item" onclick="selectItem(${i})">
+          <div class="result-id">${esc(c.id)}</div>
+          <div class="result-name">${esc(c.name)}</div>
+          <div class="result-text">${esc(c.text)}</div>
+          <div class="result-meta">${c.folderId?esc(c.folderId):'root'}${c.status?`<span class="status-badge">${esc(c.status)}</span>`:''}</div>
+        </div>`).join('') + '</div>';
+  }
+
+  async function selectItem(i) {
+    selectedComp   = window._results[i];
+    pendingChanges = {};
+    document.querySelectorAll('.result-item').forEach((el, j) => el.classList.toggle('selected', j === i));
+
+    const card = document.getElementById('editCard');
+    card.style.display = 'block';
+    document.getElementById('editCardTitle').textContent = selectedComp.name || selectedComp.id;
+    document.getElementById('variantEditor').innerHTML =
+      '<div class="loading-variants"><div class="spinner"></div> Loading variants…</div>';
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    try {
+      const filter = encodeURIComponent(JSON.stringify({ variants: [{ id: 'all' }] }));
+      const res = await fetch(`${API_DITTO}/components?filter=${filter}`, { headers: { Authorization: getDittoKey() } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const all = await res.json();
+      variantData = {};
+      all.filter(c => c.id === selectedComp.id).forEach(c => {
+        const vid = c.variantId ?? 'base';
+        variantData[vid] = { text: c.text ?? '', originalText: c.text ?? '', status: c.status };
+      });
+      renderVariantEditor();
+    } catch(e) {
+      document.getElementById('variantEditor').innerHTML =
+        `<div class="empty-state">Failed to load variants: ${esc(e.message)}</div>`;
+    }
+  }
+
+  function renderVariantEditor() {
+    const rows = [
+      { id: 'base', name: 'Base', isBase: true },
+      ...allVariants.map(v => ({ id: v.id, name: v.name, isBase: false }))
+    ];
+
+    const hasKey = !!getAnthropicKey();
+    const missingCount  = rows.filter(v => !v.isBase && !variantData[v.id]?.text).length;
+    const totalVariants = rows.filter(v => !v.isBase).length;
+
+    const magicBar = totalVariants > 0 ? `
+      <div class="magic-bar">
+        <span class="magic-icon">🍅</span>
+        <div class="magic-info">
+          <div class="magic-title">Magic Translate</div>
+          <div class="magic-sub">${missingCount > 0 ? `${missingCount} missing · ` : 'All variants filled · '}Vialytics vocabulary (${GLOSSARY.length} terms)</div>
+        </div>
+        <button class="btn btn-magic btn-sm" id="magicAllBtn" onclick="translateAll()">${hasKey ? '🍅 Translate all' : '🔑 Add key'}</button>
+      </div>` : '';
+
+    const variantBlocks = rows.map(v => {
+      const d = variantData[v.id];
+      const hasText = d && d.text;
+      const tagClass = v.isBase ? 'base' : (hasText ? 'has-text' : 'missing');
+      const textVal  = d?.text ?? '';
+      return `
+        <div class="variant-block ${v.isBase ? 'base-block' : ''}" id="vblock-${esc(v.id)}">
+          <div class="variant-header">
+            <div class="variant-label">
+              <span class="variant-tag ${tagClass}" id="vtag-${esc(v.id)}">${esc(v.isBase ? 'Base' : v.name)}</span>
+              ${!v.isBase ? `<span class="variant-name">${esc(v.name)}</span>` : ''}
+            </div>
+            <div class="variant-actions">
+              <div id="vsave-${esc(v.id)}" class="save-indicator"></div>
+              ${!v.isBase ? `<button class="btn btn-ghost btn-xs" id="vmagic-${esc(v.id)}" onclick="translateOne('${esc(v.id)}','${esc(v.name)}')" title="Translate with Claude">🍅</button>` : ''}
+              <button class="btn btn-ghost btn-xs" onclick="saveVariant('${esc(v.id)}')">Save</button>
+            </div>
+          </div>
+          <div class="variant-body">
+            <textarea class="variant-textarea${!hasText && !v.isBase ? ' is-empty' : ''}"
+              id="vtext-${esc(v.id)}" rows="2"
+              placeholder="${esc(v.isBase ? 'Base text…' : v.name + ' translation…')}"
+              oninput="onInput('${esc(v.id)}',this)"
+            >${esc(textVal)}</textarea>
+          </div>
+          <div class="variant-footer">
+            <span class="char-count" id="vchars-${esc(v.id)}">${textVal.length} chars</span>
+          </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('variantEditor').innerHTML = `
+      ${magicBar}
+      ${glossaryTableHtml()}
+      <div class="variant-list">${variantBlocks}</div>
+      <div class="bulk-actions">
+        <span class="changes-summary" id="changesSummary"></span>
+        <div class="spacer"></div>
+        <button class="btn btn-ghost btn-sm" onclick="resetAll()">Reset</button>
+        <button class="btn btn-primary" id="saveAllBtn" onclick="saveAll()">Save all changes</button>
+      </div>`;
+
+    document.querySelectorAll('.variant-textarea').forEach(autoResize);
+    updateChangesSummary();
+  }
+
+  function autoResize(ta) {
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+  }
+
+  function onInput(vid, ta) {
+    autoResize(ta);
+    const newText  = ta.value;
+    const original = variantData[vid]?.originalText ?? '';
+    const chars = document.getElementById(`vchars-${vid}`);
+    if (chars) chars.textContent = `${newText.length} chars`;
+    if (newText !== original) {
+      pendingChanges[vid] = newText;
+      setIndicator(vid, 'unsaved', '● unsaved');
+    } else {
+      delete pendingChanges[vid];
+      setIndicator(vid, '', '');
+    }
+    updateChangesSummary();
+  }
+
+  function setIndicator(vid, cls, text) {
+    const el = document.getElementById(`vsave-${vid}`);
+    if (!el) return;
+    el.className = `save-indicator${cls ? ' '+cls : ''}`;
+    el.textContent = text;
+  }
+
+  function updateChangesSummary() {
+    const n  = Object.keys(pendingChanges).length;
+    const el = document.getElementById('changesSummary');
+    if (el) el.innerHTML = n > 0 ? `<span>${n}</span> unsaved change${n>1?'s':''}` : '';
+    const btn = document.getElementById('saveAllBtn');
+    if (btn) btn.disabled = n === 0;
+  }
+
+  async function translateOne(vid, variantName) {
+    const apiKey = getAnthropicKey();
+    if (!apiKey) { toast('Add your Anthropic API key above', 'error'); return; }
+    const baseText = variantData['base']?.text || document.getElementById('vtext-base')?.value?.trim() || '';
+    if (!baseText) { toast('Base text is empty', 'error'); return; }
+
+    const ta  = document.getElementById(`vtext-${vid}`);
+    const btn = document.getElementById(`vmagic-${vid}`);
+    ta.classList.add('translating-shimmer');
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    setIndicator(vid, 'saving', '');
+
+    try {
+      const result = await callClaude(apiKey, baseText, variantName);
+      ta.classList.remove('translating-shimmer');
+      ta.value = result;
+      autoResize(ta);
+      const original = variantData[vid]?.originalText ?? '';
+      if (result !== original) {
+        pendingChanges[vid] = result;
+        setIndicator(vid, 'unsaved', '● unsaved');
+      }
+      const tag = document.getElementById(`vtag-${vid}`);
+      if (tag) { tag.className = 'variant-tag has-text'; tag.textContent = variantName; }
+      const chars = document.getElementById(`vchars-${vid}`);
+      if (chars) chars.textContent = `${result.length} chars`;
+      updateChangesSummary();
+      toast(`Translated to ${variantName}`, 'info');
+    } catch(e) {
+      ta.classList.remove('translating-shimmer');
+      setIndicator(vid, '', '');
+      toast('Translation failed: ' + e.message, 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '🍅'; }
+    }
+  }
+
+  async function translateAll() {
+    const apiKey = getAnthropicKey();
+    if (!apiKey) { toast('Add your Anthropic API key above', 'error'); return; }
+    const btn = document.getElementById('magicAllBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<div class="spinner spinner-sm"></div> Translating…'; }
+    let done = 0;
+    for (const v of allVariants) {
+      try { await translateOne(v.id, v.name); done++; } catch(e) {}
+    }
+    if (btn) { btn.disabled = false; btn.innerHTML = '🍅 Translate all'; }
+    toast(`Translated ${done} variant${done!==1?'s':''}`, 'info');
+  }
+
+  async function callClaude(apiKey, sourceText, targetLanguage) {
+    const system = `You are a professional UI copy translator for Vialytics — a municipal road infrastructure SaaS used by city planners and field workers in Germany and Europe.
+
+Translate the given UI string to ${targetLanguage}.
+
+Rules:
+- Return ONLY the translated string — no explanation, no quotes, no markdown
+- Preserve any emoji exactly as-is
+- Preserve any {{VariableName}} placeholders exactly as-is
+- Match the tone: concise, professional, unambiguous UI copy for municipal software
+- Use sentence case unless the source uses Title Case${buildGlossaryPrompt()}`;
+
+    const res = await fetch(API_ANTHROPIC, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 500,
+        system,
+        messages: [{ role: 'user', content: sourceText }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    const text = data.content?.find(b => b.type === 'text')?.text ?? '';
+    if (!text) throw new Error('Empty response');
+    return text.trim();
+  }
+
+  async function saveVariant(vid) {
+    const ta = document.getElementById(`vtext-${vid}`);
+    const newText = ta?.value ?? '';
+    setIndicator(vid, 'saving', '');
+    try {
+      await patchDitto(vid, newText);
+      if (!variantData[vid]) variantData[vid] = {};
+      variantData[vid].text = newText;
+      variantData[vid].originalText = newText;
+      delete pendingChanges[vid];
+      setIndicator(vid, 'saved', '✓ saved');
+      setTimeout(() => setIndicator(vid, '', ''), 2500);
+      updateChangesSummary();
+    } catch(e) {
+      setIndicator(vid, 'unsaved', '● error');
+      toast('Save failed: ' + e.message, 'error');
+    }
+  }
+
+  async function saveAll() {
+    const vids = Object.keys(pendingChanges);
+    if (!vids.length) return;
+    const btn = document.getElementById('saveAllBtn');
+    btn.innerHTML = '<div class="spinner"></div> Saving…';
+    btn.disabled = true;
+    let saved = 0;
+    for (const vid of vids) {
+      try {
+        const ta = document.getElementById(`vtext-${vid}`);
+        const text = ta?.value ?? '';
+        await patchDitto(vid, text);
+        if (!variantData[vid]) variantData[vid] = {};
+        variantData[vid].text = text;
+        variantData[vid].originalText = text;
+        delete pendingChanges[vid];
+        setIndicator(vid, 'saved', '✓ saved');
+        setTimeout(() => setIndicator(vid, '', ''), 2500);
+        saved++;
+      } catch(e) {
+        setIndicator(vid, 'unsaved', '● error');
+      }
+    }
+    btn.innerHTML = 'Save all changes';
+    updateChangesSummary();
+    if (saved > 0) toast(`Saved ${saved} change${saved>1?'s':''} ✓`);
+  }
+
+  async function patchDitto(vid, text) {
+    const isBase = vid === 'base';
+    const body = {
+      updates: [{ developerId: selectedComp.id, text }],
+      ...(!isBase ? { variantId: vid } : {})
+    };
+    const res = await fetch(`${API_DITTO}/components`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: getDittoKey() },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(()=>({}));
+    if (!res.ok || !data.success) throw new Error(data.message || `HTTP ${res.status}`);
+  }
+
+  function resetAll() {
+    pendingChanges = {};
+    renderVariantEditor();
+  }
+</script>
+</body>
+</html>

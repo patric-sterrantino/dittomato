@@ -1,0 +1,367 @@
+/* =======================================================================
+   vialytics — colors & type tokens
+   Source of truth: src/index.css in vialytics/ui-components (develop) and
+   the VDS _ Foundations Figma file (Colors page). Keep in sync.
+   ======================================================================= */
+
+@font-face {
+    font-family: 'Roboto Flex';
+    font-style: normal;
+    font-weight: 100 1000;
+    font-display: swap;
+    src: url('fonts/RobotoFlex-VariableFont_GRAD_XOPQ_XTRA_YOPQ_YTAS_YTDE_YTFI_YTLC_YTUC_opsz_slnt_wdth_wght.ttf') format('truetype-variations'),
+         url('fonts/RobotoFlex-VariableFont_GRAD_XOPQ_XTRA_YOPQ_YTAS_YTDE_YTFI_YTLC_YTUC_opsz_slnt_wdth_wght.ttf') format('truetype');
+}
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+    /* ------------------------------------------------------------------
+       ROOT COLOR SCALES (10 steps each, 1 = lightest, 10 = darkest)
+       ------------------------------------------------------------------ */
+    --root-dark-blue-1: #eff0f0; --root-dark-blue-2: #d3d5d7;
+    --root-dark-blue-3: #a7abb0; --root-dark-blue-4: #7a8188;
+    --root-dark-blue-5: #4e5761; --root-dark-blue-6: #222d39;
+    --root-dark-blue-7: #1b242e; --root-dark-blue-8: #141b22;
+    --root-dark-blue-9: #0e1217; --root-dark-blue-10: #07090b;
+
+    --root-grey-1: #e9eaeb;  --root-grey-2: #d3d5d7;
+    --root-grey-3: #ffffff;  --root-grey-4: #f1f2f4;
+    --root-grey-5: #e6e7e9;  --root-grey-6: #cacaca;
+    --root-grey-7: #686e72;  --root-grey-8: #434d57;
+    --root-grey-9: #222d39;  --root-grey-10: #000000;
+
+    --root-coral-red-1: #ffeeee; --root-coral-red-2: #ffdddd;
+    --root-coral-red-3: #ffbbbb; --root-coral-red-4: #ff9999;
+    --root-coral-red-5: #ff7777; --root-coral-red-6: #ff5555;
+    --root-coral-red-7: #f13b3b; --root-coral-red-8: #c43030;
+    --root-coral-red-9: #972525; --root-coral-red-10: #6a1a1a;
+
+    --root-yellow-1: #fffbe6; --root-yellow-2: #fef6cc;
+    --root-yellow-3: #fdee99; --root-yellow-4: #f0e18e;
+    --root-yellow-5: #fcdd33; --root-yellow-6: #fbd400;
+    --root-yellow-7: #dac656; --root-yellow-8: #977f00;
+    --root-yellow-9: #645500; --root-yellow-10: #322a00;
+
+    --root-orange-1: #fff3eb; --root-orange-2: #ffe6d7;
+    --root-orange-3: #ffcaa7; --root-orange-4: #edba9a;
+    --root-orange-5: #ff9d5d; --root-orange-6: #ff8435;
+    --root-orange-7: #ff682d; --root-orange-8: #de6638;
+    --root-orange-9: #712d12; --root-orange-10: #371609;
+
+    --root-green-1: #f0faf2; --root-green-2: #e2f6e5;
+    --root-green-3: #c5eccc; --root-green-4: #a7e3b2;
+    --root-green-5: #8ad999; --root-green-6: #6dd07f;
+    --root-green-7: #57a666; --root-green-8: #417d4c;
+    --root-green-9: #2c5333; --root-green-10: #162a19;
+
+    --root-bianchi-green-1: #ecfaf8; --root-bianchi-green-2: #d8f5f2;
+    --root-bianchi-green-3: #b1ebe5; --root-bianchi-green-4: #8ae2d7;
+    --root-bianchi-green-5: #63d8ca; --root-bianchi-green-6: #3ccebd;
+    --root-bianchi-green-7: #30a597; --root-bianchi-green-8: #247c71;
+    --root-bianchi-green-9: #18524c; --root-bianchi-green-10: #0c2926;
+
+    --root-lime-lizard-1: #f6fbef; --root-lime-lizard-2: #edf7df;
+    --root-lime-lizard-3: #dbefbe; --root-lime-lizard-4: #c8e69e;
+    --root-lime-lizard-5: #b6de7d; --root-lime-lizard-6: #a4d65d;
+    --root-lime-lizard-7: #83ab4a; --root-lime-lizard-8: #628038;
+    --root-lime-lizard-9: #425625; --root-lime-lizard-10: #212b13;
+
+    --root-citrus-delight-1: #fbfbee; --root-citrus-delight-2: #f6f7dd;
+    --root-citrus-delight-3: #edeebb; --root-citrus-delight-4: #e4e69a;
+    --root-citrus-delight-5: #dbdd78; --root-citrus-delight-6: #d2d556;
+    --root-citrus-delight-7: #a8aa45; --root-citrus-delight-8: #7e8034;
+    --root-citrus-delight-9: #545522; --root-citrus-delight-10: #2a2b11;
+
+    --root-coral-fountain-1: #fcf6f6; --root-coral-fountain-2: #f9eded;
+    --root-coral-fountain-3: #f4dcdc; --root-coral-fountain-4: #eecaca;
+    --root-coral-fountain-5: #e9b9b9; --root-coral-fountain-6: #e3a7a7;
+    --root-coral-fountain-7: #b68686; --root-coral-fountain-8: #886464;
+    --root-coral-fountain-9: #5b4343; --root-coral-fountain-10: #2d2121;
+
+    --root-atlantic-ocean-1: #f6fbfc; --root-atlantic-ocean-2: #edf7f9;
+    --root-atlantic-ocean-3: #dceff4; --root-atlantic-ocean-4: #cae8ee;
+    --root-atlantic-ocean-5: #b9e0e9; --root-atlantic-ocean-6: #a7d8e3;
+    --root-atlantic-ocean-7: #86adb6; --root-atlantic-ocean-8: #648288;
+    --root-atlantic-ocean-9: #43565b; --root-atlantic-ocean-10: #212b2d;
+
+    --root-purple-1: #f3e6fb; --root-purple-2: #e7ccf7;
+    --root-purple-3: #ce99ef; --root-purple-4: #b666e7;
+    --root-purple-5: #9d33df; --root-purple-6: #8500d7;
+    --root-purple-7: #6a00ac; --root-purple-8: #500081;
+    --root-purple-9: #350056; --root-purple-10: #1b002b;
+
+    --root-blue-1: #e8eefd; --root-blue-2: #d0ddfb;
+    --root-blue-3: #a1bbf7; --root-blue-4: #729af2;
+    --root-blue-5: #4378ee; --root-blue-6: #1456ea;
+    --root-blue-7: #1045bb; --root-blue-8: #0c348c;
+    --root-blue-9: #08225e; --root-blue-10: #04112f;
+
+    /* ------------------------------------------------------------------
+       UTILITY + STATUS
+       ------------------------------------------------------------------ */
+    --utility-transparent: #00000000;
+    --utility-grey-light-transparent: #0f12160d;
+    --utility-dark-blue-60-alpha: #222d3999;
+    --utility-hint: #1456ea1a;
+
+    --status-hover-hover-off: #81818100;
+    --status-hover-hover-on-grey: var(--root-grey-5);
+    --status-hover-hover: #8181811a;
+    --status-hover-hover-on-dark: #ffffff26;
+    --status-hover-purple-hover: var(--root-purple-8);
+    --status-hover-hover-dark: var(--root-grey-8);
+    --status-hover-red-hover: var(--root-coral-red-8);
+    --status-hover-yellow-hover: var(--root-yellow-5);
+
+    /* ------------------------------------------------------------------
+       SEMANTIC ALIASES
+       ------------------------------------------------------------------ */
+    --primary-black: var(--root-grey-10);
+    --primary-dark-blue: var(--root-dark-blue-6);   /* #222d39 — signature UI ink */
+    --primary-dark-blue-3: var(--root-dark-blue-4);
+    --primary-dark-blue-2: var(--root-dark-blue-2);
+    --primary-grey: var(--root-dark-blue-1);
+    --primary-white: var(--root-grey-3);
+
+    --secondary-purple: var(--root-purple-6);
+    --secondary-yellow: var(--root-yellow-6);        /* #fbd400 — brand yellow */
+    --secondary-blue:   var(--root-blue-6);
+
+    /* Semantic foreground/background tokens */
+    --fg-1: var(--primary-dark-blue);      /* default text */
+    --fg-2: var(--root-dark-blue-4);       /* muted text */
+    --fg-3: var(--root-dark-blue-3);       /* tertiary / disabled */
+    --fg-inverse: var(--primary-white);
+    --bg-surface: var(--primary-white);
+    --bg-elevated: var(--primary-white);
+    --bg-muted: var(--root-dark-blue-1);   /* #eff0f0 page tint */
+    --bg-dark: #0b0d0e;                    /* dark-mode canvas */
+    --border-default: var(--root-dark-blue-1);
+    --border-subtle: var(--utility-grey-light-transparent);
+
+    /* Status */
+    --status-error:   var(--root-coral-red-6);
+    --status-success: var(--root-green-6);
+    --status-warning: var(--secondary-yellow);
+    --status-u: var(--root-orange-7);
+    --status-i: var(--root-blue-8);
+    --status-new: var(--root-blue-4);
+    --status-newest: var(--root-blue-8);
+    --status-purple-inactive: var(--root-purple-3);
+    --status-active-selected: var(--root-blue-1);
+
+    /* Priority */
+    --prio-high: var(--root-coral-red-5);
+    --prio-medium: var(--root-yellow-5);
+    --prio-low: var(--root-bianchi-green-5);
+    --prio-high-light: var(--root-coral-red-3);
+    --prio-medium-light: var(--root-yellow-3);
+    --prio-low-light: var(--root-bianchi-green-3);
+
+    /* Badges */
+    --badge-yellow-light: var(--root-yellow-3); --badge-yellow-dark: var(--root-yellow-9);
+    --badge-green-light:  var(--root-green-3);  --badge-green-dark:  var(--root-green-9);
+    --badge-red-light:    var(--root-coral-red-3); --badge-red-dark: var(--root-coral-red-9);
+    --badge-grey-light:   var(--root-dark-blue-2); --badge-grey-dark: var(--root-dark-blue-6);
+    --badge-blue-light:   var(--root-atlantic-ocean-4); --badge-blue-dark: var(--root-atlantic-ocean-9);
+    --badge-purple-light: var(--root-purple-3);     --badge-purple-dark: var(--root-purple-9);
+
+    /* Grading — the defining domain scale (pavement condition 1.0..5.0) */
+    --grading-1-0: var(--root-bianchi-green-6);
+    --grading-1-5: var(--root-green-6);
+    --grading-2-0: var(--root-lime-lizard-6);
+    --grading-2-5: var(--root-citrus-delight-6);
+    --grading-3-0: var(--root-yellow-6);
+    --grading-3-5: var(--root-yellow-7);
+    --grading-4-0: var(--root-orange-6);
+    --grading-4-5: var(--root-orange-7);
+    --grading-5-0: var(--root-coral-red-6);
+    --grading-inactive-1-0: var(--root-bianchi-green-3);
+    --grading-inactive-1-5: var(--root-green-3);
+    --grading-inactive-2-0: var(--root-lime-lizard-4);
+    --grading-inactive-2-5: var(--root-citrus-delight-4);
+    --grading-inactive-3-0: var(--root-yellow-3);
+    --grading-inactive-3-5: var(--root-yellow-4);
+    --grading-inactive-4-0: var(--root-orange-3);
+    --grading-inactive-4-5: var(--root-orange-4);
+    --grading-inactive-5-0: var(--root-coral-red-3);
+    --grading-inactive-0-5: var(--root-blue-4);
+    --grading-inactive-0-0: var(--root-blue-8);
+
+    /* Table */
+    --table-border: #f2f2f2;
+    --table-border-cell-hover: var(--root-dark-blue-3);
+    --table-row-background-hover: #55545c14;
+    --table-cell-background-hover: var(--table-border);
+    --table-active-cell-border: var(--primary-dark-blue);
+    --table-selected-row-background: #1452df0d;
+    --table-selected-row-border: #1452df;
+    --table-selected-cell-border: var(--root-dark-blue-2);
+    --table-selected-cell-background: #f4f6fd;
+
+    /* ------------------------------------------------------------------
+       SHADOWS
+       ------------------------------------------------------------------ */
+    --box-shadow-dropdown:
+        0 0 1px rgba(34, 45, 57, 0.3),
+        0 4px 12px rgba(34, 45, 57, 0.2),
+        0 8px 24px rgba(34, 45, 57, 0.1);
+    --box-shadow-regular:
+        0 0 1px rgba(34, 45, 57, 0.3),
+        0 4px 12px rgba(34, 45, 57, 0.1);
+    --box-shadow-large:
+        0 8px 24px rgba(34, 45, 57, 0.1),
+        0 4px 12px rgba(34, 45, 57, 0.2);
+
+    /* ------------------------------------------------------------------
+       RADII
+       ------------------------------------------------------------------ */
+    --radius-xs: 4px;
+    --radius-sm: 6px;   /* button__less-rounded */
+    --radius-md: 8px;
+    --radius-lg: 12px;  /* default button + image */
+    --radius-xl: 16px;  /* button__extra-rounded */
+    --radius-2xl: 24px; /* big cards + modal chrome */
+    --radius-pill: 999px;
+
+    /* ------------------------------------------------------------------
+       SPACING — 4px base rhythm
+       ------------------------------------------------------------------ */
+    --space-1: 4px;   --space-2: 8px;   --space-3: 12px;
+    --space-4: 16px;  --space-5: 24px;  --space-6: 32px;
+    --space-7: 48px;  --space-8: 64px;  --space-9: 96px;
+
+    /* ------------------------------------------------------------------
+       TYPE — Roboto Flex throughout
+       ------------------------------------------------------------------ */
+    --font-sans: 'Roboto Flex', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --fw-regular: 400;
+    --fw-medium: 500;
+    --fw-semibold: 600;
+    --fw-bold: 700;
+
+    /* Observed in Figma: 28/36, 20/28, 18/24, 16/24, 14/20, 12/16, 8/10. */
+    --fs-display: 28px; --lh-display: 36px; --ls-display: -0.3px;
+    --fs-h1:      28px; --lh-h1:      36px; --ls-h1:      -0.3px;
+    --fs-h2:      20px; --lh-h2:      28px; --ls-h2:      -0.1px;
+    --fs-h3:      18px; --lh-h3:      24px;
+    --fs-h4:      16px; --lh-h4:      24px;
+    --fs-body:    14px; --lh-body:    20px;
+    --fs-caption: 12px; --lh-caption: 16px;
+    --fs-micro:   8px;  --lh-micro:   10px;
+
+    /* z-index */
+    --zindex-dropdown: 1000;
+    --zindex-sticky: 1020;
+    --zindex-fixed: 1030;
+    --zindex-modal-backdrop: 1040;
+    --zindex-offcanvas: 1050;
+    --zindex-modal: 1060;
+    --zindex-popover: 1070;
+    --zindex-tooltip: 1080;
+    --zindex-zooming: 1090;
+}
+
+/* ----------------------------------------------------------------------
+   BASE — body default matches the repo's index.css
+   ---------------------------------------------------------------------- */
+html, body {
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: var(--font-sans);
+    font-weight: var(--fw-regular);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--fg-1);
+    background: var(--bg-surface);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+button { font-family: var(--font-sans); }
+* { box-sizing: border-box; }
+
+/* ----------------------------------------------------------------------
+   SEMANTIC TYPE — apply to raw tags OR utility classes of the same name
+   ---------------------------------------------------------------------- */
+h1, .h1 {
+    font: var(--fw-bold) var(--fs-h1)/var(--lh-h1) var(--font-sans);
+    letter-spacing: var(--ls-h1);
+    color: var(--fg-1);
+    margin: 0;
+}
+h2, .h2 {
+    font: var(--fw-bold) var(--fs-h2)/var(--lh-h2) var(--font-sans);
+    letter-spacing: var(--ls-h2);
+    color: var(--fg-1);
+    margin: 0;
+}
+h3, .h3 {
+    font: var(--fw-semibold) var(--fs-h3)/var(--lh-h3) var(--font-sans);
+    color: var(--fg-1);
+    margin: 0;
+}
+h4, .h4 {
+    font: var(--fw-semibold) var(--fs-h4)/var(--lh-h4) var(--font-sans);
+    color: var(--fg-1);
+    margin: 0;
+}
+p, .p {
+    font: var(--fw-regular) var(--fs-body)/var(--lh-body) var(--font-sans);
+    color: var(--fg-1);
+    margin: 0;
+}
+.label {
+    font: var(--fw-medium) var(--fs-body)/var(--lh-body) var(--font-sans);
+    color: var(--fg-1);
+}
+.caption {
+    font: var(--fw-regular) var(--fs-caption)/var(--lh-caption) var(--font-sans);
+    color: var(--fg-2);
+}
+.micro {
+    font: var(--fw-semibold) var(--fs-micro)/var(--lh-micro) var(--font-sans);
+    color: var(--fg-1);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+/* ----------------------------------------------------------------------
+   DASHBOARD TOKENS (db-*) — from milky-way-ui/src/index.css.
+   Used by the Dashboard surface. Co-exist with primary palette.
+   ---------------------------------------------------------------------- */
+:root {
+    --db-font-mono: 'Roboto Mono', monospace;
+    --db-font-flex: 'Roboto Flex', sans-serif;
+    --db-text-primary: #222d39;
+    --db-text-secondary: #6b7280;
+    --db-text-tertiary: #99a1af;
+    --db-text-dimmed: #a0aab4;
+    --db-card-bg: #f9fafb;
+    --db-card-border: #eff0f0;
+    --db-divider: #f4f4f4;
+    --db-divider-strong: #d1d5db;
+    --db-positive: #059669;
+    --db-negative: #dc2626;
+    --db-neutral: #99a1af;
+    --db-benchmark: #1456ea;
+    --db-link: #1456ea;
+    --db-accent: #fbd400;
+    --db-surface-dark: #222d39;
+    --db-surface-dark-border: #3a4553;
+    --db-hover-bg: #f3f4f6;
+    --db-warning-bg: #fffbeb;
+    --db-warning-border: #fde68a;
+    --db-warning-icon: #d97706;
+    --db-warning-text: #92400e;
+
+    --divider-subtle: rgba(0, 0, 0, 0.05);
+    --height-modal-content: 476px;
+}
+.mono {
+    font-family: var(--font-mono);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+}
