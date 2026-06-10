@@ -1,19 +1,13 @@
 # 🍅 Dittomato
 
-A saucy two-part tool for managing Ditto UI strings:
+A two-part tool for managing Ditto UI strings:
 
 - **Browser app** (`index.html`) — search, edit, and translate Ditto components with Magic Translate powered by Claude
-- **CLI** (`harvest.js`) — scan React JSX/TSX files, match strings against Ditto, and push new ones
+- **CLI** (`harvest.js`) — scan React JSX/TSX files for hardcoded strings, match them against Ditto, and replace them with `<Ditto />` components
 
 ---
 
-## Browser app
-
-Open `index.html` directly or host on GitHub Pages. Enter your Ditto and Anthropic API keys and start editing.
-
----
-
-## CLI — Install globally
+## Install
 
 ```bash
 git clone https://github.com/your-username/dittomato.git
@@ -21,63 +15,182 @@ cd dittomato
 npm install -g .
 ```
 
-Add your Ditto API key to `~/.env` for global use across all projects:
+## API key
+
+Dittomato needs your Ditto API key. It looks for it in a `.env` file, walking up the directory tree from wherever you run it.
+
+Create `~/.env` for global use:
 
 ```
 DITTO_API_KEY=your_key_here
 ```
 
-Or add a `.env` file per project — Dittomato walks up the directory tree to find it.
+Or add a `.env` at the root of a specific project — that takes precedence.
 
 ---
 
-## CLI — Usage
+## CLI usage
 
 ```bash
-# Scan a single file
-dittomato src/screens/MyScreen.jsx
+dittomato [path] [options]
+```
 
-# Scan a folder recursively
+`path` can be a file, a folder (scanned recursively), or omitted to scan the current directory.
+
+```bash
+dittomato                        # scan current directory
+dittomato src/                   # scan a folder
+dittomato src/screens/Home.tsx   # scan a single file
+```
+
+### Options
+
+| Flag | Description |
+|---|---|
+| `--push` | Push unmatched strings to Ditto as new components |
+| `--yes` | Skip all confirmation prompts (CI mode) |
+| `--ext jsx,tsx` | File extensions to scan (default: `jsx,tsx`) |
+| `--ignore stories,e2e` | Extra folder names to skip |
+| `--import-from path` | Override the path used in `import { Ditto } from '...'` |
+| `--no-color` | Disable colored output (useful when piping) |
+
+---
+
+## What it scans
+
+Dittomato extracts strings from two places in each file:
+
+**JSX text nodes** — readable text between tags:
+```jsx
+<p>Welcome back</p>
+```
+
+**String props** — a comprehensive set of copy-carrying prop names:
+
+| Category | Props |
+|---|---|
+| Core | `label`, `text`, `title`, `description`, `caption`, `message` |
+| Input | `placeholder`, `helperText`, `hint`, `legend` |
+| Buttons | `buttonText`, `confirmText`, `confirmLabel`, `cancelText`, `cancelLabel`, `submitText`, `saveText`, `actionText` |
+| States | `emptyText`, `emptyMessage`, `noDataText`, `noResultsText`, `noRowsLabel`, `loadingText` |
+| Feedback | `successMessage`, `errorMessage`, `warningMessage`, `infoMessage`, `errorText` |
+| Structure | `header`, `subheader`, `subtitle` |
+| Lists | `primaryText`, `secondaryText` |
+| Data grid | `headerName` |
+| Images | `alt` |
+| Accessibility | `aria-label`, `aria-description`, `aria-placeholder` |
+
+**Skipped automatically:** test files (`*.test.*`, `*.spec.*`, `*.stories.*`), mock/dummy files, type declarations (`.d.ts`), and strings that look like code identifiers, URLs, hex colors, or TypeScript type annotations.
+
+---
+
+## Typical workflow
+
+### 1. Scan and review
+
+```bash
 dittomato src/
+```
 
-# Scan the entire repo
-dittomato .
+This fetches your Ditto components and shows three sections:
 
-# JSX only (default includes tsx)
-dittomato src/ --ext jsx
+- **✅ MATCHED** — strings already in Ditto, with their component IDs
+- **🔍 NEAR MATCH** — strings not in Ditto by exact text, but a similar component exists (different capitalisation, punctuation, etc.) — you choose whether to link them or treat them as new
+- **➕ NEW** — strings with no match in Ditto, with a suggested component ID
 
-# Skip additional folders
-dittomato src/ --ignore stories,e2e
+### 2. Push new strings to Ditto
 
-# Push unmatched strings to Ditto
-dittomato src/ --push
+From the **What's next?** menu, choose `[p]`:
 
-# Push without confirmation prompt (CI)
+```
+What's next?
+──────────────────────────────────────────────────────────────
+  [p]  Push 5 new strings to Ditto
+  [w]  Replace strings in source files with Ditto components
+  [q]  Quit
+```
+
+You'll review each string before it's pushed:
+
+```
+Reviewing 5 new strings before push
+──────────────────────────────────────────────────────────────
+  ↵ push as-is   s skip   a push all   q stop   e edit string   or type a new ID to rename
+
+(1/5)  src/components/Menu.tsx:42
+  String  "export xls"
+  ID      menu.export-xls
+  > ↵
+  → pushing as "menu.export-xls"
+```
+
+At the `>` prompt:
+- **Enter** — push as-is
+- **`s`** — skip this string
+- **`a`** — push all remaining without reviewing
+- **`q`** — stop here, push only what you've already accepted
+- **`e`** — edit the string text (re-checks for Ditto matches after editing)
+- **Any other text** — use it as the component ID instead of the suggestion
+
+### 3. Replace strings in source files
+
+From the **What's next?** menu, choose `[w]`. For every matched or pushed string, Dittomato rewrites the source file in place.
+
+**ReactNode props** (e.g. `label`, `text`, `title`) get a `<Ditto />` component:
+```jsx
+// before
+<Button label="Save changes" />
+
+// after
+import { Ditto } from '../lib/ditto';
+<Button label={<Ditto componentId="dashboard.save-changes" />} />
+```
+
+**String-only props** (`aria-label`, `placeholder`, `alt`, `title`, `aria-description`, `aria-placeholder`) get a `useDittoWrapper` hook instead, since those attributes only accept plain strings:
+```jsx
+// before
+<input placeholder="Search…" aria-label="Search field" />
+
+// after
+import { Ditto, useDittoWrapper } from '../lib/ditto';
+const searchPlaceholderText = useDittoWrapper({ componentId: 'search.placeholder' });
+const searchFieldText = useDittoWrapper({ componentId: 'search.aria-label' });
+<input placeholder={searchPlaceholderText} aria-label={searchFieldText} />
+```
+
+If no `import { Ditto }` is found in the scanned files, Dittomato will ask you to provide the import path once.
+
+---
+
+## CI / automated push
+
+Use `--push --yes` to push without any prompts — all suggested IDs are accepted as-is:
+
+```bash
 dittomato src/ --push --yes
-
-# No colors (CI / pipe to file)
-dittomato src/ --no-color
 ```
 
 ---
 
-## Full workflow
+## How component IDs are suggested
 
-```bash
-# 1. Scan your prototype and preview results
-dittomato src/
+When a string has no Ditto match, an ID is generated from the filename + the string:
 
-# 2. Review harvest-report.json or read the terminal output
-
-# 3. Push new strings to Ditto
-dittomato src/ --push
-
-# 4. Open the Dittomato browser app to add translations
-#    https://your-username.github.io/dittomato
 ```
+src/components/SettingsPanel.tsx  +  "Save changes"
+→  settingspanel.save-changes
+```
+
+You can rename it during the push review.
 
 ---
 
-## harvest-report.json
+## Matching logic
 
-Written to the current working directory after every run. Contains matched strings with their Ditto developer IDs, unmatched strings with suggested IDs, and (after `--push`) a record of what was created.
+Dittomato uses three levels of matching to avoid creating duplicates:
+
+1. **Exact text** — `"export xls"` matches a component whose text is `"export xls"`
+2. **Normalised text** — `"export xls"` matches `"Export XLS"` (case and punctuation ignored)
+3. **Component ID** — `"exportxls"` matches an existing component whose developer ID is `exportxls`
+
+Near matches are shown interactively so you can confirm before anything is pushed.

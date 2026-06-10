@@ -102,6 +102,8 @@ input:focus{border-color:var(--primary-dark-blue);box-shadow:0 0 0 3px rgba(34,4
 
 /* left pane */
 .left{width:384px;flex-shrink:0;background:#fff;border-right:1px solid var(--root-dark-blue-1);display:flex;flex-direction:column;min-height:0}
+.left-foot{flex-shrink:0;padding:12px 16px;border-top:1px solid var(--root-dark-blue-1)}
+.left-foot .btn{width:100%;justify-content:center}
 .search-head{height:88px;box-sizing:border-box;padding:0 20px;display:flex;flex-direction:column;justify-content:center;gap:8px;border-bottom:1px solid var(--root-dark-blue-1)}
 .search-row{display:flex;gap:8px}
 .search-field{position:relative;flex:1}
@@ -253,6 +255,14 @@ input:focus{border-color:var(--primary-dark-blue);box-shadow:0 0 0 3px rgba(34,4
 .gl-table tr.hidden-row{display:none}
 .gl-empty{color:var(--root-dark-blue-3)}
 
+/* new component modal */
+.nc-field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.nc-field label{font-size:12px;font-weight:600;color:var(--root-grey-8)}
+.nc-field input{font-size:14px;padding:9px 12px;border:1px solid var(--root-dark-blue-2);border-radius:var(--radius-md);transition:border-color 150ms ease,box-shadow 150ms ease}
+.nc-field input:focus{outline:none;border-color:var(--primary-dark-blue);box-shadow:0 0 0 3px rgba(34,45,57,.08)}
+.nc-field .nc-hint{font-size:11px;color:var(--root-grey-7);margin-top:2px}
+.nc-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+
 /* editor footer */
 .editor-foot{flex-shrink:0;display:none;align-items:center;gap:12px;background:#fff;border-top:1px solid var(--root-dark-blue-1);padding:12px 24px}
 .changes-summary{font-size:13px;color:var(--root-grey-7)}
@@ -335,7 +345,7 @@ body[data-spacing="cozy"] .result-item{padding:10px 12px;gap:4px}
       </svg>
       <h1>ditto<span class="mato">mato</span></h1>
     </div>
-    <span class="brand-version" id="versionBadge">v1.1.6</span>
+    <span class="brand-version" id="versionBadge">v1.2.2</span>
   </div>
 
   <div class="topbar-spacer"></div>
@@ -403,6 +413,12 @@ body[data-spacing="cozy"] .result-item{padding:10px 12px;gap:4px}
         <p>Search to find a component to edit.</p>
       </div>
     </div>
+    <div class="left-foot">
+      <button class="btn btn-ghost" id="newCompBtn" onclick="openNewComp()">
+        <svg class="ico" width="16" height="16" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+        New component
+      </button>
+    </div>
   </aside>
 
   <!-- right: editor -->
@@ -444,6 +460,48 @@ body[data-spacing="cozy"] .result-item{padding:10px 12px;gap:4px}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- new component modal -->
+<div class="modal-overlay" id="newCompModal" onclick="if(event.target===this) closeNewComp()">
+  <div class="modal" role="dialog" aria-label="Create new component">
+    <div class="modal-head">
+      <div class="modal-title">
+        <span class="gl-ico"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></span>
+        New component
+      </div>
+      <button class="icon-btn" onclick="closeNewComp()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </button>
+    </div>
+    <div class="modal-sub" id="ncSub">Creates a new component in Ditto.</div>
+    <div class="modal-body">
+      <!-- step 1: text + ID -->
+      <div id="ncStep1">
+        <div class="nc-field">
+          <label for="ncText">String text</label>
+          <input type="text" id="ncText" placeholder="e.g. Save changes" oninput="ncAutoId()" onkeydown="if(event.key==='Enter')document.getElementById('ncId').focus()" />
+        </div>
+        <div class="nc-field">
+          <label for="ncId">Component ID</label>
+          <input type="text" id="ncId" placeholder="e.g. settings.save.changes" onkeydown="if(event.key==='Enter')submitNewComp()" />
+          <span class="nc-hint">Auto-generated from the text. Edit to add a namespace prefix.</span>
+        </div>
+        <div class="nc-foot">
+          <button class="btn btn-ghost btn-sm" onclick="closeNewComp()">Cancel</button>
+          <button class="btn btn-primary btn-sm" id="ncSubmitBtn" onclick="submitNewComp()">Create component</button>
+        </div>
+      </div>
+      <!-- step 2: translations (shown after create) -->
+      <div id="ncStep2" style="display:none">
+        <div id="ncTransFields"></div>
+        <div class="nc-foot">
+          <button class="btn btn-ghost btn-sm" onclick="closeNewComp()">Skip</button>
+          <button class="btn btn-primary btn-sm" id="ncSaveTransBtn" onclick="saveNewCompTranslations()">Save translations</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- vocabulary modal -->
 <div class="modal-overlay" id="vocabModal" onclick="if(event.target===this) closeVocab()">
@@ -622,6 +680,100 @@ function buildVocab() {
 }
 function openVocab()  { document.getElementById('vocabModal').classList.add('open'); const inp = document.getElementById('vocabSearch'); if (inp) { inp.value = ''; filterGlossary(''); setTimeout(() => inp.focus(), 50); } }
 function closeVocab() { document.getElementById('vocabModal').classList.remove('open'); }
+
+function openNewComp() {
+  const k = getDittoKey();
+  if (!k) { toast('Add your Ditto API key first', 'error'); toggleKeysPop(true); return; }
+  document.getElementById('ncText').value = '';
+  document.getElementById('ncId').value = '';
+  document.getElementById('ncSubmitBtn').disabled = false;
+  document.getElementById('ncSubmitBtn').textContent = 'Create component';
+  document.getElementById('newCompModal').classList.add('open');
+  setTimeout(() => document.getElementById('ncText').focus(), 50);
+}
+function closeNewComp() { document.getElementById('newCompModal').classList.remove('open'); }
+
+function ncAutoId() {
+  const text = document.getElementById('ncText').value;
+  const slug = text.toLowerCase().replace(/\s+/g, '.').replace(/[^a-z0-9.]/g, '').replace(/\.+/g, '.').replace(/^\.|\.$/g, '').slice(0, 60);
+  document.getElementById('ncId').value = slug;
+}
+
+let _ncCreatedId = null;
+
+async function submitNewComp() {
+  const text = document.getElementById('ncText').value.trim();
+  const devId = document.getElementById('ncId').value.trim();
+  if (!text) { document.getElementById('ncText').focus(); return; }
+  if (!devId) { document.getElementById('ncId').focus(); return; }
+  const k = getDittoKey();
+  if (!k) { toast('Add your Ditto API key first', 'error'); return; }
+
+  const btn = document.getElementById('ncSubmitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  try {
+    const res = await fetch(`${API_DITTO}/components`, {
+      method: 'POST',
+      headers: { Authorization: k, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ components: [{ name: text, text, developerId: devId }] }),
+    });
+    if (res.status === 201 || res.status === 200) {
+      _ncCreatedId = devId;
+      toast(`Created "${devId}"`, 'success');
+      // Move to step 2 — translations
+      await ensureVariants();
+      if (!allVariants || allVariants.length === 0) { closeNewComp(); return; }
+      document.getElementById('ncStep1').style.display = 'none';
+      document.getElementById('ncSub').textContent = 'Optionally add translations for the new component.';
+      const fields = allVariants.map(v =>
+        `<div class="nc-field">
+          <label>${langName(v) || v.name || v.id}</label>
+          <input type="text" id="nct-${v.id}" placeholder="Translation…" />
+        </div>`
+      ).join('');
+      document.getElementById('ncTransFields').innerHTML = fields;
+      document.getElementById('ncStep2').style.display = '';
+      document.getElementById('ncTransFields').querySelector('input')?.focus();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      const msg = err.message || err.error || `HTTP ${res.status}`;
+      toast(`Failed: ${msg}`, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Create component';
+    }
+  } catch (e) {
+    toast(`Network error: ${e.message}`, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Create component';
+  }
+}
+
+async function saveNewCompTranslations() {
+  if (!_ncCreatedId) { closeNewComp(); return; }
+  const k = getDittoKey();
+  const btn = document.getElementById('ncSaveTransBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  let saved = 0, failed = 0;
+  for (const v of (allVariants || [])) {
+    const text = document.getElementById(`nct-${v.id}`)?.value.trim();
+    if (!text) continue;
+    try {
+      const res = await fetch(`${API_DITTO}/components`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: k },
+        body: JSON.stringify({ updates: [{ developerId: _ncCreatedId, text }], variantId: v.id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) saved++; else failed++;
+    } catch { failed++; }
+  }
+  if (saved > 0) toast(`Saved ${saved} translation${saved > 1 ? 's' : ''}`, 'success');
+  if (failed > 0) toast(`${failed} translation${failed > 1 ? 's' : ''} failed to save`, 'error');
+  closeNewComp();
+}
 function filterGlossary(q) {
   const lower = q.toLowerCase();
   GLOSSARY.forEach((g, i) => {
