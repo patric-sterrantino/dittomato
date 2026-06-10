@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "scannedAt": "2026-06-10T08:48:12.380Z",
+    "filesScanned": 1,
+    "stringsFound": 2,
+    "alreadyWrapped": 0,
+    "matched": 0,
+    "unmatched": 2
+  },
+  "matched": [],
+  "unmatched": [
+    {
+      "string": "Actually visible text",
+      "suggestedId": "commenttest.actually-visible-text",
+      "file": "../../../../../tmp/CommentTest.tsx",
+      "line": 12
+    },
+    {
+      "string": "Real label",
+      "suggestedId": "commenttest.real-label",
+      "file": "../../../../../tmp/CommentTest.tsx",
+      "line": 15
+    }
+  ],
+  "alreadyWrapped": []
+}

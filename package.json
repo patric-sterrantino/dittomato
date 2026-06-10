@@ -1,0 +1,14 @@
+{
+  "name": "dittomato",
+  "version": "1.0.0",
+  "description": "🍅 Saucy Ditto string editor and JSX string harvester",
+  "bin": {
+    "dittomato": "./harvest.js"
+  },
+  "scripts": {
+    "harvest": "node harvest.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

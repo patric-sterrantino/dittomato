@@ -1,22 +1,83 @@
-# CODING AGENTS: READ THIS FIRST
+# 🍅 Dittomato
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+A saucy two-part tool for managing Ditto UI strings:
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+- **Browser app** (`index.html`) — search, edit, and translate Ditto components with Magic Translate powered by Claude
+- **CLI** (`harvest.js`) — scan React JSX/TSX files, match strings against Ditto, and push new ones
 
-## What you should do — IMPORTANT
+---
 
-**Read `dittomato/project/Dittomato.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+## Browser app
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+Open `index.html` directly or host on GitHub Pages. Enter your Ditto and Anthropic API keys and start editing.
 
-## About the design files
+---
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+## CLI — Install globally
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+```bash
+git clone https://github.com/your-username/dittomato.git
+cd dittomato
+npm install -g .
+```
 
-## Bundle contents
+Add your Ditto API key to `~/.env` for global use across all projects:
 
-- `dittomato/README.md` — this file
-- `dittomato/project/` — the `dittomato` project files (HTML prototypes, assets, components)
+```
+DITTO_API_KEY=your_key_here
+```
+
+Or add a `.env` file per project — Dittomato walks up the directory tree to find it.
+
+---
+
+## CLI — Usage
+
+```bash
+# Scan a single file
+dittomato src/screens/MyScreen.jsx
+
+# Scan a folder recursively
+dittomato src/
+
+# Scan the entire repo
+dittomato .
+
+# JSX only (default includes tsx)
+dittomato src/ --ext jsx
+
+# Skip additional folders
+dittomato src/ --ignore stories,e2e
+
+# Push unmatched strings to Ditto
+dittomato src/ --push
+
+# Push without confirmation prompt (CI)
+dittomato src/ --push --yes
+
+# No colors (CI / pipe to file)
+dittomato src/ --no-color
+```
+
+---
+
+## Full workflow
+
+```bash
+# 1. Scan your prototype and preview results
+dittomato src/
+
+# 2. Review harvest-report.json or read the terminal output
+
+# 3. Push new strings to Ditto
+dittomato src/ --push
+
+# 4. Open the Dittomato browser app to add translations
+#    https://your-username.github.io/dittomato
+```
+
+---
+
+## harvest-report.json
+
+Written to the current working directory after every run. Contains matched strings with their Ditto developer IDs, unmatched strings with suggested IDs, and (after `--push`) a record of what was created.
