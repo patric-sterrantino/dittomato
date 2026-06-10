@@ -335,7 +335,7 @@ body[data-spacing="cozy"] .result-item{padding:10px 12px;gap:4px}
       </svg>
       <h1>ditto<span class="mato">mato</span></h1>
     </div>
-    <span class="brand-version" id="versionBadge">v1.1.0</span>
+    <span class="brand-version" id="versionBadge">v1.1.3</span>
   </div>
 
   <div class="topbar-spacer"></div>
@@ -677,7 +677,10 @@ async function doSearch() {
       const g = groups[id];
       const base = g.base || g.variants[0];
       if (!base) continue;
+      const normQ = q.replace(/[^a-z0-9]/g, '');
+      const normId = base.id ? base.id.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
       const metaHit = (base.id && base.id.toLowerCase().includes(q)) ||
+                      (normQ && normId.includes(normQ)) ||
                       (base.name && base.name.toLowerCase().includes(q)) ||
                       (base.text && base.text.toLowerCase().includes(q));
       const vHit = g.variants.find(v => v.text && v.text.toLowerCase().includes(q));

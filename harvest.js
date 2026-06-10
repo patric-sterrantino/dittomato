@@ -559,11 +559,7 @@ async function main() {
           toPush = [];
           console.log(c.bold(`Reviewing ${unmatched.length} new string${unmatched.length !== 1 ? 's' : ''} before push`));
           console.log(HR);
-          console.log(c.dim('  Each string will be created as a new Ditto component.'));
-          console.log(c.dim('  Review the suggested ID and copy text before confirming.\n'));
-          console.log(c.dim('  [y] push this string        [s] skip (don\'t push)'));
-          console.log(c.dim('  [e] edit the string text    [i] edit the component ID'));
-          console.log(c.dim('  [a] push all remaining      [q] stop here'));
+          console.log(c.dim('  ↵  push as-is   s  skip   a  push all   q  stop   or type a new ID to rename'));
           console.log();
           let pushAll = false;
           let reviewIndex = 0;
@@ -572,84 +568,66 @@ async function main() {
             if (pushAll) { toPush.push(u); continue; }
             reviewIndex++;
 
-            // Loop so user can edit then re-review the same entry
-            while (true) {
-              const loc     = c.dim(`${relPath(u.file)}:${u.line}`);
-              const counter = c.dim(`(${reviewIndex}/${unmatched.length})`);
-              console.log(`${counter}  ${loc}`);
-              console.log(`  ${c.bold('String')}  "${trunc(u.string, 60)}"`);
-              console.log(`  ${c.bold('ID')}      ${u.suggestedId}`);
-              process.stdout.write(`  Action [y/s/e/i/a/q]: `);
-              const ans2 = await prompt('');
-              const k    = ans2.trim();
-              const kl   = k.toLowerCase();
+            const loc     = c.dim(`${relPath(u.file)}:${u.line}`);
+            const counter = c.dim(`(${reviewIndex}/${unmatched.length})`);
+            console.log(`${counter}  ${loc}`);
+            console.log(`  ${c.bold('String')}  "${trunc(u.string, 60)}"`);
+            console.log(`  ${c.bold('ID')}      ${u.suggestedId}`);
+            process.stdout.write(`  > `);
+            const ans = (await prompt('')).trim();
+            const kl  = ans.toLowerCase();
 
-              if (kl === 'a') {
-                console.log(c.dim('  → pushing all remaining'));
-                console.log();
-                pushAll = true; toPush.push(u); break;
-              } else if (kl === 'q') {
-                console.log(c.dim('  → stopped. Only previously accepted strings will be pushed.'));
-                console.log();
-                ui = unmatched.length; break;
-              } else if (kl === 's') {
-                console.log(c.dim('  → skipped'));
-                console.log();
-                break;
-              } else if (kl === 'y' || k === '') {
-                console.log(c.dim(`  → will push as "${u.suggestedId}"`));
-                console.log();
-                toPush.push(u); break;
-              } else if (kl === 'e') {
-                process.stdout.write(c.dim('  New string text: '));
-                const newText = (await prompt('')).trim();
-                if (newText) {
-                  u = { ...u, string: newText };
-                  console.log(c.dim(`  ✎ text updated to "${trunc(newText, 55)}"`));
-                  // Re-check if edited text now matches an existing Ditto component
-                  const reHits = dittoByText.get(newText.toLowerCase())
-                    || dittoByNorm.get(norm(newText))
-                    || dittoById.get(norm(newText));
-                  if (reHits && reHits.length) {
-                    console.log(c.cyan(`  ✦ edited text matches existing Ditto component${reHits.length > 1 ? 's' : ''}:`));
-                    reHits.forEach((comp, i) => {
-                      const id = comp.developerId || comp.id;
-                      console.log(`    ${c.dim('[' + (i + 1) + ']')} ${id}  ${c.dim('"' + trunc(comp.text || '', 45) + '"')}`);
-                    });
-                    console.log(`    ${c.dim('[n]')} keep as new and continue editing`);
-                    process.stdout.write('  Use existing? ');
-                    const pick = await prompt('');
-                    const pn = parseInt(pick.trim(), 10);
-                    if (!isNaN(pn) && pn >= 1 && pn <= reHits.length) {
-                      const comp = reHits[pn - 1];
-                      matched.push({ ...u, developerId: comp.developerId || comp.id });
-                      console.log(c.green(`  → matched to existing "${comp.developerId || comp.id}" (won't be pushed)`));
-                      console.log();
-                      break;
-                    }
+            if (kl === 'q') {
+              console.log(c.dim('  → stopped. Only accepted strings will be pushed.'));
+              console.log();
+              ui = unmatched.length; continue;
+            } else if (kl === 's') {
+              console.log(c.dim('  → skipped'));
+              console.log();
+              continue;
+            } else if (kl === 'a') {
+              console.log(c.dim('  → pushing all remaining'));
+              console.log();
+              pushAll = true; toPush.push(u); continue;
+            } else if (kl === 'e') {
+              // explicit string edit
+              process.stdout.write(c.dim('  New string text: '));
+              const newText = (await prompt('')).trim();
+              if (newText) {
+                u = { ...u, string: newText };
+                // Re-check against Ditto after text edit
+                const reHits = dittoByText.get(newText.toLowerCase())
+                  || dittoByNorm.get(norm(newText))
+                  || dittoById.get(norm(newText));
+                if (reHits && reHits.length) {
+                  console.log(c.cyan(`  ✦ matches existing Ditto component${reHits.length > 1 ? 's' : ''}:`));
+                  reHits.forEach((comp, i) => {
+                    const id = comp.developerId || comp.id;
+                    console.log(`    [${i + 1}] ${id}  ${c.dim('"' + trunc(comp.text || '', 45) + '"')}`);
+                  });
+                  process.stdout.write(`  Use existing (1-${reHits.length}) or Enter to push as new: `);
+                  const pick = (await prompt('')).trim();
+                  const pn = parseInt(pick, 10);
+                  if (!isNaN(pn) && pn >= 1 && pn <= reHits.length) {
+                    const comp = reHits[pn - 1];
+                    matched.push({ ...u, developerId: comp.developerId || comp.id });
+                    console.log(c.green(`  → matched to existing "${comp.developerId || comp.id}"`));
+                    console.log();
+                    continue;
                   }
-                } else {
-                  console.log(c.dim('  (no change)'));
                 }
-                console.log();
-                // loop again to re-show the updated entry
-              } else if (kl === 'i') {
-                process.stdout.write(c.dim('  New component ID: '));
-                const newId = (await prompt('')).trim();
-                if (newId) {
-                  u = { ...u, suggestedId: newId };
-                  console.log(c.dim(`  ✎ ID updated to "${newId}"`));
-                } else {
-                  console.log(c.dim('  (no change)'));
-                }
-                console.log();
-                // loop again to re-show the updated entry
-              } else {
-                console.log(c.dim(`  ✎ ID updated to "${k}"`));
-                console.log();
-                toPush.push({ ...u, suggestedId: k }); break;
               }
+              toPush.push(u);
+            } else if (ans === '') {
+              // push as-is
+            } else {
+              // anything else = new ID
+              u = { ...u, suggestedId: ans };
             }
+
+            console.log(c.dim(`  → pushing as "${u.suggestedId}"`));
+            console.log();
+            toPush.push(u);
           }
           console.log(HR);
           if (toPush.length === 0) {
