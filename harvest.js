@@ -532,209 +532,193 @@ async function main() {
   let pushed = [], pushFailed = [];
 
   if (flags.push) {
-    if (unmatched.length === 0) {
-      console.log(c.green('Nothing to push — all strings are already in Ditto.'));
-      console.log();
-    } else {
-      const maskedKey = '****' + DITTO_KEY.slice(-4);
-      console.log(c.yellow(`➕ Ready to push ${unmatched.length} new components to Ditto.`));
-      console.log(c.dim(`   API key: ${maskedKey}`));
-      console.log(c.dim(`   Endpoint: api.dittowords.com`));
-      console.log();
-
-      let doPush = flags.yes;
-      if (!doPush) {
-        const ans = await prompt('? Proceed? (y/N) ');
-        doPush = /^y$/i.test(ans.trim());
-        if (!doPush) {
-          console.log(c.dim('Aborted. Nothing was pushed.'));
-          console.log();
-        }
-      }
-
-      if (doPush) {
-        // Per-item review: let user skip, accept, or rename the suggested ID
-        let toPush = unmatched;
-        if (!flags.yes) {
-          toPush = [];
-          console.log(c.bold(`Reviewing ${unmatched.length} new string${unmatched.length !== 1 ? 's' : ''} before push`));
-          console.log(HR);
-          console.log(c.dim('  ↵  push as-is   s  skip   a  push all   q  stop   or type a new ID to rename'));
-          console.log();
-          let pushAll = false;
-          let reviewIndex = 0;
-          for (let ui = 0; ui < unmatched.length; ui++) {
-            let u = { ...unmatched[ui] };
-            if (pushAll) { toPush.push(u); continue; }
-            reviewIndex++;
-
-            const loc     = c.dim(`${relPath(u.file)}:${u.line}`);
-            const counter = c.dim(`(${reviewIndex}/${unmatched.length})`);
-            console.log(`${counter}  ${loc}`);
-            console.log(`  ${c.bold('String')}  "${trunc(u.string, 60)}"`);
-            console.log(`  ${c.bold('ID')}      ${u.suggestedId}`);
-            process.stdout.write(`  > `);
-            const ans = (await prompt('')).trim();
-            const kl  = ans.toLowerCase();
-
-            if (kl === 'q') {
-              console.log(c.dim('  → stopped. Only accepted strings will be pushed.'));
-              console.log();
-              ui = unmatched.length; continue;
-            } else if (kl === 's') {
-              console.log(c.dim('  → skipped'));
-              console.log();
-              continue;
-            } else if (kl === 'a') {
-              console.log(c.dim('  → pushing all remaining'));
-              console.log();
-              pushAll = true; toPush.push(u); continue;
-            } else if (kl === 'e') {
-              // explicit string edit
-              process.stdout.write(c.dim('  New string text: '));
-              const newText = (await prompt('')).trim();
-              if (newText) {
-                u = { ...u, string: newText };
-                // Re-check against Ditto after text edit
-                const reHits = dittoByText.get(newText.toLowerCase())
-                  || dittoByNorm.get(norm(newText))
-                  || dittoById.get(norm(newText));
-                if (reHits && reHits.length) {
-                  console.log(c.cyan(`  ✦ matches existing Ditto component${reHits.length > 1 ? 's' : ''}:`));
-                  reHits.forEach((comp, i) => {
-                    const id = comp.developerId || comp.id;
-                    console.log(`    [${i + 1}] ${id}  ${c.dim('"' + trunc(comp.text || '', 45) + '"')}`);
-                  });
-                  process.stdout.write(`  Use existing (1-${reHits.length}) or Enter to push as new: `);
-                  const pick = (await prompt('')).trim();
-                  const pn = parseInt(pick, 10);
-                  if (!isNaN(pn) && pn >= 1 && pn <= reHits.length) {
-                    const comp = reHits[pn - 1];
-                    matched.push({ ...u, developerId: comp.developerId || comp.id });
-                    console.log(c.green(`  → matched to existing "${comp.developerId || comp.id}"`));
-                    console.log();
-                    continue;
-                  }
-                }
-              }
-              toPush.push(u);
-            } else if (ans === '') {
-              // push as-is
-            } else {
-              // anything else = new ID
-              u = { ...u, suggestedId: ans };
-            }
-
-            console.log(c.dim(`  → pushing as "${u.suggestedId}"`));
-            console.log();
-            toPush.push(u);
-          }
-          console.log(HR);
-          if (toPush.length === 0) {
-            console.log(c.dim('Nothing selected to push.'));
-            console.log();
-            doPush = false;
-          } else {
-            console.log(c.dim(`Pushing ${toPush.length} of ${unmatched.length} strings…\n`));
-          }
-        }
-
-        for (const u of toPush) {
-          const str = `"${trunc(u.string, 40)}"`;
-          process.stdout.write(`  Pushing ${str}… `);
-          let res;
-          let usedId = u.suggestedId;
-          try {
-            res = await pushComponent(u.string, u.string, usedId);
-          } catch (e) {
-            process.stdout.write(c.red(`❌ failed`) + c.dim(` (network error: ${e.message})\n`));
-            pushFailed.push({ string: u.string, suggestedId: usedId, error: e.message, file: u.file, line: u.line });
-            continue;
-          }
-
-          if (res.status === 409) {
-            process.stdout.write(c.dim(`(HTTP 409 — ID conflict, retrying…)\n  Pushing ${str}… `));
-            usedId = usedId + '-2';
-            try {
-              res = await pushComponent(u.string, u.string, usedId);
-            } catch (e) {
-              process.stdout.write(c.red(`❌ failed`) + c.dim(` (network error: ${e.message})\n`));
-              pushFailed.push({ string: u.string, suggestedId: usedId, error: e.message, file: u.file, line: u.line });
-              continue;
-            }
-          }
-
-          if (res.status === 201 || res.status === 200) {
-            process.stdout.write(c.green(`✅ created`) + c.dim(`   (${usedId})\n`));
-            pushed.push({ string: u.string, developerId: usedId, file: u.file, line: u.line });
-          } else {
-            let errMsg;
-            try {
-              const parsed = JSON.parse(res.body);
-              errMsg = parsed.message || parsed.error || parsed.detail || JSON.stringify(parsed);
-            } catch { errMsg = res.body ? res.body.slice(0, 200) : `HTTP ${res.status}`; }
-            if (res.status === 409) errMsg = 'conflict after retry';
-            process.stdout.write(c.red(`❌ failed`) + c.dim(`   (${errMsg})\n`));
-            pushFailed.push({ string: u.string, suggestedId: usedId, error: errMsg, file: u.file, line: u.line });
-          }
-        }
-
-        console.log();
-        console.log(HR);
-        console.log(`${c.green(`✅ ${pushed.length} created`)} · ${c.red(`❌ ${pushFailed.length} failed`)}`);
-        console.log();
-
-        if (pushFailed.length > 0) {
-          console.log('Failed:');
-          for (const f of pushFailed) {
-            console.log(`  ${c.dim('"' + trunc(f.string) + '"')}  →  ${f.suggestedId}  ${c.red('(' + f.error + ')')}`);
-          }
-          console.log();
-        }
-
-        // Update report with push data
-        console.log();
-      }
-    }
+    const result = await runPushFlow(unmatched, { matched, dittoByText, dittoByNorm, dittoById, norm });
+    pushed = result.pushed;
+    pushFailed = result.pushFailed;
   }
 
   // Interactive "what's next" menu (skip when --yes or non-TTY)
   if (!flags.yes && process.stdin.isTTY) {
-    await whatNextMenu({ matched, unmatched, pushed, paths });
+    await whatNextMenu({ matched, unmatched, pushed, paths, dittoByText, dittoByNorm, dittoById, norm });
   }
 }
 
-async function whatNextMenu({ matched, unmatched, pushed, paths }) {
-  const remaining   = unmatched.length - pushed.length;
-  const pathArg     = paths.join(' ');
-  // All strings that now have a confirmed developerId (matched + successfully pushed)
-  const resolved    = [
-    ...matched,
-    ...pushed,
-  ];
+async function runPushFlow(unmatched, { matched, dittoByText, dittoByNorm, dittoById, norm }) {
+  const pushed = [], pushFailed = [];
+
+  if (unmatched.length === 0) {
+    console.log(c.green('Nothing to push — all strings are already in Ditto.'));
+    console.log();
+    return { pushed, pushFailed };
+  }
+
+  const maskedKey = '****' + DITTO_KEY.slice(-4);
+  console.log(c.yellow(`➕ Ready to push ${unmatched.length} new component${unmatched.length !== 1 ? 's' : ''} to Ditto.`));
+  console.log(c.dim(`   API key: ${maskedKey}   Endpoint: api.dittowords.com`));
+  console.log();
+
+  let doPush = flags.yes;
+  if (!doPush) {
+    const ans = await prompt('? Proceed? (y/N) ');
+    doPush = /^y$/i.test(ans.trim());
+    if (!doPush) { console.log(c.dim('Aborted. Nothing was pushed.')); console.log(); return { pushed, pushFailed }; }
+  }
+
+  let toPush = unmatched;
+  if (!flags.yes) {
+    toPush = [];
+    console.log(c.bold(`Reviewing ${unmatched.length} new string${unmatched.length !== 1 ? 's' : ''} before push`));
+    console.log(HR);
+    console.log(
+      `  ${c.bold('↵')}${c.dim(' push as-is')}   ${c.bold('s')}${c.dim(' skip')}   ${c.bold('a')}${c.dim(' push all')}   ${c.bold('q')}${c.dim(' stop')}   ${c.bold('e')}${c.dim(' edit string')}   ${c.dim('or type a new ID to rename')}`
+    );
+    console.log();
+    let pushAll = false;
+    let reviewIndex = 0;
+    for (let ui = 0; ui < unmatched.length; ui++) {
+      let u = { ...unmatched[ui] };
+      if (pushAll) { toPush.push(u); continue; }
+      reviewIndex++;
+
+      const loc     = c.dim(`${relPath(u.file)}:${u.line}`);
+      const counter = c.dim(`(${reviewIndex}/${unmatched.length})`);
+      console.log(`${counter}  ${loc}`);
+      console.log(`  ${c.bold('String')}  "${trunc(u.string, 60)}"`);
+      console.log(`  ${c.bold('ID')}      ${u.suggestedId}`);
+      process.stdout.write(`  > `);
+      const ans = (await prompt('')).trim();
+      const kl  = ans.toLowerCase();
+
+      if (kl === 'q') {
+        console.log(c.dim('  → stopped. Only accepted strings will be pushed.')); console.log();
+        ui = unmatched.length; continue;
+      } else if (kl === 's') {
+        console.log(c.dim('  → skipped')); console.log(); continue;
+      } else if (kl === 'a') {
+        console.log(c.dim('  → pushing all remaining')); console.log();
+        pushAll = true; toPush.push(u); continue;
+      } else if (kl === 'e') {
+        process.stdout.write(c.dim('  New string text: '));
+        const newText = (await prompt('')).trim();
+        if (newText) {
+          u = { ...u, string: newText };
+          const reHits = dittoByText.get(newText.toLowerCase())
+            || dittoByNorm.get(norm(newText))
+            || dittoById.get(norm(newText));
+          if (reHits && reHits.length) {
+            console.log(c.cyan(`  ✦ matches existing Ditto component${reHits.length > 1 ? 's' : ''}:`));
+            reHits.forEach((comp, i) => {
+              const id = comp.developerId || comp.id;
+              console.log(`    [${i + 1}] ${id}  ${c.dim('"' + trunc(comp.text || '', 45) + '"')}`);
+            });
+            process.stdout.write(`  Use existing (1-${reHits.length}) or Enter to push as new: `);
+            const pick = (await prompt('')).trim();
+            const pn = parseInt(pick, 10);
+            if (!isNaN(pn) && pn >= 1 && pn <= reHits.length) {
+              const comp = reHits[pn - 1];
+              matched.push({ ...u, developerId: comp.developerId || comp.id });
+              console.log(c.green(`  → matched to existing "${comp.developerId || comp.id}"`));
+              console.log();
+              continue;
+            }
+          }
+        }
+        toPush.push(u);
+      } else if (ans === '') {
+        // push as-is
+      } else {
+        u = { ...u, suggestedId: ans };
+      }
+
+      console.log(c.dim(`  → pushing as "${u.suggestedId}"`)); console.log();
+      toPush.push(u);
+    }
+    console.log(HR);
+    if (toPush.length === 0) {
+      console.log(c.dim('Nothing selected to push.')); console.log();
+      return { pushed, pushFailed };
+    }
+    console.log(c.dim(`Pushing ${toPush.length} of ${unmatched.length} strings…\n`));
+  }
+
+  for (const u of toPush) {
+    const str = `"${trunc(u.string, 40)}"`;
+    process.stdout.write(`  Pushing ${str}… `);
+    let res;
+    let usedId = u.suggestedId;
+    try {
+      res = await pushComponent(u.string, u.string, usedId);
+    } catch (e) {
+      process.stdout.write(c.red(`❌ failed`) + c.dim(` (network error: ${e.message})\n`));
+      pushFailed.push({ string: u.string, suggestedId: usedId, error: e.message, file: u.file, line: u.line });
+      continue;
+    }
+
+    if (res.status === 409) {
+      process.stdout.write(c.dim(`(HTTP 409 — ID conflict, retrying…)\n  Pushing ${str}… `));
+      usedId = usedId + '-2';
+      try {
+        res = await pushComponent(u.string, u.string, usedId);
+      } catch (e) {
+        process.stdout.write(c.red(`❌ failed`) + c.dim(` (network error: ${e.message})\n`));
+        pushFailed.push({ string: u.string, suggestedId: usedId, error: e.message, file: u.file, line: u.line });
+        continue;
+      }
+    }
+
+    if (res.status === 201 || res.status === 200) {
+      process.stdout.write(c.green(`✅ created`) + c.dim(`   (${usedId})\n`));
+      pushed.push({ string: u.string, developerId: usedId, file: u.file, line: u.line });
+    } else {
+      let errMsg;
+      try {
+        const parsed = JSON.parse(res.body);
+        errMsg = parsed.message || parsed.error || parsed.detail || JSON.stringify(parsed);
+      } catch { errMsg = res.body ? res.body.slice(0, 200) : `HTTP ${res.status}`; }
+      if (res.status === 409) errMsg = 'conflict after retry';
+      process.stdout.write(c.red(`❌ failed`) + c.dim(`   (${errMsg})\n`));
+      pushFailed.push({ string: u.string, suggestedId: usedId, error: errMsg, file: u.file, line: u.line });
+    }
+  }
+
+  console.log();
+  console.log(HR);
+  console.log(`${c.green(`✅ ${pushed.length} created`)} · ${c.red(`❌ ${pushFailed.length} failed`)}`);
+  console.log();
+
+  if (pushFailed.length > 0) {
+    console.log('Failed:');
+    for (const f of pushFailed) {
+      console.log(`  ${c.dim('"' + trunc(f.string) + '"')}  →  ${f.suggestedId}  ${c.red('(' + f.error + ')')}`);
+    }
+    console.log();
+  }
+
+  return { pushed, pushFailed };
+}
+
+async function whatNextMenu({ matched, unmatched, pushed, paths, dittoByText, dittoByNorm, dittoById, norm }) {
+  const remaining = unmatched.filter(u => !pushed.find(p => p.file === u.file && p.line === u.line));
+  const resolved  = [...matched, ...pushed];
 
   const options = [];
 
-  if (remaining > 0) {
+  if (remaining.length > 0) {
     options.push({
       key: 'p',
-      label: `Push ${remaining} new string${remaining !== 1 ? 's' : ''} to Ditto`,
-      hint: `dittomato ${pathArg} --push`,
+      label: `Push ${remaining.length} new string${remaining.length !== 1 ? 's' : ''} to Ditto`,
     });
   }
 
   if (resolved.length > 0) {
     options.push({
       key: 'w',
-      label: `Replace strings in source files with t() calls`,
+      label: `Replace strings in source files with Ditto components`,
       hint: resolved.length + ' strings across ' + new Set(resolved.map(r => r.file)).size + ' files',
     });
   }
 
-  options.push({
-    key: 'q',
-    label: 'Quit',
-  });
+  options.push({ key: 'q', label: 'Quit' });
 
   console.log(c.bold('What\'s next?'));
   console.log(HR);
@@ -756,10 +740,8 @@ async function whatNextMenu({ matched, unmatched, pushed, paths }) {
   }
 
   if (chosen.key === 'p') {
-    const { spawn } = require('child_process');
-    const args = [...paths, '--push'];
-    if (flags.noColor) args.push('--no-color');
-    spawn(process.execPath, [__filename, ...args], { stdio: 'inherit' }).on('exit', code => process.exit(code ?? 0));
+    const result = await runPushFlow(remaining, { matched, dittoByText, dittoByNorm, dittoById, norm });
+    await whatNextMenu({ matched, unmatched, pushed: [...pushed, ...result.pushed], paths, dittoByText, dittoByNorm, dittoById, norm });
     return;
   }
 
@@ -767,7 +749,6 @@ async function whatNextMenu({ matched, unmatched, pushed, paths }) {
     await replaceInFiles(resolved);
     return;
   }
-
 }
 
 // ── Replace strings in source files ───────────────────────────────────────
