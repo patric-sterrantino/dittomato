@@ -21,6 +21,7 @@ const c = {
   dim:    s => NO_COLOR ? s : `\x1b[2m${s}\x1b[0m`,
   bold:   s => NO_COLOR ? s : `\x1b[1m${s}\x1b[0m`,
   purple: s => NO_COLOR ? s : `\x1b[35m${s}\x1b[0m`,
+  cyan:   s => NO_COLOR ? s : `\x1b[36m${s}\x1b[0m`,
 };
 const HR = '─'.repeat(62);
 
@@ -128,16 +129,35 @@ const allFiles = [...new Set(paths.flatMap(collectFiles))];
 
 // ── String extraction ──────────────────────────────────────────────────────
 const PROP_NAMES = [
-  'label', 'placeholder', 'title', 'tooltip', 'helperText',
-  'description', 'buttonText', 'emptyText', 'successMessage',
-  'errorMessage', 'hint', 'aria-label', 'aria-description',
+  // core copy props
+  'label', 'text', 'title', 'description', 'caption', 'message',
+  // input / form
+  'placeholder', 'helperText', 'hint', 'legend',
+  // tooltips / overlays
+  'tooltip',
+  // button / action labels
+  'buttonText', 'confirmText', 'confirmLabel', 'cancelText', 'cancelLabel',
+  'submitText', 'saveText', 'actionText',
+  // empty / loading states
+  'emptyText', 'emptyMessage', 'noDataText', 'noResultsText', 'noRowsLabel', 'loadingText',
+  // feedback messages
+  'successMessage', 'errorMessage', 'warningMessage', 'infoMessage', 'errorText',
+  // section / card structure
+  'header', 'subheader', 'subtitle',
+  // list / nav items
+  'primaryText', 'secondaryText',
+  // data grid column headers
+  'headerName',
+  // image alt text
+  'alt',
+  // accessibility
+  'aria-label', 'aria-description', 'aria-placeholder',
 ];
 
 // Props that only accept a string — <Ditto /> (a React element) is invalid here.
-// These are harvested but skipped during automated replacement; flagged for manual handling.
 const STRING_ONLY_PROPS = new Set([
   'aria-label', 'aria-description', 'aria-placeholder',
-  'placeholder', 'title', 'alt', 'name',
+  'placeholder', 'title', 'alt',
 ]);
 
 // JSX text between tags — only lines that look like real copy, not expressions
@@ -152,7 +172,7 @@ const T_CALL_RE  = /\bt\(["']([^"']+)["']\)/g;
 // TypeScript / JS type words that indicate code fragments
 const TS_TYPE_WORDS = /\b(Array|Promise|Map|Set|Record|Partial|Required|Readonly|Extract|Exclude|ReturnType|void|null|undefined|boolean|string|number|object|never|unknown|any)\b/;
 
-function isJunk(s) {
+function isJunk(s, kind) {
   if (s.length < 4) return true;
   if (!/[a-zA-Z]/.test(s)) return true;
   if (/^\s*$/.test(s)) return true;
@@ -174,7 +194,8 @@ function isJunk(s) {
   if (/\./.test(s) && !/\s/.test(s)) return true;
 
   // variable-like single token: no spaces AND (camelCase / PascalCase / ALL_CAPS / kebab-case)
-  if (!/\s/.test(s) && /^([a-z][a-zA-Z0-9]*|[A-Z][a-zA-Z0-9]+|[A-Z_]{2,}|[a-z][a-z0-9-]+)$/.test(s)) return true;
+  // Skip this check for explicit prop values — text="exportxls" is intentional copy, not a variable
+  if (kind !== 'prop' && !/\s/.test(s) && /^([a-z][a-zA-Z0-9]*|[A-Z][a-zA-Z0-9]+|[A-Z_]{2,}|[a-z][a-z0-9-]+)$/.test(s)) return true;
 
   // JS expression fragments
   if (/&&|\|\||\?\?|=>/.test(s)) return true;
@@ -242,14 +263,14 @@ function extractStrings(file, content) {
   JSX_TEXT_RE.lastIndex = 0;
   while ((m = JSX_TEXT_RE.exec(content)) !== null) {
     const s = m[1].trim();
-    if (isGoodJsxText(s) && !isJunk(s)) results.push({ string: s, file, line: lineOf(content, m.index), kind: 'jsx' });
+    if (isGoodJsxText(s) && !isJunk(s, 'jsx')) results.push({ string: s, file, line: lineOf(content, m.index), kind: 'jsx' });
   }
 
   // String props
   PROP_RE.lastIndex = 0;
   while ((m = PROP_RE.exec(content)) !== null) {
     const s = m[2].trim();
-    if (!isJunk(s)) results.push({ string: s, file, line: lineOf(content, m.index), kind: 'prop' });
+    if (!isJunk(s, 'prop')) results.push({ string: s, file, line: lineOf(content, m.index), kind: 'prop' });
   }
 
   return results;
@@ -281,7 +302,8 @@ async function fetchComponents() {
 }
 
 async function pushComponent(name, text, developerId) {
-  const body = JSON.stringify({ name, text, developerId });
+  // Only send name/text/developerId — never include variants; Ditto auto-fills them.
+  const body = JSON.stringify({ components: [{ name, text, developerId }] });
   const res = await httpsRequest({
     hostname: 'api.dittowords.com',
     path: '/v2/components',
@@ -360,25 +382,83 @@ async function main() {
   }
   console.log();
 
-  // Build lookup: text → array of components (multiple comps can share the same text)
+  // Normalize for fuzzy matching: lowercase + strip all non-alphanumeric
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  // Build lookup: exact lowercase text → components
   const dittoByText = new Map();
+  // Build secondary lookup: normalized text → components (catches "Export XLS" ↔ "export xls")
+  const dittoByNorm = new Map();
+  // Build tertiary lookup: normalized developerId → components (catches string "exportxls" ↔ id "exportxls")
+  const dittoById   = new Map();
   for (const comp of dittoComponents) {
-    if (!comp.text) continue;
-    const key = comp.text.toLowerCase();
-    if (!dittoByText.has(key)) dittoByText.set(key, []);
-    dittoByText.get(key).push(comp);
+    const devId = comp.developerId || comp.id || '';
+    if (comp.text) {
+      const exact = comp.text.toLowerCase();
+      if (!dittoByText.has(exact)) dittoByText.set(exact, []);
+      dittoByText.get(exact).push(comp);
+      const n = norm(comp.text);
+      if (!dittoByNorm.has(n)) dittoByNorm.set(n, []);
+      dittoByNorm.get(n).push(comp);
+    }
+    if (devId) {
+      const nid = norm(devId);
+      if (!dittoById.has(nid)) dittoById.set(nid, []);
+      dittoById.get(nid).push(comp);
+    }
   }
 
   // Match
   const matched   = [];
   const ambiguous = [];
+  const nearMatch = []; // exact text miss but normalized hit
   const unmatched = [];
   for (const entry of unique) {
     const key  = entry.string.toLowerCase();
     const hits = dittoByText.get(key);
-    if (!hits)            unmatched.push({ ...entry, suggestedId: suggestId(entry.file, entry.string) });
-    else if (hits.length === 1) matched.push({ ...entry, developerId: hits[0].developerId || hits[0].id });
-    else                  ambiguous.push({ ...entry, candidates: hits });
+    if (hits && hits.length === 1) {
+      matched.push({ ...entry, developerId: hits[0].developerId || hits[0].id });
+    } else if (hits && hits.length > 1) {
+      ambiguous.push({ ...entry, candidates: hits });
+    } else {
+      // No exact text match — try normalized text, then normalized developer ID
+      const normHits = dittoByNorm.get(norm(entry.string)) || dittoById.get(norm(entry.string));
+      if (normHits && normHits.length) {
+        nearMatch.push({ ...entry, candidates: normHits, suggestedId: suggestId(entry.file, entry.string) });
+      } else {
+        unmatched.push({ ...entry, suggestedId: suggestId(entry.file, entry.string) });
+      }
+    }
+  }
+
+  // Resolve near-matches interactively
+  if (nearMatch.length > 0) {
+    console.log(c.cyan(`🔍  NEAR MATCH — similar text already in Ditto (${nearMatch.length})`));
+    console.log(HR);
+    for (const entry of nearMatch) {
+      const loc = c.dim(`${relPath(entry.file)}:${entry.line}`);
+      console.log(`\n  ${c.bold('"' + trunc(entry.string, 55) + '"')}  ${loc}`);
+      console.log(c.dim('  Similar in Ditto:'));
+      entry.candidates.forEach((comp, i) => {
+        const id = comp.developerId || comp.id;
+        console.log(`    ${c.dim('[' + (i + 1) + ']')} ${id}  ${c.dim('"' + trunc(comp.text, 45) + '"')}`);
+      });
+      console.log(`    ${c.dim('[n]')} treat as new`);
+
+      let pick;
+      if (flags.yes) {
+        pick = entry.candidates[0];
+        console.log(c.dim(`    → auto-picked [1] ${pick.developerId || pick.id}`));
+      } else {
+        const ans = await prompt('    Choice: ');
+        const n   = parseInt(ans.trim(), 10);
+        if (!isNaN(n) && n >= 1 && n <= entry.candidates.length) pick = entry.candidates[n - 1];
+      }
+
+      if (pick) matched.push({ ...entry, developerId: pick.developerId || pick.id });
+      else      unmatched.push({ ...entry, suggestedId: entry.suggestedId });
+    }
+    console.log();
   }
 
   // Resolve ambiguous entries interactively (or auto-pick first with --yes)
@@ -477,28 +557,101 @@ async function main() {
         let toPush = unmatched;
         if (!flags.yes) {
           toPush = [];
-          console.log(c.dim('Review each string — [y] push  [s] skip  [a] push all remaining  [q] stop'));
-          console.log(c.dim('                     or type a custom ID to rename before pushing\n'));
+          console.log(c.bold(`Reviewing ${unmatched.length} new string${unmatched.length !== 1 ? 's' : ''} before push`));
+          console.log(HR);
+          console.log(c.dim('  Each string will be created as a new Ditto component.'));
+          console.log(c.dim('  Review the suggested ID and copy text before confirming.\n'));
+          console.log(c.dim('  [y] push this string        [s] skip (don\'t push)'));
+          console.log(c.dim('  [e] edit the string text    [i] edit the component ID'));
+          console.log(c.dim('  [a] push all remaining      [q] stop here'));
+          console.log();
           let pushAll = false;
-          for (const u of unmatched) {
+          let reviewIndex = 0;
+          for (let ui = 0; ui < unmatched.length; ui++) {
+            let u = { ...unmatched[ui] };
             if (pushAll) { toPush.push(u); continue; }
-            const loc    = c.dim(`${relPath(u.file)}:${u.line}`);
-            const idHint = c.dim(`→ ${u.suggestedId}`);
-            process.stdout.write(`  "${trunc(u.string, 48)}"  ${idHint}  ${loc}\n  [y/s/a/q or new-id]: `);
-            const ans2 = await prompt('');
-            const k    = ans2.trim();
-            const kl   = k.toLowerCase();
-            if (kl === 'a')      { pushAll = true; toPush.push(u); }
-            else if (kl === 'q') { console.log(c.dim('Stopped review. Pushing accepted strings only.')); break; }
-            else if (kl === 's') { /* skip */ }
-            else if (kl === 'y' || k === '') { toPush.push(u); }
-            else {
-              // Treat any other non-empty input as a custom developer ID
-              console.log(c.dim(`    renamed → ${k}`));
-              toPush.push({ ...u, suggestedId: k });
+            reviewIndex++;
+
+            // Loop so user can edit then re-review the same entry
+            while (true) {
+              const loc     = c.dim(`${relPath(u.file)}:${u.line}`);
+              const counter = c.dim(`(${reviewIndex}/${unmatched.length})`);
+              console.log(`${counter}  ${loc}`);
+              console.log(`  ${c.bold('String')}  "${trunc(u.string, 60)}"`);
+              console.log(`  ${c.bold('ID')}      ${u.suggestedId}`);
+              process.stdout.write(`  Action [y/s/e/i/a/q]: `);
+              const ans2 = await prompt('');
+              const k    = ans2.trim();
+              const kl   = k.toLowerCase();
+
+              if (kl === 'a') {
+                console.log(c.dim('  → pushing all remaining'));
+                console.log();
+                pushAll = true; toPush.push(u); break;
+              } else if (kl === 'q') {
+                console.log(c.dim('  → stopped. Only previously accepted strings will be pushed.'));
+                console.log();
+                ui = unmatched.length; break;
+              } else if (kl === 's') {
+                console.log(c.dim('  → skipped'));
+                console.log();
+                break;
+              } else if (kl === 'y' || k === '') {
+                console.log(c.dim(`  → will push as "${u.suggestedId}"`));
+                console.log();
+                toPush.push(u); break;
+              } else if (kl === 'e') {
+                process.stdout.write(c.dim('  New string text: '));
+                const newText = (await prompt('')).trim();
+                if (newText) {
+                  u = { ...u, string: newText };
+                  console.log(c.dim(`  ✎ text updated to "${trunc(newText, 55)}"`));
+                  // Re-check if edited text now matches an existing Ditto component
+                  const reHits = dittoByText.get(newText.toLowerCase())
+                    || dittoByNorm.get(norm(newText))
+                    || dittoById.get(norm(newText));
+                  if (reHits && reHits.length) {
+                    console.log(c.cyan(`  ✦ edited text matches existing Ditto component${reHits.length > 1 ? 's' : ''}:`));
+                    reHits.forEach((comp, i) => {
+                      const id = comp.developerId || comp.id;
+                      console.log(`    ${c.dim('[' + (i + 1) + ']')} ${id}  ${c.dim('"' + trunc(comp.text || '', 45) + '"')}`);
+                    });
+                    console.log(`    ${c.dim('[n]')} keep as new and continue editing`);
+                    process.stdout.write('  Use existing? ');
+                    const pick = await prompt('');
+                    const pn = parseInt(pick.trim(), 10);
+                    if (!isNaN(pn) && pn >= 1 && pn <= reHits.length) {
+                      const comp = reHits[pn - 1];
+                      matched.push({ ...u, developerId: comp.developerId || comp.id });
+                      console.log(c.green(`  → matched to existing "${comp.developerId || comp.id}" (won't be pushed)`));
+                      console.log();
+                      break;
+                    }
+                  }
+                } else {
+                  console.log(c.dim('  (no change)'));
+                }
+                console.log();
+                // loop again to re-show the updated entry
+              } else if (kl === 'i') {
+                process.stdout.write(c.dim('  New component ID: '));
+                const newId = (await prompt('')).trim();
+                if (newId) {
+                  u = { ...u, suggestedId: newId };
+                  console.log(c.dim(`  ✎ ID updated to "${newId}"`));
+                } else {
+                  console.log(c.dim('  (no change)'));
+                }
+                console.log();
+                // loop again to re-show the updated entry
+              } else {
+                console.log(c.dim(`  ✎ ID updated to "${k}"`));
+                console.log();
+                toPush.push({ ...u, suggestedId: k }); break;
+              }
             }
           }
-          console.log();
+          console.log(HR);
           if (toPush.length === 0) {
             console.log(c.dim('Nothing selected to push.'));
             console.log();
@@ -538,7 +691,10 @@ async function main() {
             pushed.push({ string: u.string, developerId: usedId, file: u.file, line: u.line });
           } else {
             let errMsg;
-            try { errMsg = JSON.parse(res.body).message || `HTTP ${res.status}`; } catch { errMsg = `HTTP ${res.status}`; }
+            try {
+              const parsed = JSON.parse(res.body);
+              errMsg = parsed.message || parsed.error || parsed.detail || JSON.stringify(parsed);
+            } catch { errMsg = res.body ? res.body.slice(0, 200) : `HTTP ${res.status}`; }
             if (res.status === 409) errMsg = 'conflict after retry';
             process.stdout.write(c.red(`❌ failed`) + c.dim(`   (${errMsg})\n`));
             pushFailed.push({ string: u.string, suggestedId: usedId, error: errMsg, file: u.file, line: u.line });
