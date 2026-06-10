@@ -106,6 +106,7 @@ input:focus{border-color:var(--primary-dark-blue);box-shadow:0 0 0 3px rgba(34,4
 .left-foot .btn{width:100%;justify-content:center}
 .search-head{height:88px;box-sizing:border-box;padding:0 20px;display:flex;flex-direction:column;justify-content:center;gap:8px;border-bottom:1px solid var(--root-dark-blue-1)}
 .search-row{display:flex;gap:8px}
+#searchBtn{width:40px;padding:0;flex-shrink:0}
 .search-field{position:relative;flex:1}
 .search-field .ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--root-grey-7);pointer-events:none}
 .search-field input{padding-left:38px}
@@ -345,7 +346,7 @@ body[data-spacing="cozy"] .result-item{padding:10px 12px;gap:4px}
       </svg>
       <h1>ditto<span class="mato">mato</span></h1>
     </div>
-    <span class="brand-version" id="versionBadge">v1.2.2</span>
+    <span class="brand-version" id="versionBadge">v1.2.3</span>
   </div>
 
   <div class="topbar-spacer"></div>
@@ -397,9 +398,8 @@ body[data-spacing="cozy"] .result-item{padding:10px 12px;gap:4px}
           <svg class="ico" width="18" height="18" viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
           <input type="text" id="searchQuery" placeholder="Any language, or developer ID…" onkeydown="if(event.key==='Enter') doSearch()" />
         </div>
-        <button class="btn btn-primary" id="searchBtn" onclick="doSearch()">
+        <button class="btn btn-primary" id="searchBtn" onclick="doSearch()" aria-label="Search">
           <svg class="ico" width="18" height="18" viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-          Search
         </button>
       </div>
     </div>
