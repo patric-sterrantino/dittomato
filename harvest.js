@@ -7,6 +7,10 @@ const https = require('https');
 const readline = require('readline');
 const os   = require('os');
 
+const VERSION = (() => {
+  try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version; } catch { return '?'; }
+})();
+
 // ── ANSI colors ────────────────────────────────────────────────────────────
 const NO_COLOR = process.argv.includes('--no-color') || !process.stdout.isTTY;
 const c = {
@@ -316,7 +320,7 @@ function prompt(question) {
 // ── Main ───────────────────────────────────────────────────────────────────
 async function main() {
   console.log();
-  console.log(c.bold(c.purple('🍅 Dittomato — String Harvest')));
+  console.log(c.bold(c.purple('🍅 Dittomato — String Harvest')) + c.dim(`  v${VERSION}`));
   console.log(HR);
 
   // Collect and extract

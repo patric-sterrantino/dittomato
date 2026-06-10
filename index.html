@@ -47,6 +47,7 @@ button{font-family:inherit;cursor:pointer}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
 .brand-logo{height:22px;display:block}
 .brand-div{width:1px;height:22px;background:var(--root-dark-blue-2)}
+.brand-version{font-size:11px;font-weight:600;color:var(--root-dark-blue-3);letter-spacing:.02em;align-self:flex-end;padding-bottom:2px}
 .brand-name{display:flex;align-items:center;gap:7px}
 .brand-name h1{font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--primary-dark-blue)}
 .brand-name h1 .mato{color:var(--root-coral-red-7)}
@@ -334,6 +335,7 @@ body[data-spacing="cozy"] .result-item{padding:10px 12px;gap:4px}
       </svg>
       <h1>ditto<span class="mato">mato</span></h1>
     </div>
+    <span class="brand-version" id="versionBadge">v1.0.1</span>
   </div>
 
   <div class="topbar-spacer"></div>
@@ -1358,6 +1360,12 @@ function TweaksApp() {
 }
 
 ReactDOM.createRoot(document.getElementById('tweaks-root')).render(<TweaksApp />);
+</script>
+<script>
+fetch('./package.json').then(r=>r.json()).then(p=>{
+  const el=document.getElementById('versionBadge');
+  if(el&&p.version)el.textContent='v'+p.version;
+}).catch(()=>{});
 </script>
 </body>
 </html>
