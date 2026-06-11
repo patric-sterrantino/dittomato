@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --bg:         #0e0e0e;
+  --surface:    #1a1a1a;
+  --surface2:   #222;
+  --surface3:   #2a2a2a;
+  --line:       rgba(255,255,255,0.08);
+  --line2:      rgba(255,255,255,0.15);
+  --txt:        #ececec;
+  --txt2:       #888;
+  --txt3:       #555;
+  --blue:       #6490f5;
+  --blue-dim:   rgba(100,144,245,0.14);
+  --green:      #3ecf8e;
+  --green-dim:  rgba(62,207,142,0.13);
+  --amber:      #e8a030;
+  --amber-dim:  rgba(232,160,48,0.13);
+  --red:        #f07070;
+  --mono:       'SF Mono','Fira Code',ui-monospace,monospace;
+  --r:          6px;
+  --r-sm:       4px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 12px;
+  background: var(--bg);
+  color: var(--txt);
+  display: flex; flex-direction: column; overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+::selection { background: var(--blue); color: #fff; }
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; height: 50px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg); flex-shrink: 0;
+}
+.hd-title {
+  font-weight: 600; font-size: 14px; letter-spacing: -.02em;
+  display: flex; align-items: center; gap: 7px; color: var(--txt);
+}
+.hd-actions { display: flex; align-items: center; gap: 8px; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 13px; border-radius: var(--r); font-size: 11.5px; font-weight: 500;
+  border: 1px solid transparent; cursor: pointer; font-family: inherit;
+  white-space: nowrap; transition: background 120ms, box-shadow 120ms, opacity 120ms;
+  line-height: 1; letter-spacing: -.01em;
+}
+.btn:disabled { opacity: .3; cursor: not-allowed; }
+
+.btn-primary {
+  background: #fff; color: #0e0e0e; border-color: #fff;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.35);
+}
+.btn-primary:not(:disabled):hover {
+  background: #e8e8e8; border-color: #e8e8e8;
+}
+
+.btn-ghost {
+  background: var(--surface3); color: var(--txt2);
+  border-color: var(--line2);
+}
+.btn-ghost:not(:disabled):hover { background: #333; color: var(--txt); border-color: var(--line2); }
+
+.btn-green {
+  background: var(--green-dim); color: var(--green);
+  border-color: rgba(62,207,142,0.25);
+  box-shadow: 0 1px 6px rgba(62,207,142,0.15);
+}
+.btn-green:not(:disabled):hover { background: rgba(62,207,142,0.22); box-shadow: 0 1px 10px rgba(62,207,142,0.25); }
+
+.btn-sm { padding: 6px 13px; font-size: 11px; }
+
+/* ── Content ─────────────────────────────────────────────────────────────── */
+.content { flex: 1; overflow-y: auto; min-height: 0; }
+
+/* ── States ──────────────────────────────────────────────────────────────── */
+.state { padding: 48px 20px; text-align: center; color: var(--txt2); }
+.state p { font-size: 12px; line-height: 1.7; }
+.state strong { color: var(--txt); font-weight: 500; }
+
+.spinner {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--line2); border-top-color: var(--blue);
+  border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Setup ───────────────────────────────────────────────────────────────── */
+.setup { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+.setup p { font-size: 12.5px; color: var(--txt2); line-height: 1.75; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label {
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--txt3);
+}
+.field input {
+  border: 1px solid var(--line2); border-radius: var(--r);
+  padding: 9px 12px; font-size: 12.5px; font-family: inherit;
+  outline: none; color: var(--txt); background: var(--surface2);
+}
+.field input::placeholder { color: var(--txt3); }
+.field input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-dim); }
+
+/* ── Sections ────────────────────────────────────────────────────────────── */
+.section { border-bottom: 1px solid var(--line); }
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 16px; cursor: pointer; user-select: none;
+}
+.section-head:hover .section-title { color: var(--txt); }
+.section-title {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: 11px; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--txt2);
+  transition: color 120ms;
+}
+
+.badge {
+  font-size: 9.5px; font-weight: 600; padding: 2px 7px; border-radius: 20px;
+  letter-spacing: .02em;
+  background: var(--surface3); color: var(--txt2);
+}
+.badge-green  { background: var(--green-dim);  color: var(--green); }
+.badge-yellow { background: var(--amber-dim);  color: var(--amber); }
+.badge-blue   { background: var(--blue-dim);   color: var(--blue);  }
+
+.section-body { padding: 0 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.section-body.collapsed { display: none; }
+.chevron {
+  font-size: 8px; color: var(--txt3);
+  display: inline-block; transition: transform 150ms;
+}
+
+/* ── Items ───────────────────────────────────────────────────────────────── */
+.item {
+  border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 16px;
+  background: var(--surface);
+  display: flex; flex-direction: column; gap: 11px;
+  transition: border-color 150ms, background 150ms;
+}
+.item:hover { background: var(--surface2); border-color: var(--line2); }
+
+.item-resolved { opacity: .45; }
+
+.item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.item-text {
+  font-size: 13px; font-weight: 400; color: var(--txt);
+  flex: 1; word-break: break-word; line-height: 1.6;
+  white-space: pre-wrap;
+}
+.item-layers { font-size: 10.5px; color: var(--txt3); white-space: nowrap; flex-shrink: 0; padding-top: 3px; }
+.item-id {
+  font-family: var(--mono); font-size: 10.5px; color: var(--blue);
+  background: var(--blue-dim); padding: 3px 8px; border-radius: var(--r-sm);
+  display: inline-block; border: 1px solid rgba(100,144,245,0.2);
+}
+.item-similar { font-size: 12px; color: var(--txt2); line-height: 1.6; }
+.item-similar strong {
+  color: var(--txt); font-family: var(--mono); font-size: 10.5px;
+  background: var(--blue-dim); padding: 2px 6px; border-radius: var(--r-sm);
+  border: 1px solid rgba(100,144,245,0.2);
+}
+.item-actions { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; padding-top: 2px; }
+.item-status { font-size: 11px; color: var(--txt2); }
+.item-status.ok  { color: var(--green); font-weight: 500; }
+.item-status.err { color: var(--red);   font-weight: 500; }
+
+/* ── ID inputs ───────────────────────────────────────────────────────────── */
+.id-row { display: flex; align-items: center; gap: 10px; }
+.id-label {
+  font-size: 10px; color: var(--txt3); white-space: nowrap;
+  font-weight: 600; text-transform: uppercase; letter-spacing: .07em;
+}
+.id-input {
+  flex: 1; font-family: var(--mono); font-size: 11.5px; color: var(--blue);
+  border: 1px solid var(--line2); border-radius: var(--r-sm);
+  padding: 6px 10px; outline: none; background: var(--bg);
+}
+.id-input::placeholder { color: var(--txt3); font-style: italic; }
+.id-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-dim); }
+textarea.id-input {
+  resize: none; overflow: hidden; min-height: 34px;
+  line-height: 1.55; font-family: inherit; font-size: 12.5px;
+  color: var(--txt); font-family: inherit;
+}
+
+.id-select {
+  font-family: var(--mono); font-size: 11.5px; color: var(--blue);
+  background: var(--blue-dim); border: 1px solid rgba(100,144,245,0.22);
+  border-radius: var(--r-sm); padding: 5px 9px; cursor: pointer;
+  max-width: 260px; outline: none;
+}
+.id-select:focus { border-color: var(--blue); }
+.id-select option { background: var(--surface2); color: var(--txt); }
+
+/* ── Toggle ──────────────────────────────────────────────────────────────── */
+.toggle-label {
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer; user-select: none;
+}
+.toggle-input { display: none; }
+.toggle-track {
+  position: relative; width: 26px; height: 14px;
+  background: var(--surface3); border-radius: 7px;
+  border: 1px solid var(--line2);
+  transition: background 150ms, border-color 150ms; flex-shrink: 0;
+}
+.toggle-thumb {
+  position: absolute; top: 2px; left: 2px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--txt3);
+  transition: transform 150ms, background 150ms;
+}
+.toggle-input:checked + .toggle-track {
+  background: var(--blue-dim); border-color: rgba(91,138,240,0.35);
+}
+.toggle-input:checked + .toggle-track .toggle-thumb {
+  background: var(--blue); transform: translateX(12px);
+}
+.toggle-text { font-size: 10px; color: var(--txt2); }
+.toggle-label:hover .toggle-text { color: var(--txt); }
+
+/* ── Done banner ─────────────────────────────────────────────────────────── */
+.done-banner {
+  padding: 48px 24px; text-align: center;
+  color: var(--txt2); font-size: 13px; line-height: 1.8;
+}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="hd-title">🍅 Dittomato</div>
+  <div class="hd-actions" style="align-items:center">
+    <label class="toggle-label" for="autoScanChk">
+      <input type="checkbox" id="autoScanChk" checked onchange="setAutoScan(this.checked)" class="toggle-input">
+      <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      <span class="toggle-text">Auto-scan</span>
+    </label>
+    <label class="toggle-label" for="ignoreHiddenChk">
+      <input type="checkbox" id="ignoreHiddenChk" onchange="setIgnoreHidden(this.checked)" class="toggle-input">
+      <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      <span class="toggle-text">Skip hidden</span>
+    </label>
+    <button class="btn btn-ghost btn-sm" id="scanBtn" onclick="rescan()" disabled>↺ Scan</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- Setup -->
+  <div id="sSetup" style="display:none">
+    <div class="setup">
+      <div class="field">
+        <label>Ditto API key</label>
+        <input type="password" id="keyInput" placeholder="Paste your API key…" oninput="onKeyInput(this.value)" onkeydown="if(event.key==='Enter')saveKey()" />
+      </div>
+      <button class="btn btn-primary" id="saveKeyBtn" onclick="saveKey()" disabled>Save &amp; Scan</button>
+      <p style="font-size:10px;color:var(--txt3)">Stored locally — never leaves your browser.</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="sLoading" style="display:none">
+    <div class="state"><div class="spinner"></div><p id="loadMsg">Loading…</p></div>
+  </div>
+
+  <!-- No selection -->
+  <div id="sNone" style="display:none">
+    <div class="state">
+      <p>Select a <strong>frame</strong> or <strong>section</strong> in Figma,<br>then click <strong>↺ Scan</strong>.</p>
+    </div>
+  </div>
+
+  <!-- No text found -->
+  <div id="sNoText" style="display:none">
+    <div class="state"><p>No text layers found in selection.</p></div>
+  </div>
+
+  <!-- Results -->
+  <div id="sResults" style="display:none">
+
+    <!-- Matched -->
+    <div class="section" id="secMatched" style="display:none">
+      <div class="section-head" id="secMatchedHead" onclick="toggleSec('matched')">
+        <div class="section-title">
+          <span class="chevron" id="chevMatched">▶</span>
+          ✅ Matched
+          <span class="badge badge-green" id="matchedBadge">0</span>
+        </div>
+        <button class="btn btn-green btn-sm" id="renameAllBtn" onclick="event.stopPropagation();renameAllMatched()">Rename layers</button>
+      </div>
+      <div class="section-body collapsed" id="matchedBody"></div>
+    </div>
+
+    <!-- Near match -->
+    <div class="section" id="secNear" style="display:none">
+      <div class="section-head" style="cursor:default">
+        <div class="section-title">
+          🔍 Near match
+          <span class="badge badge-yellow" id="nearBadge">0</span>
+        </div>
+      </div>
+      <div class="section-body" id="nearBody"></div>
+    </div>
+
+    <!-- New -->
+    <div class="section" id="secNew" style="display:none">
+      <div class="section-head" style="cursor:default">
+        <div class="section-title">
+          ➕ New
+          <span class="badge badge-blue" id="newBadge">0</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="pushAllNew()">Push all</button>
+      </div>
+      <div style="padding:8px 12px 10px;border-bottom:1px solid var(--line)">
+        <div class="id-row">
+          <span class="id-label" style="min-width:60px">ID prefix</span>
+          <input class="id-input" id="newPrefixInp" placeholder="e.g. buttons."
+                 oninput="var v=sanitizeId(this.value);this.value=v;updateNewPrefix(v)"
+                 style="color:var(--txt2)" />
+        </div>
+      </div>
+      <div class="section-body" id="newBody"></div>
+    </div>
+
+    <!-- All done -->
+    <div class="done-banner" id="doneBanner" style="display:none">
+      All strings are accounted for. 🍅
+    </div>
+
+    <div style="padding:10px 14px;border-top:1px solid var(--line);text-align:right">
+      <button class="btn btn-ghost btn-sm" onclick="showSetup()" style="font-size:10px;color:var(--txt3);border-color:transparent">API key</button>
+    </div>
+
+  </div>
+
+</div><!-- /content -->
+
+<!-- Translate canvas bar — visible when matched items + variants exist -->
+<div id="translateBar" style="display:none;padding:12px 16px 14px;border-top:1px solid var(--line);background:var(--bg);flex-shrink:0">
+  <div style="display:flex;align-items:center;gap:9px">
+    <span style="font-size:11px;font-weight:600;color:var(--txt2);white-space:nowrap;letter-spacing:.03em;text-transform:uppercase">🌐 Translate</span>
+    <select id="translateVariantSel" class="id-select" style="flex:1;max-width:none"></select>
+    <button class="btn btn-primary btn-sm" id="translateBtn" onclick="applyTranslation()">Apply</button>
+  </div>
+  <div id="translateStatus" style="font-size:11px;color:var(--txt2);margin-top:5px;min-height:16px"></div>
+</div>
+
+<script>
+const API = 'https://api.dittowords.com/v2';
+let _key  = ''; // loaded from figma.clientStorage via code.js
+
+// ── State ──────────────────────────────────────────────────────────────────
+let st = {
+  matched:  [],  // { text, nodeIds, layerNames, comp, alreadyApplied }
+  near:     [],  // { text, nodeIds, layerNames, comp, decision: null|'use'|'new' }
+  newItems: [],  // { text, nodeIds, layerNames, id }
+};
+let _newPrefix = ''; // folder prefix for all new IDs
+let _silentRescan = false; // suppress loading spinner on post-push auto-rescan
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+const norm  = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+const esc   = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const trunc = (s, n) => s.length > n ? s.slice(0, n) + '…' : s;
+
+function sanitizeId(raw) {
+  // Live sanitizer — keeps trailing hyphen/dot so user can continue typing
+  return raw.toLowerCase()
+    .replace(/ /g, '-')
+    .replace(/[^a-z0-9.\-]/g, '')
+    .replace(/-+/g, '-').replace(/\.+/g, '.');
+}
+
+function sanitizeIdFinal(raw) {
+  // Strip leading/trailing separators for final use in push
+  return sanitizeId(raw).replace(/^[-.]|[-.]$/g, '');
+}
+
+function suggestId(text) {
+  return sanitizeIdFinal(text.replace(/\s+/g, '-')).slice(0, 60) || 'new-string';
+}
+
+function getDittoKey() { return _key; }
+
+function setIgnoreHidden(val) {
+  parent.postMessage({ pluginMessage: { type: 'set-options', options: { ignoreHidden: val } } }, '*');
+}
+function setAutoScan(val) {
+  parent.postMessage({ pluginMessage: { type: 'set-options', options: { autoScan: val } } }, '*');
+}
+
+// ── Variants cache ─────────────────────────────────────────────────────────
+let _variants = null; // null = not yet fetched
+async function ensureVariants() {
+  if (_variants !== null) return;
+  try {
+    const res = await fetch(`${API}/variants`, { headers: { Authorization: getDittoKey() } });
+    _variants = res.ok ? await res.json() : [];
+  } catch(e) { _variants = []; }
+}
+
+// ── Screen management ──────────────────────────────────────────────────────
+function show(id) {
+  ['sSetup','sLoading','sNone','sNoText','sResults'].forEach(s => {
+    document.getElementById(s).style.display = s === id ? 'block' : 'none';
+  });
+}
+function setLoading(msg) {
+  show('sLoading');
+  document.getElementById('loadMsg').textContent = msg || 'Loading…';
+}
+function showSetup() {
+  const inp = document.getElementById('keyInput');
+  const btn = document.getElementById('saveKeyBtn');
+  const k   = getDittoKey();
+  if (inp) inp.value = k;
+  if (btn) btn.disabled = !k;
+  show('sSetup');
+  setTimeout(() => inp && inp.focus(), 50);
+}
+function onKeyInput(val) {
+  document.getElementById('saveKeyBtn').disabled = !val.trim();
+}
+function saveKey() {
+  const k = document.getElementById('keyInput').value.trim();
+  if (!k) return;
+  _key = k;
+  parent.postMessage({ pluginMessage: { type: 'save-key', value: k } }, '*');
+  document.getElementById('scanBtn').disabled = false;
+  rescan();
+}
+
+// ── Figma messaging ────────────────────────────────────────────────────────
+function rescan() {
+  setLoading('Scanning selection…');
+  parent.postMessage({ pluginMessage: { type: 'rescan' } }, '*');
+}
+function sendRenames(renames) {
+  if (!renames.length) return;
+  parent.postMessage({ pluginMessage: { type: 'rename-layers', renames } }, '*');
+}
+
+// ── Ditto API ──────────────────────────────────────────────────────────────
+async function fetchComps(key) {
+  const res = await fetch(`${API}/components`, { headers: { Authorization: key } });
+  if (!res.ok) throw new Error(`Ditto API: HTTP ${res.status}`);
+  const rows = await res.json();
+  const seen = new Set();
+  return rows.filter(c => !c.variantId && !seen.has(c.id) && seen.add(c.id));
+}
+
+async function postComp(key, name, text, developerId, variants) {
+  // Step 1 — create the base component
+  const res = await fetch(`${API}/components`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: key },
+    body: JSON.stringify({ components: [{ name, text, developerId }] }),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.message || `HTTP ${res.status}`);
+  }
+  const data = await res.json();
+
+  // Step 2 — PATCH each variant translation separately (same as index.html)
+  if (variants) {
+    var vids = Object.keys(variants);
+    for (var vi = 0; vi < vids.length; vi++) {
+      var vtext = variants[vids[vi]];
+      if (!vtext) continue;
+      await fetch(`${API}/components`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: key },
+        body: JSON.stringify({ updates: [{ developerId: developerId, text: vtext }], variantId: vids[vi] }),
+      });
+    }
+  }
+
+  return data;
+}
+
+// ── Matching ───────────────────────────────────────────────────────────────
+function matchNodes(nodes, comps) {
+  const byExact      = new Map(); // lowercase text -> [comp, ...]
+  const byNorm       = new Map();
+  const byId         = new Map();
+  const byDeveloperId = new Map(); // exact component id -> comp
+  for (const c of comps) {
+    if (c.id) {
+      byDeveloperId.set(c.id, c);
+      const n = norm(c.id);
+      if (!byId.has(n)) byId.set(n, c);
+    }
+    if (c.text) {
+      const lc = c.text.toLowerCase();
+      if (!byExact.has(lc)) byExact.set(lc, []);
+      byExact.get(lc).push(c);
+      const n = norm(c.text);
+      if (!byNorm.has(n)) byNorm.set(n, c);
+    }
+  }
+
+  // Group nodes by text (many layers can share the same string)
+  const byText = new Map();
+  for (const node of nodes) {
+    if (!byText.has(node.text)) byText.set(node.text, { nodeIds: [], layerNames: [] });
+    const g = byText.get(node.text);
+    g.nodeIds.push(node.nodeId);
+    g.layerNames.push(node.layerName);
+  }
+
+  const matched = [], near = [], newItems = [];
+  for (const [text, { nodeIds, layerNames }] of byText) {
+    const n = norm(text);
+
+    // Layer-name match: any layer already renamed to a known Ditto component ID
+    var layerComp = null;
+    for (var li = 0; li < layerNames.length; li++) {
+      var lc = byDeveloperId.get(layerNames[li]);
+      if (lc) { layerComp = lc; break; }
+    }
+    if (layerComp) {
+      var allApplied = layerNames.every(function(ln) { return ln === layerComp.id; });
+      matched.push({ text: text, nodeIds: nodeIds, layerNames: layerNames, comp: layerComp, candidates: [layerComp], alreadyApplied: allApplied });
+      continue;
+    }
+
+    const exactAll = byExact.get(text.toLowerCase());
+    if (exactAll && exactAll.length) {
+      // Check if layers already match one of the candidates
+      var appliedComp = null;
+      for (var ci = 0; ci < exactAll.length; ci++) {
+        var cand = exactAll[ci];
+        var allMatch = true;
+        for (var li = 0; li < layerNames.length; li++) {
+          if (layerNames[li] !== cand.id) { allMatch = false; break; }
+        }
+        if (allMatch) { appliedComp = cand; break; }
+      }
+      var selectedComp   = appliedComp || exactAll[0];
+      var alreadyApplied = appliedComp !== null;
+      matched.push({ text, nodeIds, layerNames, comp: selectedComp, candidates: exactAll, alreadyApplied });
+      continue;
+    }
+    const close = byNorm.get(n) || byId.get(n);
+    if (close)  { near.push({ text, nodeIds, layerNames, comp: close, decision: null }); continue; }
+    newItems.push({ text, nodeIds, layerNames, id: suggestId(text) });
+  }
+  return { matched, near, newItems };
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function layerLabel(n) { return `${n} layer${n !== 1 ? 's' : ''}`; }
+
+function renderResults() {
+  const { matched, near, newItems } = st;
+
+  // Matched
+  var hasPending = matched.some(function(m) { return !m.alreadyApplied; });
+  document.getElementById('secMatched').style.display = matched.length ? '' : 'none';
+  document.getElementById('matchedBadge').textContent = matched.length;
+  document.getElementById('renameAllBtn').style.display = hasPending ? '' : 'none';
+  document.getElementById('matchedBody').innerHTML = matched.map(function(m, i) {
+    var textSynced = !m.comp.text || m.text === m.comp.text;
+
+    // Text has drifted — show both versions and offer sync
+    if (!textSynced) return (
+      '<div class="item item-matched">' +
+        '<div style="display:flex;gap:12px">' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:4px">Figma</div>' +
+            '<div class="item-text" style="font-size:12px">' + esc(m.text) + '</div>' +
+          '</div>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);margin-bottom:4px">Ditto · ' + esc(m.comp.id) + '</div>' +
+            '<div class="item-text" style="font-size:12px">' + esc(m.comp.text) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="item-actions" style="justify-content:flex-end">' +
+          '<span class="item-layers">' + layerLabel(m.nodeIds.length) + '</span>' +
+          '<button class="btn btn-ghost btn-sm" onclick="pushMatchedToDitto(' + i + ')">Push Figma → Ditto</button>' +
+          '<button class="btn btn-primary btn-sm" onclick="applyDittoToFigma(' + i + ')">Use Ditto text</button>' +
+          '<span class="item-status" id="ms-' + i + '"></span>' +
+        '</div>' +
+      '</div>');
+
+    // Text synced, layer name already correct
+    if (m.alreadyApplied) return (
+      '<div class="item item-matched" style="opacity:0.65">' +
+        '<div class="item-top">' +
+          '<span style="display:flex;align-items:flex-start;gap:7px;flex:1">' +
+            '<span style="color:#10b981;font-size:13px;flex-shrink:0;margin-top:1px">✓</span>' +
+            '<span class="item-text">' + esc(m.text) + '</span>' +
+          '</span>' +
+          '<span class="item-layers">' + layerLabel(m.nodeIds.length) + '</span>' +
+        '</div>' +
+        '<div class="item-id" style="color:#10b981">✓ ' + esc(m.comp.id) + '</div>' +
+      '</div>');
+
+    // Text synced, layer name needs renaming
+    var idPart;
+    if (m.candidates.length > 1) {
+      var opts = m.candidates.map(function(c, ci) {
+        return '<option value="' + ci + '"' + (c.id === m.comp.id ? ' selected' : '') + '>' + esc(c.id) + '</option>';
+      }).join('');
+      idPart = '<div class="item-id">→ <select class="id-select" onchange="selectMatchedComp(' + i + ',this.selectedIndex)">' + opts + '</select></div>';
+    } else {
+      idPart = '<div class="item-id">→ ' + esc(m.comp.id) + '</div>';
+    }
+    return (
+      '<div class="item item-matched">' +
+        '<div class="item-top">' +
+          '<label style="display:flex;align-items:flex-start;gap:7px;cursor:pointer;flex:1">' +
+            '<input type="checkbox" id="mc' + i + '" checked style="margin-top:2px;flex-shrink:0">' +
+            '<span class="item-text">' + esc(m.text) + '</span>' +
+          '</label>' +
+          '<span class="item-layers">' + layerLabel(m.nodeIds.length) + '</span>' +
+        '</div>' +
+        idPart +
+      '</div>');
+  }).join('');
+
+  // Near
+  document.getElementById('secNear').style.display = near.length ? '' : 'none';
+  document.getElementById('nearBadge').textContent = near.length;
+  document.getElementById('nearBody').innerHTML = near.map((n, i) => renderNear(n, i)).join('');
+
+  // New
+  document.getElementById('secNew').style.display = newItems.length ? '' : 'none';
+  document.getElementById('newBadge').textContent = newItems.length;
+  document.getElementById('newBody').innerHTML = newItems.map((item, i) =>
+    item.showTrans ? renderTransFields('new', i, item) : (
+    '<div class="item item-new" id="ni-' + i + '">' +
+      '<div class="item-top">' +
+        '<span class="item-text">' + esc(item.text) + '</span>' +
+        '<span class="item-layers">' + layerLabel(item.nodeIds.length) + '</span>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:8px">' +
+        '<div class="id-row" style="flex:1;min-width:0">' +
+          '<span class="id-label">ID</span>' +
+          (_newPrefix ? '<span style="font-family:var(--mono);font-size:11px;color:var(--txt3);white-space:nowrap;flex-shrink:0">' + esc(_newPrefix) + '</span>' : '') +
+          '<input class="id-input" id="nid-' + i + '" value="' + esc(item.id) + '" oninput="var v=sanitizeId(this.value);this.value=v;st.newItems[' + i + '].id=v" style="min-width:0" />' +
+        '</div>' +
+        '<button class="btn btn-primary btn-sm" style="flex-shrink:0" onclick="openTransFields(\'new\',' + i + ')">Push</button>' +
+      '</div>' +
+      '<span class="item-status" id="ns-' + i + '"></span>' +
+    '</div>')).join('');
+
+  // Done banner
+  const allGone = matched.length === 0 && near.length === 0 && newItems.length === 0;
+  document.getElementById('doneBanner').style.display = allGone ? '' : 'none';
+
+  // Translate bar — show when there are matched items and variants are loaded
+  var bar = document.getElementById('translateBar');
+  if (bar) {
+    var showBar = matched.length > 0 && _variants && _variants.length > 0;
+    bar.style.display = showBar ? '' : 'none';
+    if (showBar) populateVariantDropdown();
+  }
+
+  show('sResults');
+}
+
+function renderNear(n, i) {
+  if (n.decision === 'use') return `
+    <div class="item item-resolved">
+      <div class="item-top">
+        <span class="item-text">${esc(n.text)}</span>
+        <span class="item-layers">${layerLabel(n.nodeIds.length)}</span>
+      </div>
+      <div class="item-id">→ ${esc(n.comp.id)}</div>
+      <div class="item-actions">
+        <button class="btn btn-green btn-sm" onclick="renameNear(${i})">Rename layers</button>
+        <button class="btn btn-ghost btn-sm" onclick="undoNear(${i})">Undo</button>
+        <span class="item-status" id="nrs-${i}"></span>
+      </div>
+    </div>`;
+
+  if (n.decision === 'new') {
+    if (n.showTrans) return renderTransFields('near', i, n);
+    const sid = n.nearId || suggestId(n.text);
+    return `
+    <div class="item item-new" id="ni-near-new-${i}">
+      <div class="item-top">
+        <span class="item-text">${esc(n.text)}</span>
+        <span class="item-layers">${layerLabel(n.nodeIds.length)}</span>
+      </div>
+      <div class="item-similar">Skipping <strong>${esc(n.comp.id)}</strong> — creating new</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="id-row" style="flex:1;min-width:0">
+          <span class="id-label">ID</span>
+          <input class="id-input" id="nrid-${i}" value="${esc(sid)}" oninput="var v=sanitizeId(this.value);this.value=v;st.near[${i}].nearId=v" style="min-width:0" />
+        </div>
+        <button class="btn btn-primary btn-sm" style="flex-shrink:0" onclick="openTransFields('near',${i})">Push</button>
+        <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="undoNear(${i})">Undo</button>
+      </div>
+      <span class="item-status" id="nns-${i}"></span>
+    </div>`;
+  }
+
+  // Undecided
+  return `
+    <div class="item item-near" id="ni-near-${i}">
+      <div class="item-top">
+        <span class="item-text">${esc(n.text)}</span>
+        <span class="item-layers">${layerLabel(n.nodeIds.length)}</span>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:2px">
+        <div style="flex:1">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:3px">Figma</div>
+          <div class="item-similar">${esc(n.text)}</div>
+        </div>
+        ${n.comp.text ? `<div style="flex:1">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:3px">Ditto · ${esc(n.comp.id)}</div>
+          <div class="item-similar">${esc(n.comp.text)}</div>
+        </div>` : `<div style="font-size:10.5px;color:var(--txt3);align-self:center">→ <strong style="color:var(--amber)">${esc(n.comp.id)}</strong></div>`}
+      </div>
+      <div class="item-actions" style="justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="setNearDecision(${i},'new')">Create new</button>
+        <button class="btn btn-ghost btn-sm" onclick="updateNearComp(${i})">Push Figma → Ditto</button>
+        <button class="btn btn-primary btn-sm" onclick="useNearDittoText(${i})">Use Ditto text</button>
+        <span class="item-status" id="nupd-${i}"></span>
+      </div>
+    </div>`;
+}
+
+// ── Section collapse ───────────────────────────────────────────────────────
+function toggleSec(name) {
+  const bodyId = name === 'matched' ? 'matchedBody' : name === 'near' ? 'nearBody' : 'newBody';
+  const chevId = name === 'matched' ? 'chevMatched' : name === 'near' ? 'chevNear' : 'chevNew';
+  const body = document.getElementById(bodyId);
+  const chev = document.getElementById(chevId);
+  const isCollapsed = body.classList.toggle('collapsed');
+  if (chev) chev.style.transform = isCollapsed ? '' : 'rotate(90deg)';
+}
+
+// ── Actions: matched ───────────────────────────────────────────────────────
+function renameAllMatched() {
+  const renames = [];
+  st.matched.forEach((m, i) => {
+    const cb = document.getElementById(`mc${i}`);
+    if (cb && cb.checked) {
+      m.nodeIds.forEach(nid => renames.push({ nodeId: nid, newName: m.comp.id }));
+    }
+  });
+  if (!renames.length) return;
+  _silentRescan = true;
+  parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames } }, '*');
+}
+
+function selectMatchedComp(i, idx) {
+  st.matched[i].comp = st.matched[i].candidates[idx];
+}
+
+function updateNewPrefix(val) {
+  _newPrefix = val;
+  renderResults(); // newPrefixInp is static HTML, not affected by re-render
+}
+
+// ── Translation fields ─────────────────────────────────────────────────────
+function renderTransFields(type, i, item) {
+  const devId  = item.fullId || (type === 'new' ? _newPrefix + (item.id || suggestId(item.text)) : null) || item.nearId || item.id || suggestId(item.text);
+  const fields = (_variants || []).map(v => `
+    <div class="id-row" style="align-items:flex-start">
+      <span class="id-label" style="min-width:60px;padding-top:7px">${esc(v.name || v.id)}</span>
+      <textarea class="id-input" id="tr_${type}_${i}_${esc(v.id)}" placeholder="optional"
+             rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+    </div>`).join('');
+  return `
+    <div class="item item-new" id="ni-trans-${type}-${i}">
+      <div class="item-top">
+        <span class="item-text">${esc(item.text)}</span>
+        <span class="item-layers">${layerLabel(item.nodeIds.length)}</span>
+      </div>
+      <div class="item-id" style="margin-bottom:4px">→ ${esc(devId)}</div>
+      ${fields.length ? `
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--txt3);margin-top:2px">
+        Translations <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span>
+      </div>
+      ${fields}` : ''}
+      <div class="item-actions" style="margin-top:6px;justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="cancelTrans('${type}',${i})">Back</button>
+        <button class="btn btn-primary btn-sm" onclick="confirmPush('${type}',${i},'${esc(devId)}')">Push to Ditto</button>
+        <span class="item-status" id="ts-${type}-${i}"></span>
+      </div>
+    </div>`;
+}
+
+async function openTransFields(type, i) {
+  // Sync the current ID input value into state before switching view
+  if (type === 'new') {
+    const inp = document.getElementById(`nid-${i}`);
+    if (inp) st.newItems[i].id = sanitizeIdFinal(inp.value) || st.newItems[i].id;
+    st.newItems[i].fullId = sanitizeIdFinal(_newPrefix) + st.newItems[i].id;
+    await ensureVariants();
+    if (!_variants.length) { await confirmPush('new', i, st.newItems[i].fullId); return; }
+    st.newItems[i].showTrans = true;
+  } else {
+    const inp = document.getElementById(`nrid-${i}`);
+    if (inp) st.near[i].nearId = sanitizeIdFinal(inp.value) || st.near[i].nearId || suggestId(st.near[i].text);
+    await ensureVariants();
+    if (!_variants.length) { await confirmPush('near', i, sanitizeIdFinal(st.near[i].nearId) || suggestId(st.near[i].text)); return; }
+    st.near[i].showTrans = true;
+  }
+  renderResults();
+}
+
+function cancelTrans(type, i) {
+  if (type === 'new') st.newItems[i].showTrans = false;
+  else { st.near[i].showTrans = false; }
+  renderResults();
+}
+
+async function confirmPush(type, i, developerId) {
+  const item = type === 'new' ? st.newItems[i] : st.near[i];
+  const s    = document.getElementById(`ts-${type}-${i}`);
+  if (s) { s.textContent = 'Pushing…'; s.className = 'item-status'; }
+  try {
+    const k = getDittoKey();
+    // Collect translations from form fields before POST (avoids a separate PATCH)
+    const variantTexts = {};
+    for (const v of (_variants || [])) {
+      const el = document.getElementById('tr_' + type + '_' + i + '_' + v.id);
+      const val = el ? el.value.trim() : '';
+      if (val) variantTexts[v.id] = val;
+    }
+    await postComp(k, item.text, item.text, developerId, variantTexts);
+    if (s) { s.textContent = '✅'; s.className = 'item-status ok'; }
+    const renames = item.nodeIds.map(nid => ({ nodeId: nid, newName: developerId }));
+    setTimeout(() => {
+      if (type === 'new') st.newItems.splice(i, 1);
+      else st.near.splice(i, 1);
+      renderResults();
+      _silentRescan = true;
+      parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames } }, '*');
+    }, 900);
+  } catch(e) {
+    if (s) { s.textContent = '❌ ' + e.message; s.className = 'item-status err'; }
+  }
+}
+
+// ── Actions: near ──────────────────────────────────────────────────────────
+function setNearDecision(i, d) {
+  st.near[i].decision = d;
+  const el = document.getElementById(`ni-near-${i}`);
+  if (el) el.outerHTML = renderNear(st.near[i], i);
+}
+function undoNear(i) {
+  st.near[i].decision = null;
+  renderResults();
+}
+function renameNear(i) {
+  const n = st.near[i];
+  const renames = n.nodeIds.map(nid => ({ nodeId: nid, newName: n.comp.id }));
+  _silentRescan = true;
+  parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames } }, '*');
+}
+// ── Actions: matched text sync ─────────────────────────────────────────────
+function applyDittoToFigma(i) {
+  const m = st.matched[i];
+  if (!m.comp.text) return;
+  const textMap = {};
+  m.nodeIds.forEach(nid => { textMap[nid] = m.comp.text; });
+  _silentRescan = true;
+  parent.postMessage({ pluginMessage: { type: 'text-rename-rescan', textMap, renames: [] } }, '*');
+}
+
+async function pushMatchedToDitto(i) {
+  const m = st.matched[i];
+  const s = document.getElementById(`ms-${i}`);
+  if (s) { s.textContent = 'Updating…'; s.className = 'item-status'; }
+  try {
+    const k = getDittoKey();
+    const res = await fetch(API + '/components', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: k },
+      body: JSON.stringify({ updates: [{ developerId: m.comp.id, text: m.text }] }),
+    });
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || `HTTP ${res.status}`); }
+    if (s) { s.textContent = '✅'; s.className = 'item-status ok'; }
+    _silentRescan = true;
+    parent.postMessage({ pluginMessage: { type: 'rescan' } }, '*');
+  } catch(e) {
+    if (s) { s.textContent = '❌ ' + e.message; s.className = 'item-status err'; }
+  }
+}
+
+function useNearDittoText(i) {
+  const n = st.near[i];
+  const textMap = {};
+  if (n.comp.text) n.nodeIds.forEach(nid => { textMap[nid] = n.comp.text; });
+  const renames = n.nodeIds.map(nid => ({ nodeId: nid, newName: n.comp.id }));
+  _silentRescan = true;
+  parent.postMessage({ pluginMessage: { type: 'text-rename-rescan', textMap, renames } }, '*');
+}
+
+async function updateNearComp(i) {
+  const n = st.near[i];
+  const s = document.getElementById(`nupd-${i}`);
+  if (s) { s.textContent = 'Updating…'; s.className = 'item-status'; }
+  try {
+    const k = getDittoKey();
+    const res = await fetch(API + '/components', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: k },
+      body: JSON.stringify({ updates: [{ developerId: n.comp.id, text: n.text }] }),
+    });
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || `HTTP ${res.status}`); }
+    if (s) { s.textContent = '✅'; s.className = 'item-status ok'; }
+    const renames = n.nodeIds.map(nid => ({ nodeId: nid, newName: n.comp.id }));
+    _silentRescan = true;
+    parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames } }, '*');
+  } catch(e) {
+    if (s) { s.textContent = '❌ ' + e.message; s.className = 'item-status err'; }
+  }
+}
+// pushNearAsNew now goes through openTransFields (defined above)
+
+async function pushAllNew() {
+  // Collect all before any splice
+  const targets = st.newItems.map((item, i) => {
+    const suffix = document.getElementById(`nid-${i}`)?.value;
+    const id = suffix ? sanitizeIdFinal(sanitizeIdFinal(_newPrefix) + sanitizeIdFinal(suffix)) : null;
+    return { item, i, id };
+  }).filter(t => t.id);
+
+  const k = getDittoKey();
+  const allRenames = [];
+  await Promise.all(targets.map(async ({ item, i, id }) => {
+    const s = document.getElementById(`ns-${i}`);
+    if (s) s.textContent = 'Pushing…';
+    try {
+      await postComp(k, item.text, item.text, id);
+      if (s) { s.textContent = '✅'; s.className = 'item-status ok'; }
+      item.nodeIds.forEach(nid => allRenames.push({ nodeId: nid, newName: id }));
+      item._done = true;
+    } catch(e) {
+      if (s) { s.textContent = '❌ ' + e.message; s.className = 'item-status err'; }
+    }
+  }));
+  setTimeout(() => {
+    st.newItems = st.newItems.filter(it => !it._done);
+    renderResults();
+    if (allRenames.length) {
+      _silentRescan = true;
+      parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames: allRenames } }, '*');
+    }
+  }, 1000);
+}
+
+// ── Translate canvas ───────────────────────────────────────────────────────
+function populateVariantDropdown() {
+  const sel = document.getElementById('translateVariantSel');
+  if (!sel || !_variants || !_variants.length) return;
+  const current = sel.value;
+  sel.innerHTML =
+    '<option value="__base__"' + (current === '__base__' ? ' selected' : '') + '>Base</option>' +
+    _variants.map(function(v) {
+      return '<option value="' + esc(v.id) + '"' + (v.id === current ? ' selected' : '') + '>' + esc(v.name || v.id) + '</option>';
+    }).join('');
+}
+
+async function applyTranslation() {
+  const sel = document.getElementById('translateVariantSel');
+  const variantId = sel ? sel.value : '';
+  if (!variantId) return;
+  const btn    = document.getElementById('translateBtn');
+  const status = document.getElementById('translateStatus');
+  btn.disabled = true;
+  status.textContent = 'Fetching translations…';
+  status.style.display = '';
+  try {
+    const k = getDittoKey();
+    const isBase = variantId === '__base__';
+    const filter = encodeURIComponent(JSON.stringify({ variants: [{ id: isBase ? 'all' : variantId }] }));
+    const res = await fetch(API + '/components?filter=' + filter, {
+      headers: { Authorization: k },
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const rows = Array.isArray(json) ? json : (json.items || json.data || json.components || []);
+
+    // Base: rows with variantId === null. Translation: rows with variantId set.
+    const transMap = {};
+    for (var ri = 0; ri < rows.length; ri++) {
+      var c = rows[ri];
+      if (isBase ? c.variantId !== null : !c.variantId) continue;
+      var id = c.developerId || c.id;
+      if (id && c.text) transMap[id] = c.text;
+    }
+    if (!Object.keys(transMap).length) {
+      status.textContent = 'No translations found for this variant.';
+      btn.disabled = false;
+      return;
+    }
+
+    // Build { nodeId → translatedText } using already-scanned matched items.
+    const nodeMap = {};
+    for (var mi = 0; mi < st.matched.length; mi++) {
+      var item = st.matched[mi];
+      var compId = item.comp && (item.comp.developerId || item.comp.id);
+      var translatedText = compId && transMap[compId];
+      if (!translatedText) continue;
+      for (var ni = 0; ni < item.nodeIds.length; ni++) {
+        nodeMap[item.nodeIds[ni]] = translatedText;
+      }
+    }
+
+    var nodeCount = Object.keys(nodeMap).length;
+    if (!nodeCount) {
+      status.textContent = 'transMap has ' + Object.keys(transMap).length + ' entries but 0 matched scanned IDs.';
+      btn.disabled = false;
+      return;
+    }
+
+    status.textContent = 'Applying…';
+    parent.postMessage({ pluginMessage: { type: 'apply-variant', nodeMap: nodeMap } }, '*');
+  } catch(e) {
+    status.textContent = '❌ ' + e.message;
+    btn.disabled = false;
+  }
+}
+
+function applyDebugTranslation() {
+  const status = document.getElementById('translateStatus');
+  // Build a fake transMap: every matched component ID → "🧪 <id>"
+  const transMap = {};
+  for (var i = 0; i < st.matched.length; i++) {
+    var item = st.matched[i];
+    var compId = item.comp && (item.comp.developerId || item.comp.id);
+    if (!compId) continue;
+    // Also map every layer name for this item in case it differs from compId
+    for (var j = 0; j < item.layerNames.length; j++) {
+      transMap[item.layerNames[j]] = '🧪 ' + item.layerNames[j];
+    }
+    transMap[compId] = '🧪 ' + compId;
+  }
+  var count = Object.keys(transMap).length;
+  if (!count) {
+    if (status) status.textContent = 'No matched IDs to test with — run a scan first.';
+    return;
+  }
+  if (status) status.textContent = 'Sending ' + count + ' test entries…';
+  parent.postMessage({ pluginMessage: { type: 'apply-variant', transMap: transMap } }, '*');
+}
+
+// ── Message from plugin code ───────────────────────────────────────────────
+window.onmessage = async (event) => {
+  const msg = event.data.pluginMessage;
+  if (!msg) return;
+
+  if (msg.type === 'rename-done') return;
+
+  if (msg.type === 'translate-done') {
+    const btn    = document.getElementById('translateBtn');
+    const status = document.getElementById('translateStatus');
+    if (btn) btn.disabled = false;
+    var statusMsg = msg.count
+      ? '✅ Updated ' + msg.count + ' layer' + (msg.count !== 1 ? 's' : '')
+      : 'No layers updated.';
+    if (msg.errors && msg.errors.length) {
+      statusMsg += ' ⚠️ ' + msg.errors.length + ' error(s): ' + msg.errors.slice(0, 2).join('; ');
+    }
+    if (status) { status.textContent = statusMsg; status.style.display = ''; }
+    return;
+  }
+
+  // Key is loaded from figma.clientStorage — this is the real init trigger
+  if (msg.type === 'key-loaded') {
+    _key = msg.value || '';
+    document.getElementById('scanBtn').disabled = !_key;
+    if (!_key) { showSetup(); return; }
+    // key-loaded fires before scan-result, so just show loading
+    setLoading('Scanning…');
+    return;
+  }
+
+  // Never let incoming messages override the setup screen
+  if (!getDittoKey()) { showSetup(); return; }
+
+  if (msg.type === 'no-selection') { show('sNone'); return; }
+
+  if (msg.type === 'scan-result') {
+    if (!msg.nodes.length) { show('sNoText'); return; }
+
+    const silent = _silentRescan;
+    _silentRescan = false;
+    if (!silent) setLoading('Fetching Ditto components…');
+
+    try {
+      const comps = await fetchComps(getDittoKey());
+      await ensureVariants();
+      const result = matchNodes(msg.nodes, comps);
+      st.matched  = result.matched;
+      st.near     = result.near;
+      st.newItems = result.newItems;
+      // Auto-fill prefix from file/frame context on every explicit scan
+      if (!silent && msg.suggestedPrefix !== undefined) {
+        _newPrefix = msg.suggestedPrefix;
+        const pfxInp = document.getElementById('newPrefixInp');
+        if (pfxInp) pfxInp.value = msg.suggestedPrefix;
+      }
+      renderResults();
+    } catch(e) {
+      if (!silent) {
+        show('sLoading');
+        document.getElementById('loadMsg').textContent = '❌ ' + e.message;
+        if (e.message.includes('401') || e.message.includes('403')) {
+          setTimeout(showSetup, 1200);
+        }
+      }
+    }
+  }
+};
+
+// ── Init — wait for key-loaded message from code.js ───────────────────────
+setLoading('Starting…');
+</script>
+</body>
+</html>

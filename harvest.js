@@ -32,7 +32,6 @@ const paths  = [];
 let   exts   = ['jsx', 'tsx'];
 let   ignoreExtra = [];
 
-let importFrom = '';
 
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
@@ -41,8 +40,7 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--no-color') { /* already read */ }
   else if (a === '--ext')  { exts = (argv[++i] || '').split(',').map(s => s.trim()).filter(Boolean); }
   else if (a === '--ignore') { ignoreExtra = (argv[++i] || '').split(',').map(s => s.trim()).filter(Boolean); }
-  else if (a === '--import-from') { importFrom = argv[++i] || ''; }
-  else if (!a.startsWith('-')) { paths.push(a); }
+else if (!a.startsWith('-')) { paths.push(a); }
 }
 if (paths.length === 0) paths.push('.');
 
@@ -154,11 +152,7 @@ const PROP_NAMES = [
   'aria-label', 'aria-description', 'aria-placeholder',
 ];
 
-// Props that only accept a string — <Ditto /> (a React element) is invalid here.
-const STRING_ONLY_PROPS = new Set([
-  'aria-label', 'aria-description', 'aria-placeholder',
-  'placeholder', 'title', 'alt',
-]);
+// react-i18next: t() returns a string and is valid for every prop type — no special handling needed.
 
 // JSX text between tags — only lines that look like real copy, not expressions
 // Require: no braces, no newline, at least 4 chars after trim
@@ -713,7 +707,7 @@ async function whatNextMenu({ matched, unmatched, pushed, paths, dittoByText, di
   if (resolved.length > 0) {
     options.push({
       key: 'w',
-      label: `Replace strings in source files with Ditto components`,
+      label: `Replace strings in source files with t() calls`,
       hint: resolved.length + ' strings across ' + new Set(resolved.map(r => r.file)).size + ' files',
     });
   }
@@ -756,24 +750,14 @@ function escapeRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// Convert a developerId like "search.assets-placeholder" → "searchAssetsPlaceholderText"
-function idToVarName(developerId) {
-  return developerId
-    .split(/[.\-_]/)
-    .map((w, i) => i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1))
-    .join('') + 'Text';
+// Detect whether `useTranslation` is already imported from react-i18next
+function detectUseTranslationImport(content) {
+  return /import\s+\{[^}]*\buseTranslation\b/.test(content);
 }
 
-// Find `import { Ditto } from '...'` in a file, return the relative path
-function detectDittoImport(content) {
-  const m = content.match(/import\s+\{[^}]*\bDitto\b[^}]*\}\s+from\s+['"]([^'"]+)['"]/);
-  return m ? m[1] : null;
-}
-
-// Find `import { useDittoWrapper } from '...'` in a file, return the relative path
-function detectWrapperImport(content) {
-  const m = content.match(/import\s+\{[^}]*\buseDittoWrapper\b[^}]*\}\s+from\s+['"]([^'"]+)['"]/);
-  return m ? m[1] : null;
+// Detect whether `const { t }` is already declared anywhere in the file
+function detectTHook(content) {
+  return /const\s+\{[^}]*\bt\b/.test(content);
 }
 
 // Given lines[], find the index of the nearest `return (` searching backwards from fromLine
@@ -790,18 +774,6 @@ function insertBeforeLine(lines, atIndex, newLines) {
   lines.splice(atIndex, 0, ...newLines.map(l => indent + l));
 }
 
-// Given a relative import path found in sourceFile, resolve it to an absolute path
-function resolveModulePath(sourceFile, relImport) {
-  if (!relImport.startsWith('.')) return null; // alias, can't resolve
-  return path.resolve(path.dirname(sourceFile), relImport);
-}
-
-// Compute a relative import from targetFile to the absolute module path
-function relativeImport(targetFile, absoluteModule) {
-  let rel = path.relative(path.dirname(targetFile), absoluteModule);
-  if (!rel.startsWith('.')) rel = './' + rel;
-  return rel;
-}
 
 // Insert an import line after the last existing import statement in the file
 function insertImport(content, importLine) {
@@ -830,57 +802,7 @@ async function replaceInFiles(resolved) {
     byFile.get(entry.file).push(entry);
   }
 
-  // Find the absolute path of Ditto and useDittoWrapper modules
-  let dittoModuleAbs   = null;
-  let wrapperModuleAbs = null;
-  if (importFrom) {
-    // --import-from given: treat as absolute or relative to cwd
-    dittoModuleAbs = path.resolve(process.cwd(), importFrom);
-  } else {
-    for (const file of allFiles) {
-      try {
-        const content = fs.readFileSync(file, 'utf8');
-        const rel = detectDittoImport(content);
-        if (rel) {
-          dittoModuleAbs = resolveModulePath(file, rel);
-          // resolveModulePath returns null for aliases (@/...) — keep searching for a relative import
-          if (dittoModuleAbs) break;
-        }
-      } catch {}
-    }
-  }
-  if (!dittoModuleAbs) {
-    process.stdout.write(c.dim('Ditto module path not resolved.\nEnter path to lib/ditto relative to cwd (e.g. src/lib/ditto), or leave blank to skip adding imports: '));
-    const ans = (await prompt('')).trim();
-    console.log();
-    if (ans && (ans.includes('/') || ans.startsWith('.'))) {
-      dittoModuleAbs = path.resolve(process.cwd(), ans);
-    } else if (ans) {
-      console.log(c.dim('  Skipping Ditto import insertion (input did not look like a path).'));
-    }
-  }
-
-  // Resolve useDittoWrapper module path (for string-only props)
-  if (!importFrom) {
-    for (const file of allFiles) {
-      try {
-        const content = fs.readFileSync(file, 'utf8');
-        const rel = detectWrapperImport(content);
-        if (rel) {
-          wrapperModuleAbs = resolveModulePath(file, rel);
-          if (wrapperModuleAbs) break;
-        }
-      } catch {}
-    }
-  }
-  if (!wrapperModuleAbs) {
-    process.stdout.write(c.dim('useDittoWrapper import not detected.\nEnter path to useDittoWrapper hook relative to cwd (e.g. src/hooks/common/useDittoWrapper), or leave blank to skip: '));
-    const ans = (await prompt('')).trim();
-    console.log();
-    if (ans && (ans.includes('/') || ans.startsWith('.'))) {
-      wrapperModuleAbs = path.resolve(process.cwd(), ans);
-    }
-  }
+  const ALL_PROP_RE_SRC = PROP_NAMES.join('|');
 
   // Preview + build plan
   console.log(c.bold(`📝 Replacing strings in ${byFile.size} file${byFile.size !== 1 ? 's' : ''}…`));
@@ -891,102 +813,74 @@ async function replaceInFiles(resolved) {
     let content;
     try { content = fs.readFileSync(file, 'utf8'); } catch { console.log(c.red(`  ❌ cannot read ${relPath(file)}`)); continue; }
 
-    const hasDittoImport   = detectDittoImport(content) !== null;
-    const hasWrapperImport = detectWrapperImport(content) !== null;
-    const changes    = []; // { string, developerId, mode }
-    const constDecls = []; // { varName, developerId, lineIndex } — for string-only props
-
-    const REACT_NODE_PROP_RE_SRC = PROP_NAMES.filter(p => !STRING_ONLY_PROPS.has(p)).join('|');
+    const hasUseTranslationImport = detectUseTranslationImport(content);
+    const hasTHook                = detectTHook(content);
+    const changes     = []; // { string, developerId, mode }
+    const tInsertions = new Set(); // return-line indices where const { t } = useTranslation() is needed
 
     for (const { string, developerId, kind } of entries) {
-      const esc  = escapeRegex(string);
-      const comp = `<Ditto componentId="${developerId}" />`;
+      const esc         = escapeRegex(string);
+      const replacement = `t('${developerId}')`;
 
-      const stringOnlyRe = new RegExp(`(?<![-\\w])(${[...STRING_ONLY_PROPS].join('|')})=["']${esc}["']`);
-      const reactNodeRe  = new RegExp(`(?<![-\\w])(${REACT_NODE_PROP_RE_SRC})=["']${esc}["']`);
-      const jsxTestRe    = new RegExp(`(>\\s*)${esc}(\\s*<)`);
-
-      const inStringOnlyProp = stringOnlyRe.test(content);
-      const inReactNodeProp  = reactNodeRe.test(content);
-      const inJsxText        = jsxTestRe.test(content);
-
-      // ReactNode prop replacement: propname="STRING" → propname={<Ditto componentId="id" />}
-      let propReplaced = false;
-      if (inReactNodeProp) {
-        const propRe = new RegExp(`((?<![-\\w])(?:${REACT_NODE_PROP_RE_SRC})=)["']${esc}["']`, 'g');
-        content = content.replace(propRe, `$1{${comp}}`);
+      // Prop replacement: prop="STRING" → prop={t('key')}
+      const propRe  = new RegExp(`((?<![-\\w])(?:${ALL_PROP_RE_SRC})=)["']${esc}["']`, 'g');
+      const inProp  = propRe.test(content);
+      if (inProp) {
+        content = content.replace(
+          new RegExp(`((?<![-\\w])(?:${ALL_PROP_RE_SRC})=)["']${esc}["']`, 'g'),
+          `$1{${replacement}}`
+        );
         changes.push({ string, developerId, mode: 'prop' });
-        propReplaced = true;
       }
 
-      // JSX text replacement: >STRING< → ><Ditto componentId="id" /><
-      if (!propReplaced || kind === 'jsx') {
-        if (inJsxText) {
-          content = content.replace(new RegExp(`(>\\s*)${esc}(\\s*<)`, 'g'), `$1${comp}$2`);
-          if (!propReplaced) changes.push({ string, developerId, mode: 'jsx' });
-        }
+      // JSX text replacement: >STRING< → >{t('key')}<
+      const jsxRe  = new RegExp(`(>\\s*)${esc}(\\s*<)`, 'g');
+      const inJsx  = jsxRe.test(content);
+      if (inJsx && (!inProp || kind === 'jsx')) {
+        content = content.replace(
+          new RegExp(`(>\\s*)${esc}(\\s*<)`, 'g'),
+          `$1{${replacement}}$2`
+        );
+        if (!inProp) changes.push({ string, developerId, mode: 'jsx' });
       }
 
-      // String-only prop: replace value with a variable, insert const before return
-      if (inStringOnlyProp) {
-        const varName = idToVarName(developerId);
-        // Find the line index of the first occurrence
-        const lines = content.split('\n');
-        const soRe  = new RegExp(`\\b(?:${[...STRING_ONLY_PROPS].join('|')})=["']${esc}["']`);
-        const lineIndex = lines.findIndex(l => soRe.test(l));
+      // Track where to insert const { t } = useTranslation() if not already present
+      if (!hasTHook && (inProp || inJsx)) {
+        const lines     = content.split('\n');
+        const lineIndex = lines.findIndex(l => l.includes(`t('${developerId}')`));
         if (lineIndex >= 0) {
-          // Replace the string value with the variable
-          content = content.replace(
-            new RegExp(`((?<![-\\w])(?:${[...STRING_ONLY_PROPS].join('|')})=)["']${esc}["']`, 'g'),
-            `$1{${varName}}`
-          );
-          constDecls.push({ varName, developerId, lineIndex });
-          changes.push({ string, developerId, mode: 'string-prop', varName });
+          const returnLine = findReturnLine(lines, lineIndex);
+          if (returnLine >= 0) tInsertions.add(returnLine);
         }
       }
     }
 
-    // Insert const declarations before the nearest return statement
-    if (constDecls.length > 0) {
-      const lines = content.split('\n');
-      // Group by the return line they each belong to
-      const byReturn = new Map();
-      for (const decl of constDecls) {
-        const returnLine = findReturnLine(lines, decl.lineIndex);
-        const key = returnLine >= 0 ? returnLine : 0;
-        if (!byReturn.has(key)) byReturn.set(key, []);
-        byReturn.get(key).push(decl);
-      }
-      // Insert in reverse order so earlier insertions don't shift later indices
-      const sortedReturns = [...byReturn.entries()].sort((a, b) => b[0] - a[0]);
-      for (const [returnLine, decls] of sortedReturns) {
-        const constLines = decls.map(d => `const ${d.varName} = useDittoWrapper({ componentId: '${d.developerId}' });`);
-        insertBeforeLine(lines, returnLine, constLines);
+    // Insert const { t } = useTranslation() before each component's return statement (once per return)
+    if (!hasTHook && tInsertions.size > 0) {
+      const lines       = content.split('\n');
+      const sortedLines = [...tInsertions].sort((a, b) => b - a); // reverse so earlier insertions don't shift indices
+      for (const returnLine of sortedLines) {
+        insertBeforeLine(lines, returnLine, [`const { t } = useTranslation();`]);
       }
       content = lines.join('\n');
     }
 
     if (changes.length === 0) continue;
 
-    // Compute import lines for this specific file
-    const dittoImportLine   = dittoModuleAbs && !hasDittoImport && changes.some(ch => ch.mode !== 'string-prop')
-      ? `import { Ditto } from '${relativeImport(file, dittoModuleAbs)}';`
-      : null;
-    const wrapperImportLine = wrapperModuleAbs && !hasWrapperImport && constDecls.length > 0
-      ? `import { useDittoWrapper } from '${relativeImport(file, wrapperModuleAbs)}';`
+    const tImportLine = !hasUseTranslationImport
+      ? `import { useTranslation } from 'react-i18next';`
       : null;
 
     const totalCount = changes.length;
     console.log(`  ${c.bold(relPath(file))}  ${c.dim(totalCount + ' replacement' + (totalCount !== 1 ? 's' : ''))}`);
     for (const ch of changes) {
-      if (ch.mode === 'prop')        console.log(`    ${c.dim('"' + trunc(ch.string, 36) + '"')}  →  ${c.dim('{<Ditto componentId="' + ch.developerId + '" />')}`);
-      else if (ch.mode === 'jsx')    console.log(`    ${c.dim('"' + trunc(ch.string, 36) + '"')}  →  ${c.dim('<Ditto componentId="' + ch.developerId + '" />')}`);
-      else if (ch.mode === 'string-prop') console.log(`    ${c.dim('"' + trunc(ch.string, 36) + '"')}  →  ${c.dim('{' + ch.varName + '}')}  ${c.dim('+ const ' + ch.varName + ' = useDittoWrapper(...)')}`);
+      if (ch.mode === 'prop') console.log(`    ${c.dim('"' + trunc(ch.string, 36) + '"')}  →  ${c.cyan(`{t('${ch.developerId}')}`)}`)
+      else if (ch.mode === 'jsx') console.log(`    ${c.dim('"' + trunc(ch.string, 36) + '"')}  →  ${c.cyan(`{t('${ch.developerId}')}`)}`);
     }
-    if (dittoImportLine)   console.log(`    ${c.green('+')} ${dittoImportLine}`);
-    if (wrapperImportLine) console.log(`    ${c.green('+')} ${wrapperImportLine}`);
+    if (!hasTHook)                  console.log(`    ${c.green('+')} const { t } = useTranslation();`);
+    if (tImportLine)                console.log(`    ${c.green('+')} ${tImportLine}`);
 
-    plan.push({ file, content, dittoImportLine, wrapperImportLine });
+    plan.push({ file, content, tImportLine });
   }
 
   if (plan.length === 0) {
@@ -1005,10 +899,9 @@ async function replaceInFiles(resolved) {
   }
 
   let written = 0;
-  for (const { file, content, dittoImportLine, wrapperImportLine } of plan) {
+  for (const { file, content, tImportLine } of plan) {
     let final = content;
-    if (dittoImportLine)   final = insertImport(final, dittoImportLine);
-    if (wrapperImportLine) final = insertImport(final, wrapperImportLine);
+    if (tImportLine) final = insertImport(final, tImportLine);
     try {
       fs.writeFileSync(file, final, 'utf8');
       console.log(c.green(`  ✅ ${relPath(file)}`));
