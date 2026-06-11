@@ -351,7 +351,8 @@ textarea.id-input {
       All strings are accounted for. 🍅
     </div>
 
-    <div style="padding:10px 14px;border-top:1px solid var(--line);text-align:right">
+    <div style="padding:10px 14px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between">
+      <span id="pluginVersion" style="font-size:10px;color:var(--txt3);font-family:var(--mono)"></span>
       <button class="btn btn-ghost btn-sm" onclick="showSetup()" style="font-size:10px;color:var(--txt3);border-color:transparent">API key</button>
     </div>
 
@@ -371,6 +372,7 @@ textarea.id-input {
 
 <script>
 const API = 'https://api.dittowords.com/v2';
+const VERSION = '1.8.0';
 let _key  = ''; // loaded from figma.clientStorage via code.js
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -1138,6 +1140,8 @@ window.onmessage = async (event) => {
 };
 
 // ── Init — wait for key-loaded message from code.js ───────────────────────
+const _verEl = document.getElementById('pluginVersion');
+if (_verEl) _verEl.textContent = 'v' + VERSION;
 setLoading('Starting…');
 </script>
 </body>
