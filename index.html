@@ -104,13 +104,32 @@ input:focus{border-color:var(--primary-dark-blue);box-shadow:0 0 0 3px rgba(34,4
 .left{width:384px;flex-shrink:0;background:#fff;border-right:1px solid var(--root-dark-blue-1);display:flex;flex-direction:column;min-height:0}
 .left-foot{flex-shrink:0;padding:12px 16px;border-top:1px solid var(--root-dark-blue-1)}
 .left-foot .btn{width:100%;justify-content:center}
-.search-head{height:88px;box-sizing:border-box;padding:0 20px;display:flex;flex-direction:column;justify-content:center;gap:8px;border-bottom:1px solid var(--root-dark-blue-1)}
+.search-head{padding:12px 16px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--root-dark-blue-1)}
 .search-row{display:flex;gap:8px}
 #searchBtn{width:40px;padding:0;flex-shrink:0}
 .search-field{position:relative;flex:1}
 .search-field .ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--root-grey-7);pointer-events:none}
 .search-field input{padding-left:38px}
-.results-head{height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.results-head{height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+/* browse panel */
+.browse-panel{flex:1;overflow-y:auto;min-height:0}
+.browse-loading{padding:28px 20px;color:var(--root-grey-7);font-size:13px;display:flex;align-items:center;gap:10px}
+.folder-item{border-bottom:1px solid var(--root-grey-4)}
+.folder-btn{width:100%;display:flex;align-items:center;gap:8px;padding:9px 16px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--primary-dark-blue);text-align:left;transition:background 150ms}
+.folder-btn:hover{background:var(--root-grey-4)}
+.folder-btn .folder-chevron{color:var(--root-grey-7);transition:transform 150ms;flex-shrink:0}
+.folder-btn.open .folder-chevron{transform:rotate(90deg)}
+.folder-btn .folder-count{margin-left:auto;font-size:11px;font-weight:600;color:var(--root-grey-7);background:var(--root-dark-blue-1);padding:1px 7px;border-radius:var(--radius-pill)}
+.folder-children{display:none}
+.folder-children.open{display:flex;flex-direction:column;gap:6px;padding:6px 12px 12px}
+.comp-item{text-align:left;width:100%;cursor:pointer;background:#fff;border:1px solid var(--root-dark-blue-1);border-radius:var(--radius-lg);padding:12px 14px;display:flex;flex-direction:column;gap:5px;font-family:inherit;transition:background 150ms ease,border-color 150ms ease,box-shadow 150ms ease}
+.comp-item:hover{border-color:var(--root-dark-blue-3);background:var(--root-grey-4)}
+.comp-item.selected{border-color:var(--table-selected-row-border);background:var(--status-active-selected)}
+/* edit-id inline */
+.eh-id-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.eh-id-edit{display:none;font-family:var(--font-mono);font-size:12px;padding:2px 8px;border:1px solid var(--primary-dark-blue);border-radius:var(--radius-sm);box-shadow:0 0 0 3px rgba(34,45,57,.08);outline:none;min-width:180px}
+.eh-id-editbtn{opacity:0;transition:opacity 150ms}
+.editor-head:hover .eh-id-editbtn{opacity:1}
 .results-head .rh-title{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--root-grey-7)}
 .results-head .rh-count{font-size:12px;color:var(--root-grey-7)}
 .results{flex:1;overflow-y:auto;padding:0 12px 12px;min-height:0;display:flex;flex-direction:column;gap:6px}
@@ -308,7 +327,7 @@ body[data-spacing="cozy"] .editor-body{padding:18px 20px}
 body[data-spacing="cozy"] .vtable td{padding-top:10px;padding-bottom:10px}
 body[data-spacing="cozy"] .search-head{padding:0 16px}
 body[data-spacing="cozy"] .editor-head{padding:0 20px}
-body[data-spacing="cozy"] .result-item{padding:10px 12px;gap:4px}
+body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padding:10px 12px;gap:4px}
 </style>
 </head>
 <body>
@@ -346,7 +365,7 @@ body[data-spacing="cozy"] .result-item{padding:10px 12px;gap:4px}
       </svg>
       <h1>ditto<span class="mato">mato</span></h1>
     </div>
-    <span class="brand-version" id="versionBadge">v1.2.3</span>
+    <span class="brand-version" id="versionBadge">v1.3.3</span>
   </div>
 
   <div class="topbar-spacer"></div>
@@ -390,29 +409,36 @@ body[data-spacing="cozy"] .result-item{padding:10px 12px;gap:4px}
 
 <!-- workspace -->
 <div class="workspace">
-  <!-- left: search + results -->
+  <!-- left: search + browse -->
   <aside class="left">
     <div class="search-head">
       <div class="search-row">
         <div class="search-field">
           <svg class="ico" width="18" height="18" viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-          <input type="text" id="searchQuery" placeholder="Any language, or developer ID…" onkeydown="if(event.key==='Enter') doSearch()" />
+          <input type="text" id="searchQuery" placeholder="Search components…" onkeydown="if(event.key==='Enter')doSearch()" oninput="onSearchInput(this.value)" />
         </div>
         <button class="btn btn-primary" id="searchBtn" onclick="doSearch()" aria-label="Search">
           <svg class="ico" width="18" height="18" viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
         </button>
       </div>
     </div>
-    <div class="results-head">
-      <span class="rh-title">Results</span>
-      <span class="rh-count" id="resultCount"></span>
+
+    <!-- search results (shown when a search has been run) -->
+    <div id="searchResults" style="display:none;flex:1;display:none;flex-direction:column;min-height:0">
+      <div class="results-head">
+        <span class="rh-title">Results</span>
+        <span class="rh-count" id="resultCount"></span>
+      </div>
+      <div class="results" id="results"></div>
     </div>
-    <div class="results" id="results">
-      <div class="empty-sm">
-        <svg class="ico" width="22" height="22" viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-        <p>Search to find a component to edit.</p>
+
+    <!-- browse tree (shown by default) -->
+    <div id="browsePanel" style="flex:1;display:flex;flex-direction:column;min-height:0">
+      <div class="browse-panel" id="browseList">
+        <div class="browse-loading"><span class="spinner spinner-dark"></span> Loading…</div>
       </div>
     </div>
+
     <div class="left-foot">
       <button class="btn btn-ghost" id="newCompBtn" onclick="openNewComp()">
         <svg class="ico" width="16" height="16" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
@@ -434,7 +460,19 @@ body[data-spacing="cozy"] .result-item{padding:10px 12px;gap:4px}
     <div class="editor" id="editor">
       <div class="editor-head">
         <span class="eh-label" id="editorLabel">Component</span>
-        <span class="eh-id" id="editorId"></span>
+        <div class="eh-id-wrap">
+          <span class="eh-id" id="editorId"></span>
+          <input class="eh-id-edit" id="editorIdInput" type="text" onkeydown="if(event.key==='Enter')saveComponentId();else if(event.key==='Escape')cancelEditId()" />
+          <button class="icon-btn eh-id-editbtn" id="editIdBtn" onclick="startEditId()" title="Edit component ID">
+            <svg width="14" height="14" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </button>
+          <button class="icon-btn" id="saveIdBtn" onclick="saveComponentId()" title="Save ID" style="display:none">
+            <svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </button>
+          <button class="icon-btn" id="cancelIdBtn" onclick="cancelEditId()" title="Cancel" style="display:none">
+            <svg width="14" height="14" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </button>
+        </div>
       </div>
       <div class="editor-body">
         <div id="variantEditor"></div>
@@ -616,6 +654,7 @@ function persistKey(which) {
     if (val) localStorage.setItem(LS[which], val); else localStorage.removeItem(LS[which]);
   } catch(e) {}
   updateConnStatus();
+  if (which === 'ditto' && getDittoKey()) { _browseLoaded = false; showBrowse(); }
 }
 function updateConnStatus() {
   const d = !!getDittoKey(), a = !!getAnthropicKey();
@@ -680,6 +719,157 @@ function buildVocab() {
 }
 function openVocab()  { document.getElementById('vocabModal').classList.add('open'); const inp = document.getElementById('vocabSearch'); if (inp) { inp.value = ''; filterGlossary(''); setTimeout(() => inp.focus(), 50); } }
 function closeVocab() { document.getElementById('vocabModal').classList.remove('open'); }
+
+// ── Left panel unified search + browse ────────────────────────────────────
+let _browseLoaded = false;
+function showBrowse() {
+  const sr = document.getElementById('searchResults');
+  const bp = document.getElementById('browsePanel');
+  if (sr) { sr.style.display = 'none'; }
+  if (bp) { bp.style.display = 'flex'; bp.style.flexDirection = 'column'; }
+  if (!_browseLoaded) loadBrowse();
+}
+function showSearchResults() {
+  const sr = document.getElementById('searchResults');
+  const bp = document.getElementById('browsePanel');
+  if (sr) { sr.style.display = 'flex'; sr.style.flexDirection = 'column'; }
+  if (bp) { bp.style.display = 'none'; }
+}
+function onSearchInput(val) {
+  if (!val.trim()) showBrowse();
+}
+// legacy alias used elsewhere
+function switchLeftTab(tab) { if (tab === 'browse') showBrowse(); else showSearchResults(); }
+
+let _browseData = [];
+async function loadBrowse() {
+  const k = getDittoKey();
+  if (!k) { toast('Add your Ditto API key first', 'error'); switchLeftTab('search'); return; }
+  document.getElementById('browseList').innerHTML = '<div class="browse-loading"><span class="spinner spinner-dark"></span> Loading…</div>';
+  try {
+    const res = await fetch(`${API_DITTO}/components`, { headers: { Authorization: k } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    // Only base components (no variantId), deduplicated by id
+    const seen = new Set();
+    _browseData = rows.filter(c => !c.variantId && !seen.has(c.id) && seen.add(c.id));
+    _browseLoaded = true;
+    renderBrowse();
+  } catch(e) {
+    document.getElementById('browseList').innerHTML = `<div class="browse-loading">${esc(e.message)}</div>`;
+  }
+}
+
+function renderBrowse(selectedId) {
+  // Group by first dot-segment of developer ID
+  const folders = {};
+  for (const comp of _browseData) {
+    const dot = comp.id.indexOf('.');
+    const folder = dot > 0 ? comp.id.slice(0, dot) : '(root)';
+    if (!folders[folder]) folders[folder] = [];
+    folders[folder].push(comp);
+  }
+  const openFolders = new Set(Object.keys(folders).slice(0, 1)); // first open by default
+  // Re-use previously open folders
+  if (window._openFolders) window._openFolders.forEach(f => openFolders.add(f));
+
+  let html = '';
+  for (const [folder, comps] of Object.entries(folders).sort(([a],[b]) => a.localeCompare(b))) {
+    const isOpen = openFolders.has(folder);
+    html += `<div class="folder-item">
+      <button class="folder-btn${isOpen?' open':''}" onclick="toggleFolder(this,'${esc(folder)}')">
+        <svg class="folder-chevron" width="14" height="14" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        ${esc(folder)}
+        <span class="folder-count">${comps.length}</span>
+      </button>
+      <div class="folder-children${isOpen?' open':''}">`;
+    for (const comp of comps.sort((a,b) => a.id.localeCompare(b.id))) {
+      const idx = _browseData.indexOf(comp);
+      const sel = comp.id === selectedId ? ' selected' : '';
+      const text = comp.text || comp.name || '';
+      html += `<button class="comp-item${sel}" data-browse-idx="${idx}" onclick="selectBrowseComp(${idx})">
+        <div class="result-top">
+          <span class="result-id">${esc(comp.id)}</span>
+          ${comp.status ? `<span class="result-status">${esc(comp.status)}</span>` : ''}
+        </div>
+        <div class="result-text">${esc(text) || '<span class="muted">— no text —</span>'}</div>
+      </button>`;
+    }
+    html += `</div></div>`;
+  }
+  if (!html) html = '<div class="browse-loading">No components found.</div>';
+  document.getElementById('browseList').innerHTML = html;
+  window._openFolders = openFolders;
+}
+
+function toggleFolder(btn, folder) {
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('open');
+  if (!window._openFolders) window._openFolders = new Set();
+  if (btn.classList.contains('open')) window._openFolders.add(folder);
+  else window._openFolders.delete(folder);
+}
+
+function selectBrowseComp(idx) {
+  const comp = _browseData[idx];
+  if (!comp) return;
+  window._results = _browseData;
+  document.querySelectorAll('.comp-item').forEach(el =>
+    el.classList.toggle('selected', el.dataset.browseIdx == idx));
+  selectItem(idx);
+}
+
+// ── Edit component ID ──────────────────────────────────────────────────────
+function startEditId() {
+  const id = selectedComp?.id;
+  if (!id) return;
+  document.getElementById('editorId').style.display = 'none';
+  document.getElementById('editIdBtn').style.display = 'none';
+  const inp = document.getElementById('editorIdInput');
+  inp.value = id;
+  inp.style.display = 'inline-block';
+  document.getElementById('saveIdBtn').style.display = 'inline-flex';
+  document.getElementById('cancelIdBtn').style.display = 'inline-flex';
+  inp.focus();
+  inp.select();
+}
+
+function cancelEditId() {
+  document.getElementById('editorId').style.display = '';
+  document.getElementById('editIdBtn').style.display = '';
+  document.getElementById('editorIdInput').style.display = 'none';
+  document.getElementById('saveIdBtn').style.display = 'none';
+  document.getElementById('cancelIdBtn').style.display = 'none';
+}
+
+async function saveComponentId() {
+  const newId = document.getElementById('editorIdInput').value.trim();
+  const oldId = selectedComp?.id;
+  if (!newId || newId === oldId) { cancelEditId(); return; }
+  const k = getDittoKey();
+  if (!k) return;
+  document.getElementById('saveIdBtn').innerHTML = '<span class="spinner"></span>';
+  try {
+    const res = await fetch(`${API_DITTO}/components`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: k },
+      body: JSON.stringify({ updates: [{ developerId: oldId, newDeveloperId: newId }] }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      selectedComp.id = newId;
+      document.getElementById('editorId').textContent = newId;
+      toast(`Renamed to "${newId}"`, 'success');
+      _browseLoaded = false;
+      showBrowse();
+    } else {
+      toast('Rename failed: ' + (data.message || `HTTP ${res.status}`), 'error');
+    }
+  } catch(e) {
+    toast('Network error: ' + e.message, 'error');
+  }
+  cancelEditId();
+}
 
 function openNewComp() {
   const k = getDittoKey();
@@ -845,12 +1035,13 @@ async function doSearch() {
       matches.push(item);
     }
     matches.sort((a, b) => String(a.id).localeCompare(String(b.id)));
+    showSearchResults();
     renderResults(matches.slice(0, 30));
   } catch(e) {
     document.getElementById('results').innerHTML = '';
     toast('Search failed: ' + e.message, 'error');
   } finally {
-    btn.innerHTML = icon('search', 18) + 'Search';
+    btn.innerHTML = icon('search', 18);
     btn.disabled = false;
   }
 }
@@ -892,6 +1083,7 @@ async function selectItem(i) {
   document.getElementById('editorFoot').style.display = 'none';
 
   try {
+    await ensureVariants();
     const filter = encodeURIComponent(JSON.stringify({ variants: [{ id: 'all' }] }));
     const res = await fetch(`${API_DITTO}/components?filter=${filter}`, { headers: { Authorization: getDittoKey() } });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1321,6 +1513,7 @@ function init() {
   if (!getDittoKey() || !getAnthropicKey()) setTimeout(() => toggleKeysPop(true), 350);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeVocab(); });
   document.getElementById('searchQuery').focus();
+  if (getDittoKey()) showBrowse();
 }
 document.addEventListener('DOMContentLoaded', init);
 </script>
