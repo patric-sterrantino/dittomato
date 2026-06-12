@@ -546,7 +546,20 @@ function linkToExisting(i) {
 }
 
 // Rename layers with // prefix so they are excluded from all future scans.
-function ignoreNew(i) {
+function _disableItemBtns(btn) {
+  if (!btn) return;
+  btn.disabled = true; btn.textContent = '…';
+  var itemEl = btn.closest('.item');
+  if (itemEl) {
+    var sibs = itemEl.querySelectorAll('button');
+    for (var b = 0; b < sibs.length; b++) {
+      if (sibs[b] !== btn) sibs[b].style.display = 'none';
+    }
+  }
+}
+
+function ignoreNew(i, btn) {
+  _disableItemBtns(btn);
   var item = st.newItems[i];
   if (!item) return;
   var renames = item.nodeIds.map(function(nid, li) {
@@ -556,7 +569,8 @@ function ignoreNew(i) {
   parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames: renames } }, '*');
 }
 
-function ignoreNear(i) {
+function ignoreNear(i, btn) {
+  _disableItemBtns(btn);
   var item = st.near[i];
   if (!item) return;
   var renames = item.nodeIds.map(function(nid, li) {
@@ -566,7 +580,8 @@ function ignoreNear(i) {
   parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames: renames } }, '*');
 }
 
-function unignore(i) {
+function unignore(i, btn) {
+  _disableItemBtns(btn);
   var item = st.ignored[i];
   if (!item) return;
   var newName = item.layerName.replace(/^\/\//, '');
@@ -875,7 +890,7 @@ function renderResults() {
       '<div class="item-actions" style="justify-content:flex-end">' +
         '<button class="btn btn-primary btn-sm" id="npushbtn-' + i + '" onclick="openTransFields(\'new\',' + i + ')">Push</button>' +
         '<button class="btn btn-sm" id="nlinkbtn-' + i + '" style="display:none;background:var(--green);color:#fff;border-color:var(--green)" onclick="linkToExisting(' + i + ')">Link</button>' +
-        '<button class="btn btn-ghost btn-sm" style="color:var(--txt3)" onclick="ignoreNew(' + i + ')" title="Rename layer with // prefix to exclude from future scans">// Ignore</button>' +
+        '<button class="btn btn-ghost btn-sm" style="color:var(--txt3)" onclick="ignoreNew(' + i + ', this)" title="Rename layer with // prefix to exclude from future scans">// Ignore</button>' +
       '</div>' +
       '<span class="item-status" id="ns-' + i + '"></span>' +
     '</div>')).join('');
@@ -891,7 +906,7 @@ function renderResults() {
       '<div class="item" style="opacity:0.55">' +
         '<div class="item-top">' +
           '<span style="font-family:var(--mono);font-size:11px;color:var(--txt3)">' + esc(item.layerName) + '</span>' +
-          '<button class="btn btn-ghost btn-sm" onclick="unignore(' + i + ')" style="opacity:1;flex-shrink:0">Unignore</button>' +
+          '<button class="btn btn-ghost btn-sm" onclick="unignore(' + i + ', this)" style="opacity:1;flex-shrink:0">Unignore</button>' +
         '</div>' +
         (item.text ? '<div class="item-text" style="font-size:11px;margin-top:3px;color:var(--txt3)">' + highlightText(trunc(item.text, 80)) + '</div>' : '') +
       '</div>'
@@ -943,7 +958,7 @@ function renderNear(n, i) {
           <input class="id-input" id="nrid-${i}" value="${esc(sid)}" oninput="var v=sanitizeId(this.value);this.value=v;st.near[${i}].nearId=v" style="min-width:0" />
         </div>
         <button class="btn btn-primary btn-sm" style="flex-shrink:0" onclick="openTransFields('near',${i})">Push</button>
-        <button class="btn btn-ghost btn-sm" style="flex-shrink:0;color:var(--txt3);font-family:var(--mono);letter-spacing:0" onclick="ignoreNear(${i})" title="Rename layer with // prefix to exclude from future scans">// Ignore</button>
+        <button class="btn btn-ghost btn-sm" style="flex-shrink:0;color:var(--txt3);font-family:var(--mono);letter-spacing:0" onclick="ignoreNear(${i}, this)" title="Rename layer with // prefix to exclude from future scans">// Ignore</button>
         <button class="btn btn-ghost btn-sm" style="flex-shrink:0" onclick="undoNear(${i})">Undo</button>
       </div>
       <span class="item-status" id="nns-${i}"></span>
@@ -968,7 +983,7 @@ function renderNear(n, i) {
         </div>` : `<div style="font-size:10.5px;color:var(--txt3);align-self:center">→ <strong style="color:var(--amber)">${esc(n.comp.id)}</strong></div>`}
       </div>
       <div class="item-actions" style="justify-content:flex-end">
-        <button class="btn btn-ghost btn-sm" style="color:var(--txt3);font-family:var(--mono);letter-spacing:0" onclick="ignoreNear(${i})" title="Rename layer with // prefix to exclude from future scans">// Ignore</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--txt3);font-family:var(--mono);letter-spacing:0" onclick="ignoreNear(${i}, this)" title="Rename layer with // prefix to exclude from future scans">// Ignore</button>
         <button class="btn btn-ghost btn-sm" onclick="setNearDecision(${i},'new')">Create new</button>
         <button class="btn btn-ghost btn-sm" onclick="updateNearComp(${i})">Push Figma → Ditto</button>
         <button class="btn btn-primary btn-sm" onclick="useNearDittoText(${i})">Use Ditto text</button>
