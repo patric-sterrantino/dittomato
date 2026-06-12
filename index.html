@@ -117,6 +117,12 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
 .search-clear{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;border:none;background:var(--surface3);color:var(--txt3);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:background 150ms,color 150ms;flex-shrink:0}
 .search-clear:hover{background:var(--line2);color:var(--txt)}
 .results-head{height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 14px}
+.browse-filters{display:flex;align-items:center;gap:6px;padding:6px 14px;border-bottom:1px solid var(--line);flex-shrink:0}
+.bfilt-btn{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:3px 10px;border-radius:var(--radius-pill);border:1px solid var(--line2);background:none;cursor:pointer;color:var(--txt3);font-family:inherit;transition:all 150ms}
+.bfilt-btn:hover{background:var(--surface3);color:var(--txt2)}
+.bfilt-btn.active{background:var(--amber-dim);border-color:rgba(232,160,48,0.4);color:var(--amber)}
+.bfilt-count{font-size:10px;font-weight:600;padding:1px 6px;border-radius:var(--radius-pill);background:var(--surface3);color:inherit;opacity:.7}
+.bfilt-btn.active .bfilt-count{background:rgba(232,160,48,0.2)}
 /* browse panel */
 .browse-panel{flex:1;overflow-y:auto;min-height:0}
 .browse-loading{padding:24px 16px;color:var(--txt2);font-size:12px;display:flex;align-items:center;gap:10px}
@@ -146,7 +152,8 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
 .result-item:hover{background:var(--surface2);border-color:var(--line2)}
 .result-item.selected{background:var(--blue-dim);border-color:rgba(100,144,245,0.35)}
 .result-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.result-id{font-family:var(--font-mono);font-size:11px;color:var(--blue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.result-id{font-family:var(--font-mono);font-size:11px;color:var(--blue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;border-radius:2px;transition:background 100ms}
+.result-id:hover{background:rgba(100,144,245,0.14)}
 .result-status{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:2px 6px;border-radius:var(--radius-xs);background:var(--surface3);color:var(--txt2);flex-shrink:0}
 .result-text{font-size:12.5px;line-height:18px;color:var(--txt);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .result-meta{font-size:11px;color:var(--txt3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -168,7 +175,8 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
 .editor{flex:1;display:none;flex-direction:column;min-width:0}
 .editor-head{height:70px;box-sizing:border-box;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;display:flex;align-items:center;gap:12px}
 .editor-head .eh-label{font-size:15px;font-weight:600;letter-spacing:-.1px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.editor-head .eh-id{font-family:var(--font-mono);font-size:11px;color:var(--blue);background:var(--blue-dim);padding:3px 8px;border-radius:var(--radius-sm);white-space:nowrap;flex-shrink:0;border:1px solid rgba(100,144,245,0.2)}
+.editor-head .eh-id{font-family:var(--font-mono);font-size:11px;color:var(--blue);background:var(--blue-dim);padding:3px 8px;border-radius:var(--radius-sm);white-space:nowrap;flex-shrink:0;border:1px solid rgba(100,144,245,0.2);cursor:pointer;transition:background 100ms}
+.editor-head .eh-id:hover{background:rgba(100,144,245,0.22)}
 .editor-body{flex:1;overflow-y:auto;padding:20px;min-height:0}
 
 /* magic bar */
@@ -249,6 +257,8 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
 .save-ind.saved{color:var(--green)}
 .save-ind.error{color:var(--red)}
 .char-count{font-size:10px;color:var(--txt3);font-variant-numeric:tabular-nums}
+.char-warn{color:var(--amber)}
+.char-warn-high{color:var(--red)}
 
 /* placeholder chips */
 .ph-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
@@ -300,6 +310,25 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
 .editor-foot .spacer{flex:1}
 
 .loading-variants{display:flex;align-items:center;gap:10px;padding:24px;color:var(--txt2);font-size:12px}
+
+/* github usages */
+.usages-wrap{border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:14px}
+.usages-head{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;background:var(--surface);user-select:none;font-size:12px;font-weight:500;color:var(--txt2);transition:background 150ms}
+.usages-head:hover{background:var(--surface3)}
+.usages-head.open{border-bottom:1px solid var(--line);color:var(--txt)}
+.usages-badge{font-size:10px;font-weight:600;padding:1px 6px;border-radius:var(--radius-pill);background:var(--surface3);color:var(--txt3)}
+.usages-chevron{margin-left:auto;color:var(--txt3);transition:transform 150ms}
+.usages-head.open .usages-chevron{transform:rotate(90deg)}
+.usages-body{flex-direction:column;gap:0}
+.usage-group{padding:8px 14px 4px}
+.usage-group+.usage-group{border-top:1px solid var(--line)}
+.usage-repo-name{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--txt3);margin-bottom:6px}
+.usage-file{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.usage-path{font-family:var(--font-mono);font-size:11px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.usage-ext-link{flex-shrink:0;color:var(--blue);opacity:.6;display:inline-flex;transition:opacity 150ms}
+.usage-ext-link:hover{opacity:1}
+.usage-fragment{font-family:var(--font-mono);font-size:10.5px;line-height:16px;color:var(--txt3);background:var(--surface2);border-radius:var(--radius-sm);padding:4px 9px;border:1px solid var(--line);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:8px}
+.usages-empty{padding:14px;text-align:center;color:var(--txt3);font-size:12px;display:flex;align-items:center;justify-content:center;gap:10px}
 
 /* spinner */
 .spinner{width:14px;height:14px;border:1.5px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;flex-shrink:0}
@@ -383,6 +412,7 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
       <span class="key-dots" aria-hidden="true">
         <span class="conn-dot" id="connDitto" title="Ditto"></span>
         <span class="conn-dot" id="connAnthropic" title="Anthropic"></span>
+        <span class="conn-dot" id="connGithub" title="GitHub"></span>
       </span>
       <span id="keysBtnLabel">Add API keys</span>
     </button>
@@ -405,6 +435,19 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
           <button class="btn btn-ghost btn-sm" onclick="toggleKeyVis('anthropicKey',this)">Show</button>
         </div>
         <div class="kp-hint">AI translation · <code>api.anthropic.com</code></div>
+      </div>
+      <div class="kp-field" style="border-top:1px solid var(--line);margin-top:10px;padding-top:12px">
+        <label>GitHub token <span class="gl-pill">Usages</span></label>
+        <div class="kp-row">
+          <input type="password" id="githubKey" placeholder="ghp_..." oninput="persistGithub('key')" />
+          <button class="btn btn-ghost btn-sm" onclick="toggleKeyVis('githubKey',this)">Show</button>
+        </div>
+        <div class="kp-hint">Code search · <code>api.github.com</code> · needs <code>repo</code> scope</div>
+      </div>
+      <div class="kp-field">
+        <label>Repositories to search</label>
+        <input type="text" id="githubRepos" placeholder="org/repo1, org/repo2" oninput="persistGithub('repos')" />
+        <div class="kp-hint">Comma-separated · e.g. vialytics/web-app, vialytics/mobile</div>
       </div>
     </div>
   </div>
@@ -440,6 +483,11 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
 
     <!-- browse tree (shown by default) -->
     <div id="browsePanel" style="flex:1;display:flex;flex-direction:column;min-height:0">
+      <div class="browse-filters">
+        <button class="bfilt-btn" id="missingFilterBtn" onclick="toggleMissingFilter()" title="Show only components with missing translations">
+          Missing only <span class="bfilt-count" id="missingFilterCount"></span>
+        </button>
+      </div>
       <div class="browse-panel" id="browseList">
         <div class="browse-loading"><span class="spinner spinner-dark"></span> Loading…</div>
       </div>
@@ -467,7 +515,7 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
       <div class="editor-head">
         <span class="eh-label" id="editorLabel">Component</span>
         <div class="eh-id-wrap">
-          <span class="eh-id" id="editorId"></span>
+          <span class="eh-id" id="editorId" role="button" title="Click to copy ID" onclick="copyId(this.textContent.trim())"></span>
           <input class="eh-id-edit" id="editorIdInput" type="text" oninput="var v=sanitizeId(this.value);this.value=v" onkeydown="if(event.key==='Enter')saveComponentId();else if(event.key==='Escape')cancelEditId()" />
           <button class="icon-btn eh-id-editbtn" id="editIdBtn" onclick="startEditId()" title="Edit component ID">
             <svg width="14" height="14" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
@@ -482,6 +530,17 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
       </div>
       <div class="editor-body">
         <div id="variantEditor"></div>
+        <div id="usagesSection" style="display:none">
+          <div class="usages-wrap">
+            <div class="usages-head" id="usagesHead" onclick="toggleUsages()">
+              <svg width="14" height="14" viewBox="0 0 24 24"><path d="M16 18 22 12 16 6M8 6 2 12 8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+              Usages in code
+              <span class="usages-badge" id="usagesBadge" style="display:none"></span>
+              <svg class="usages-chevron" width="14" height="14" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </div>
+            <div class="usages-body" id="usagesBody" style="display:none"></div>
+          </div>
+        </div>
       </div>
       <div class="editor-foot" id="editorFoot">
         <span class="changes-summary" id="changesSummary">No unsaved changes</span>
@@ -670,15 +729,24 @@ function sparkle(size = 16) {
 }
 
 /* ── keys ── */
-const LS = { ditto: 'dittomato.dittoKey', anthropic: 'dittomato.anthropicKey' };
+const LS = { ditto: 'dittomato.dittoKey', anthropic: 'dittomato.anthropicKey',
+             github: 'dittomato.githubKey', githubRepos: 'dittomato.githubRepos' };
 function getDittoKey()     { return document.getElementById('dittoKey').value.trim(); }
 function getAnthropicKey() { return document.getElementById('anthropicKey').value.trim(); }
+function getGithubKey()    { return (document.getElementById('githubKey')?.value || '').trim(); }
+function getGithubRepos()  {
+  const raw = (document.getElementById('githubRepos')?.value || '').trim();
+  return raw.split(',').map(r => r.trim()).filter(Boolean);
+}
 
 function loadKeys() {
   try {
     const d = localStorage.getItem(LS.ditto), a = localStorage.getItem(LS.anthropic);
-    if (d) document.getElementById('dittoKey').value = d;
-    if (a) document.getElementById('anthropicKey').value = a;
+    const g = localStorage.getItem(LS.github), gr = localStorage.getItem(LS.githubRepos);
+    if (d)  document.getElementById('dittoKey').value     = d;
+    if (a)  document.getElementById('anthropicKey').value  = a;
+    if (g)  document.getElementById('githubKey').value     = g;
+    if (gr) document.getElementById('githubRepos').value   = gr;
   } catch(e) {}
 }
 function persistKey(which) {
@@ -690,11 +758,23 @@ function persistKey(which) {
   updateConnStatus();
   if (which === 'ditto' && getDittoKey()) { _browseLoaded = false; showBrowse(); }
 }
+function persistGithub(which) {
+  try {
+    const id  = which === 'key' ? 'githubKey' : 'githubRepos';
+    const key = which === 'key' ? LS.github    : LS.githubRepos;
+    const val = document.getElementById(id)?.value.trim() || '';
+    if (val) localStorage.setItem(key, val); else localStorage.removeItem(key);
+  } catch(e) {}
+  updateConnStatus();
+  showUsagesSection();
+}
 function updateConnStatus() {
-  const d = !!getDittoKey(), a = !!getAnthropicKey();
+  const d = !!getDittoKey(), a = !!getAnthropicKey(), g = !!getGithubKey();
   const dEl = document.getElementById('connDitto'), aEl = document.getElementById('connAnthropic');
+  const gEl = document.getElementById('connGithub');
   if (dEl) dEl.classList.toggle('on', d);
   if (aEl) aEl.classList.toggle('on', a);
+  if (gEl) gEl.classList.toggle('on', g);
   const kb = document.getElementById('keysBtnLabel');
   if (kb) kb.textContent = (d && a) ? 'Keys connected' : (d || a) ? 'Finish setup' : 'Add API keys';
   const kbBtn = document.getElementById('keysBtn');
@@ -783,6 +863,16 @@ function showSearchResults() {
   if (sr) { sr.style.display = 'flex'; sr.style.flexDirection = 'column'; }
   if (bp) { bp.style.display = 'none'; }
 }
+function copyId(id) {
+  navigator.clipboard.writeText(id).then(() => toast('ID copied', 'success')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = id; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('ID copied', 'success');
+  });
+}
+
 function onSearchInput(val) {
   const c = document.getElementById('searchClear');
   if (c) c.style.display = val.trim() ? '' : 'none';
@@ -830,6 +920,9 @@ async function loadBrowse() {
       comp._missingVariants = allVariants.filter(v => !covered.has(v.id)).map(v => v.name || v.id);
     }
     _browseLoaded = true;
+    const missingCount = _browseData.filter(c => c._missingVariants && c._missingVariants.length).length;
+    const badge = document.getElementById('missingFilterCount');
+    if (badge) badge.textContent = missingCount || '';
     renderBrowse();
   } catch(e) {
     document.getElementById('browseList').innerHTML = `<div class="browse-loading">${esc(e.message)}</div>`;
@@ -861,7 +954,7 @@ function renderCompItem(comp, selectedId) {
   const text = comp.text || comp.name || '';
   return `<button class="comp-item${sel}" data-browse-idx="${idx}" onclick="selectBrowseComp(${idx})">
     <div class="result-top">
-      <span class="result-id">${esc(comp.id)}</span>
+      <span class="result-id" title="Click to copy ID" onclick="event.stopPropagation();copyId('${esc(comp.id)}')">${esc(comp.id)}</span>
       ${comp.status ? `<span class="result-status">${esc(comp.status)}</span>` : ''}
     </div>
     <div class="result-text">${highlightText(text) || '<span class="muted">— no text —</span>'}</div>
@@ -903,11 +996,23 @@ function renderTreeNode(node, path, openFolders, selectedId) {
   }
   return html;
 }
+let _filterMissing = false;
+function toggleMissingFilter() {
+  _filterMissing = !_filterMissing;
+  const btn = document.getElementById('missingFilterBtn');
+  if (btn) btn.classList.toggle('active', _filterMissing);
+  renderBrowse(selectedComp?.id);
+}
 function renderBrowse(selectedId) {
   const openFolders = window._openFolders || new Set();
-  const root = buildIdTree(_browseData);
+  const data = _filterMissing
+    ? _browseData.filter(c => c._missingVariants && c._missingVariants.length)
+    : _browseData;
+  const root = buildIdTree(data);
   let html = renderTreeNode(root, '', openFolders, selectedId);
-  if (!html.trim()) html = '<div class="browse-loading">No components found.</div>';
+  if (!html.trim()) html = _filterMissing
+    ? '<div class="browse-loading">No components with missing translations.</div>'
+    : '<div class="browse-loading">No components found.</div>';
   document.getElementById('browseList').innerHTML = html;
   window._openFolders = openFolders;
 }
@@ -1198,7 +1303,7 @@ function renderResults(items) {
   el.innerHTML = items.map((c, i) => `
     <button class="result-item" onclick="selectItem(${i})" id="result-${i}">
       <div class="result-top">
-        <span class="result-id">${esc(c.id)}</span>
+        <span class="result-id" title="Click to copy ID" onclick="event.stopPropagation();copyId('${esc(c.id)}')">${esc(c.id)}</span>
         ${c.status ? `<span class="result-status">${esc(c.status)}</span>` : ''}
       </div>
       <div class="result-text">${highlightText(c.text) || '<span class="muted">— no text —</span>'}</div>
@@ -1211,6 +1316,7 @@ function renderResults(items) {
 async function selectItem(i) {
   selectedComp   = window._results[i];
   pendingChanges = {};
+  resetUsages();
   document.querySelectorAll('.result-item').forEach((el, j) => el.classList.toggle('selected', j === i));
 
   document.getElementById('editorEmpty').style.display = 'none';
@@ -1347,10 +1453,22 @@ function refreshPh(vid) {
   const row = document.getElementById(`phrow-${vid}`);
   if (row) row.innerHTML = phChips(vid, document.getElementById(`vtext-${vid}`)?.value || '', vid === 'base');
 }
+function charWarnClass(len, vid) {
+  if (vid === 'base') return '';
+  const baseLen = (variantData['base']?.text ?? '').length;
+  if (!baseLen || !len) return '';
+  const r = len / baseLen;
+  if (r > 1.6) return ' char-warn-high';
+  if (r > 1.3) return ' char-warn';
+  return '';
+}
 function charCount(v) {
   if (!window.TWEAKS.showChars) return '<span></span>';
   const len = (variantData[v.id]?.text ?? '').length;
-  return `<span class="char-count" id="vchars-${esc(v.id)}">${len} chars</span>`;
+  const cls = charWarnClass(len, v.id);
+  const baseLen = !v.isBase ? (variantData['base']?.text ?? '').length : 0;
+  const title = (cls && baseLen) ? ` title="${Math.round(len / baseLen * 100)}% of source length"` : '';
+  return `<span class="char-count${cls}" id="vchars-${esc(v.id)}"${title}>${len} chars</span>`;
 }
 function bodyContent(v) { return sourceRef(v) + textarea(v) + placeholderRow(v); }
 
@@ -1409,7 +1527,7 @@ function onInput(vid, ta) {
   const newText  = ta.value;
   const original = variantData[vid]?.originalText ?? '';
   const chars = document.getElementById(`vchars-${vid}`);
-  if (chars) chars.textContent = `${newText.length} chars`;
+  if (chars) { chars.textContent = `${newText.length} chars`; chars.className = 'char-count' + charWarnClass(newText.length, vid); }
   refreshPh(vid);
   if (vid !== 'base') updateMagicVis(vid);
   updateTranslateAllBtn();
@@ -1482,7 +1600,7 @@ async function translateOne(vid, variantName) {
     const block = document.getElementById(`vblock-${vid}`);
     if (block) block.classList.remove('is-missing');
     const chars = document.getElementById(`vchars-${vid}`);
-    if (chars) chars.textContent = `${result.length} chars`;
+    if (chars) { chars.textContent = `${result.length} chars`; chars.className = 'char-count' + charWarnClass(result.length, vid); }
     refreshPh(vid);
     updateMagicVis(vid);
     updateTranslateAllBtn();
@@ -1570,7 +1688,7 @@ function revertVariant(vid) {
   delete pendingChanges[vid];
   setIndicator(vid, '', '');
   const chars = document.getElementById(`vchars-${vid}`);
-  if (chars) chars.textContent = `${original.length} chars`;
+  if (chars) { chars.textContent = `${original.length} chars`; chars.className = 'char-count' + charWarnClass(original.length, vid); }
   refreshPh(vid);
   if (vid !== 'base') updateMagicVis(vid);
   if (vid === 'base') variantRows().forEach(v => { if (!v.isBase) refreshPh(v.id); });
@@ -1674,6 +1792,109 @@ function syncBodyAttrs() {
   document.body.dataset.spacing = window.TWEAKS.spacing;
 }
 window.applyTweaks = applyTweaks;
+
+/* ── GitHub usages ── */
+let _usagesLoaded = false;
+
+function showUsagesSection() {
+  const sec = document.getElementById('usagesSection');
+  if (sec) sec.style.display = (selectedComp && getGithubKey()) ? '' : 'none';
+}
+
+function resetUsages() {
+  _usagesLoaded = false;
+  const head = document.getElementById('usagesHead');
+  const body = document.getElementById('usagesBody');
+  const badge = document.getElementById('usagesBadge');
+  if (head) head.classList.remove('open');
+  if (body) { body.style.display = 'none'; body.innerHTML = ''; }
+  if (badge) { badge.textContent = ''; badge.style.display = 'none'; }
+  showUsagesSection();
+}
+
+async function toggleUsages() {
+  const head = document.getElementById('usagesHead');
+  const body = document.getElementById('usagesBody');
+  if (!head || !body) return;
+  const isOpen = head.classList.toggle('open');
+  body.style.display = isOpen ? 'flex' : 'none';
+  if (isOpen && !_usagesLoaded) await loadUsages();
+}
+
+async function loadUsages() {
+  _usagesLoaded = true;
+  const body = document.getElementById('usagesBody');
+  const id = selectedComp?.id;
+  if (!id || !body) return;
+  const token = getGithubKey();
+  const repos = getGithubRepos();
+  if (!token) {
+    body.innerHTML = '<div class="usages-empty">Add a GitHub token in the Keys panel.</div>';
+    return;
+  }
+  if (!repos.length) {
+    body.innerHTML = '<div class="usages-empty">Add repository names in the Keys panel (e.g. org/repo).</div>';
+    return;
+  }
+  body.innerHTML = '<div class="usages-empty"><span class="spinner spinner-dark"></span> Searching…</div>';
+  try {
+    const repoQ = repos.map(r => 'repo:' + r).join('+');
+    const url = 'https://api.github.com/search/code?q=' + encodeURIComponent(id) + '+' + repoQ + '&per_page=20';
+    const res = await fetch(url, {
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/vnd.github.text-match+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'HTTP ' + res.status);
+    }
+    renderUsages(await res.json(), body);
+  } catch(e) {
+    body.innerHTML = '<div class="usages-empty">Error: ' + esc(e.message) + '</div>';
+  }
+}
+
+const IGNORED_USAGE_PATHS = [
+  'src/ditto/components-root___base.json',
+  'src/ditto/components-root___de.json',
+  'src/ditto/components-root___fr.json',
+];
+
+function renderUsages(data, body) {
+  const badge = document.getElementById('usagesBadge');
+  const items = (data.items || []).filter(item =>
+    !IGNORED_USAGE_PATHS.some(p => item.path === p || item.path.endsWith('/' + p))
+  );
+  if (badge) { badge.textContent = items.length || ''; badge.style.display = items.length ? '' : 'none'; }
+  if (!items.length) {
+    body.innerHTML = '<div class="usages-empty">No usages found in connected repositories.</div>';
+    return;
+  }
+  const byRepo = {};
+  for (const item of items) {
+    const repo = item.repository.full_name;
+    if (!byRepo[repo]) byRepo[repo] = [];
+    byRepo[repo].push(item);
+  }
+  body.innerHTML = Object.entries(byRepo).map(([repo, items]) =>
+    '<div class="usage-group">' +
+      '<div class="usage-repo-name">' + esc(repo) + '</div>' +
+      items.map(item => {
+        const fragment = (item.text_matches?.[0]?.fragment || '').trim().replace(/\s+/g, ' ');
+        return '<div class="usage-file">' +
+          '<span class="usage-path" title="' + esc(item.path) + '">' + esc(item.path) + '</span>' +
+          '<a href="' + esc(item.html_url) + '" target="_blank" rel="noopener" class="usage-ext-link" title="Open in GitHub">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>' +
+          '</a>' +
+        '</div>' +
+        (fragment ? '<div class="usage-fragment">' + esc(fragment) + '</div>' : '');
+      }).join('') +
+    '</div>'
+  ).join('');
+}
 
 /* ── init ── */
 function init() {
