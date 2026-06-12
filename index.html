@@ -149,6 +149,7 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
 .result-match{display:flex;align-items:baseline;gap:6px;font-size:11px;line-height:16px;color:var(--txt2);background:var(--purple-dim);border-radius:var(--radius-sm);padding:4px 7px;margin-top:1px;overflow:hidden}
 .result-match .rm-tag{flex-shrink:0;font-size:9px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--purple)}
 .result-item.selected .result-match{background:rgba(133,0,215,0.2)}
+.result-missing{font-size:10.5px;color:var(--amber);margin-top:1px}
 .result-loading{display:flex;align-items:center;gap:10px;padding:16px;color:var(--txt2);font-size:12px}
 .empty-sm{text-align:center;color:var(--txt2);padding:32px 16px;display:flex;flex-direction:column;align-items:center;gap:10px}
 .empty-sm .ico{color:var(--txt3)}
@@ -251,6 +252,8 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
 .ph-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--font-mono);font-size:10px;line-height:15px;padding:1px 6px;border-radius:var(--radius-xs);background:var(--blue-dim);color:var(--blue);border:1px solid rgba(100,144,245,0.2)}
 .ph-chip.miss{background:rgba(240,112,112,0.12);color:var(--red);border-color:rgba(240,112,112,0.2)}
 .ph-chip.miss .ico{color:var(--red)}
+.tk-var{font-family:var(--font-mono);font-size:.88em;color:var(--blue);background:var(--blue-dim);border:1px solid rgba(100,144,245,0.22);border-radius:3px;padding:0 3px;white-space:nowrap}
+.tk-plural{font-family:var(--font-mono);font-size:.88em;color:var(--purple);background:var(--purple-dim);border:1px solid rgba(133,0,215,0.18);border-radius:3px;padding:0 3px;white-space:nowrap}
 
 @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
 .translating-shimmer{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:400px 100%;animation:shimmer 1.2s infinite;border-radius:4px;color:transparent !important;user-select:none;min-height:22px}
@@ -723,6 +726,20 @@ function toast(msg, type = 'success') {
 function esc(s) {
   return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+function highlightText(s) {
+  const str = String(s ?? '');
+  if (!str) return '';
+  // {{variable}} tokens and ICU plural/select expressions {word, plural|select, ...{...}...}
+  const re = /\{\{[^}]+\}\}|\{[a-zA-Z_]\w*\s*,\s*(?:plural|select)\b(?:[^{}]|\{[^{}]*\})*\}/g;
+  let out = '', last = 0, m;
+  while ((m = re.exec(str)) !== null) {
+    out += esc(str.slice(last, m.index));
+    const tok = m[0];
+    out += `<span class="${tok.startsWith('{{') ? 'tk-var' : 'tk-plural'}">${esc(tok)}</span>`;
+    last = m.index + tok.length;
+  }
+  return out + esc(str.slice(last));
+}
 function langName(v) {
   if (!v) return '';
   const key = String(v.name || v.id || '').toLowerCase().slice(0, 2);
@@ -772,12 +789,31 @@ async function loadBrowse() {
   if (!k) { toast('Add your Ditto API key first', 'error'); switchLeftTab('search'); return; }
   document.getElementById('browseList').innerHTML = '<div class="browse-loading"><span class="spinner spinner-dark"></span> Loading…</div>';
   try {
-    const res = await fetch(`${API_DITTO}/components`, { headers: { Authorization: k } });
+    await ensureVariants();
+    const covFilter = encodeURIComponent(JSON.stringify({ variants: [{ id: 'all' }] }));
+    const [res, covRes] = await Promise.all([
+      fetch(`${API_DITTO}/components`, { headers: { Authorization: k } }),
+      allVariants.length ? fetch(`${API_DITTO}/components?filter=${covFilter}`, { headers: { Authorization: k } }) : Promise.resolve(null)
+    ]);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
+    // Build variant coverage map
+    const coverageMap = new Map();
+    if (covRes && covRes.ok) {
+      const covRows = await covRes.json();
+      for (const c of covRows) {
+        if (!c.variantId || !c.text) continue;
+        if (!coverageMap.has(c.id)) coverageMap.set(c.id, new Set());
+        coverageMap.get(c.id).add(c.variantId);
+      }
+    }
     // Only base components (no variantId), deduplicated by id
     const seen = new Set();
     _browseData = rows.filter(c => !c.variantId && !seen.has(c.id) && seen.add(c.id));
+    for (const comp of _browseData) {
+      const covered = coverageMap.get(comp.id) || new Set();
+      comp._missingVariants = allVariants.filter(v => !covered.has(v.id)).map(v => v.name || v.id);
+    }
     _browseLoaded = true;
     renderBrowse();
   } catch(e) {
@@ -817,7 +853,8 @@ function renderBrowse(selectedId) {
           <span class="result-id">${esc(comp.id)}</span>
           ${comp.status ? `<span class="result-status">${esc(comp.status)}</span>` : ''}
         </div>
-        <div class="result-text">${esc(text) || '<span class="muted">— no text —</span>'}</div>
+        <div class="result-text">${highlightText(text) || '<span class="muted">— no text —</span>'}</div>
+        ${comp._missingVariants && comp._missingVariants.length ? `<div class="result-missing">⚠ Missing: ${esc(comp._missingVariants.join(', '))}</div>` : ''}
       </button>`;
     }
     html += `</div></div>`;
@@ -1084,6 +1121,8 @@ async function doSearch() {
         item._matchLang = langName({ id: vHit.variantId, name: vName(vHit.variantId) }) || vName(vHit.variantId);
         item._matchText = vHit.text;
       }
+      const coveredIds = new Set(g.variants.filter(v => v.text).map(v => v.variantId));
+      item._missingVariants = allVariants.filter(v => !coveredIds.has(v.id)).map(v => v.name || v.id);
       matches.push(item);
     }
     matches.sort((a, b) => String(a.id).localeCompare(String(b.id)));
@@ -1114,8 +1153,9 @@ function renderResults(items) {
         <span class="result-id">${esc(c.id)}</span>
         ${c.status ? `<span class="result-status">${esc(c.status)}</span>` : ''}
       </div>
-      <div class="result-text">${esc(c.text) || '<span class="muted">— no text —</span>'}</div>
-      ${c._matchLang ? `<div class="result-match"><span class="rm-tag">${esc(c._matchLang)}</span>${esc(c._matchText)}</div>` : ''}
+      <div class="result-text">${highlightText(c.text) || '<span class="muted">— no text —</span>'}</div>
+      ${c._matchLang ? `<div class="result-match"><span class="rm-tag">${esc(c._matchLang)}</span>${highlightText(c._matchText)}</div>` : ''}
+      ${c._missingVariants && c._missingVariants.length ? `<div class="result-missing">⚠ Missing: ${esc(c._missingVariants.join(', '))}</div>` : ''}
       <div class="result-meta">${c.name ? esc(c.name) : ''}${c.name && c.folderId ? ' · ' : ''}${c.folderId ? esc(c.folderId) : (c.name ? '' : 'root')}</div>
     </button>`).join('');
 }
@@ -1238,7 +1278,7 @@ function sourceRef(v) {
   if (!window.TWEAKS.showSource || v.isBase) return '';
   const bt = baseText();
   if (!bt) return '';
-  return `<div class="vsource"><span class="vsource-lbl">Source</span>${esc(bt)}</div>`;
+  return `<div class="vsource"><span class="vsource-lbl">Source</span>${highlightText(bt)}</div>`;
 }
 function tokensOf(s) { return String(s ?? '').match(/\{\{[^}]+\}\}/g) || []; }
 function phChips(vid, text, isBase) {

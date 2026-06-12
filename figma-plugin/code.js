@@ -7,23 +7,34 @@ function isInfoComponent(node) {
   return false;
 }
 
-let scanOptions = { ignoreHidden: false, autoScan: true };
+let scanOptions = { ignoreHidden: true, autoScan: true };
 
-function collectTextNodes(node, results) {
+function collectTextNodes(node, results, parentHidden, ignored) {
   if (!results) results = [];
-  // Skip "Info" components and their entire subtree
+  if (!ignored) ignored = [];
   if (isInfoComponent(node)) return results;
-  // Skip hidden layers (and their subtree) if the option is on
-  if (scanOptions.ignoreHidden && node.visible === false) return results;
+  // A node is effectively hidden if it or any ancestor has visible=false.
+  // parentHidden propagates that state down so visible children of a hidden
+  // parent are still excluded when "Skip hidden" is on.
+  var hidden = parentHidden || node.visible === false;
+  if (scanOptions.ignoreHidden && hidden) return results;
   if (node.type === 'TEXT') {
-    const text = node.characters.trim();
-    if (text.length >= 2) {
-      results.push({ nodeId: node.id, layerName: node.name, text });
+    if (node.name.startsWith('//')) {
+      // Collect separately so the UI can show an Ignored section
+      ignored.push({ nodeId: node.id, layerName: node.name, text: node.characters.trim() });
+    } else {
+      const text = node.characters.trim();
+      if (text.length >= 2) {
+        var annId = nodeAnnotationId(node);
+        var entry = { nodeId: node.id, layerName: node.name, text };
+        if (annId) entry.annotationId = annId;
+        results.push(entry);
+      }
     }
   }
   if ('children' in node) {
     for (const child of node.children) {
-      collectTextNodes(child, results);
+      collectTextNodes(child, results, hidden, ignored);
     }
   }
   return results;
@@ -54,6 +65,26 @@ function suggestPrefix(sel) {
   return sanitized.length ? sanitized.join('.') + '.' : '';
 }
 
+// Extract the first Ditto developer-ID-like token from a string.
+// Matches e.g. "marketing.hero.title" or "nav-menu.item" but not plain words.
+function extractDittoId(str) {
+  var m = String(str || '').match(/\b([a-z][a-z0-9]*(?:[.\-][a-z0-9]+)+)\b/);
+  return m ? m[1] : null;
+}
+
+// Return a Ditto ID from a node's Dev Mode annotations, or null.
+function nodeAnnotationId(node) {
+  try {
+    if (node.annotations && node.annotations.length) {
+      for (var i = 0; i < node.annotations.length; i++) {
+        var id = extractDittoId(String(node.annotations[i].label || ''));
+        if (id) return id;
+      }
+    }
+  } catch(e) {}
+  return null;
+}
+
 function scan() {
   const sel = figma.currentPage.selection;
   if (!sel.length) {
@@ -61,8 +92,21 @@ function scan() {
     return;
   }
   var nodes = [];
-  for (var si = 0; si < sel.length; si++) collectTextNodes(sel[si], nodes);
-  figma.ui.postMessage({ type: 'scan-result', nodes, suggestedPrefix: suggestPrefix(sel) });
+  var ignoredNodes = [];
+  for (var si = 0; si < sel.length; si++) {
+    // Seed parentHidden so that a directly-selected node whose parent is
+    // hidden is still excluded when "Skip hidden" is on.
+    var ancestorHidden = false;
+    if (scanOptions.ignoreHidden) {
+      var anc = sel[si].parent;
+      while (anc && anc.type !== 'PAGE') {
+        if (anc.visible === false) { ancestorHidden = true; break; }
+        anc = anc.parent;
+      }
+    }
+    collectTextNodes(sel[si], nodes, ancestorHidden, ignoredNodes);
+  }
+  figma.ui.postMessage({ type: 'scan-result', nodes, ignored: ignoredNodes, suggestedPrefix: suggestPrefix(sel) });
 }
 
 // Load stored key and send to UI, then trigger first scan
@@ -99,6 +143,7 @@ figma.ui.onmessage = async (msg) => {
 
   if (msg.type === 'set-options') {
     scanOptions = Object.assign({}, scanOptions, msg.options);
+    scan(); // re-apply immediately so results reflect the new filter
     return;
   }
 
