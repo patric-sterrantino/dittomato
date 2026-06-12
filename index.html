@@ -1857,17 +1857,9 @@ async function loadUsages() {
   }
 }
 
-const IGNORED_USAGE_PATHS = [
-  'src/ditto/components-root___base.json',
-  'src/ditto/components-root___de.json',
-  'src/ditto/components-root___fr.json',
-];
-
 function renderUsages(data, body) {
   const badge = document.getElementById('usagesBadge');
-  const items = (data.items || []).filter(item =>
-    !IGNORED_USAGE_PATHS.some(p => item.path === p || item.path.endsWith('/' + p))
-  );
+  const items = (data.items || []).filter(item => !item.path.endsWith('.json'));
   if (badge) { badge.textContent = items.length || ''; badge.style.display = items.length ? '' : 'none'; }
   if (!items.length) {
     body.innerHTML = '<div class="usages-empty">No usages found in connected repositories.</div>';
