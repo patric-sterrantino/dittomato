@@ -443,7 +443,13 @@ function sanitizeIdFinal(raw) {
 }
 
 function suggestId(text) {
-  return sanitizeIdFinal(text.replace(/\s+/g, '-')).slice(0, 60) || 'new-string';
+  // Split camelCase/PascalCase into words before kebab-converting:
+  //   "SaveAsRoute"  → "Save As Route"  → "save-as-route"
+  //   "XMLParser"    → "XML Parser"     → "xml-parser"
+  var spaced = text
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
+  return sanitizeIdFinal(spaced.replace(/\s+/g, '-')).slice(0, 60) || 'new-string';
 }
 
 function getDittoKey() { return _key; }

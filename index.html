@@ -126,6 +126,8 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
 .folder-btn .folder-count{margin-left:auto;font-size:10px;font-weight:600;color:var(--txt3);background:var(--surface3);padding:1px 7px;border-radius:var(--radius-pill)}
 .folder-children{display:none}
 .folder-children.open{display:flex;flex-direction:column;gap:5px;padding:5px 10px 10px}
+.folder-children .folder-item{border-bottom:none}
+.folder-children .folder-btn{font-size:11.5px;color:var(--txt2);padding:5px 12px}
 .comp-item{text-align:left;width:100%;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);padding:9px 12px;display:flex;flex-direction:column;gap:4px;font-family:inherit;transition:background 150ms,border-color 150ms}
 .comp-item:hover{background:var(--surface2);border-color:var(--line2)}
 .comp-item.selected{background:var(--blue-dim);border-color:rgba(100,144,245,0.35)}
@@ -821,45 +823,78 @@ async function loadBrowse() {
   }
 }
 
-function renderBrowse(selectedId) {
-  // Group by first dot-segment of developer ID
-  const folders = {};
-  for (const comp of _browseData) {
-    const dot = comp.id.indexOf('.');
-    const folder = dot > 0 ? comp.id.slice(0, dot) : '(root)';
-    if (!folders[folder]) folders[folder] = [];
-    folders[folder].push(comp);
-  }
-  const openFolders = new Set(Object.keys(folders).slice(0, 1)); // first open by default
-  // Re-use previously open folders
-  if (window._openFolders) window._openFolders.forEach(f => openFolders.add(f));
-
-  let html = '';
-  for (const [folder, comps] of Object.entries(folders).sort(([a],[b]) => a.localeCompare(b))) {
-    const isOpen = openFolders.has(folder);
-    html += `<div class="folder-item">
-      <button class="folder-btn${isOpen?' open':''}" onclick="toggleFolder(this,'${esc(folder)}')">
-        <svg class="folder-chevron" width="14" height="14" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-        ${esc(folder)}
-        <span class="folder-count">${comps.length}</span>
-      </button>
-      <div class="folder-children${isOpen?' open':''}">`;
-    for (const comp of comps.sort((a,b) => a.id.localeCompare(b.id))) {
-      const idx = _browseData.indexOf(comp);
-      const sel = comp.id === selectedId ? ' selected' : '';
-      const text = comp.text || comp.name || '';
-      html += `<button class="comp-item${sel}" data-browse-idx="${idx}" onclick="selectBrowseComp(${idx})">
-        <div class="result-top">
-          <span class="result-id">${esc(comp.id)}</span>
-          ${comp.status ? `<span class="result-status">${esc(comp.status)}</span>` : ''}
-        </div>
-        <div class="result-text">${highlightText(text) || '<span class="muted">— no text —</span>'}</div>
-        ${comp._missingVariants && comp._missingVariants.length ? `<div class="result-missing">⚠ Missing: ${esc(comp._missingVariants.join(', '))}</div>` : ''}
-      </button>`;
+function buildIdTree(comps) {
+  const root = { _items: [] };
+  for (const comp of comps) {
+    const parts = comp.id.split('.');
+    let node = root;
+    for (let i = 0; i < parts.length - 1; i++) {
+      const seg = parts[i];
+      if (!node[seg]) node[seg] = { _items: [] };
+      node = node[seg];
     }
-    html += `</div></div>`;
+    node._items.push(comp);
   }
-  if (!html) html = '<div class="browse-loading">No components found.</div>';
+  return root;
+}
+function countTreeItems(node) {
+  let n = node._items.length;
+  for (const k of Object.keys(node)) if (k !== '_items') n += countTreeItems(node[k]);
+  return n;
+}
+function renderCompItem(comp, selectedId) {
+  const idx = _browseData.indexOf(comp);
+  const sel = comp.id === selectedId ? ' selected' : '';
+  const text = comp.text || comp.name || '';
+  return `<button class="comp-item${sel}" data-browse-idx="${idx}" onclick="selectBrowseComp(${idx})">
+    <div class="result-top">
+      <span class="result-id">${esc(comp.id)}</span>
+      ${comp.status ? `<span class="result-status">${esc(comp.status)}</span>` : ''}
+    </div>
+    <div class="result-text">${highlightText(text) || '<span class="muted">— no text —</span>'}</div>
+    ${comp._missingVariants && comp._missingVariants.length ? `<div class="result-missing">⚠ Missing: ${esc(comp._missingVariants.join(', '))}</div>` : ''}
+  </button>`;
+}
+function renderTreeNode(node, path, openFolders, selectedId) {
+  let html = '';
+  if (node._items.length) {
+    const itemsHtml = [...node._items].sort((a,b) => a.id.localeCompare(b.id)).map(c => renderCompItem(c, selectedId)).join('');
+    if (!path) {
+      // Root-level items (IDs with no dots) — wrap in a collapsed "(root)" folder
+      const isOpen = openFolders.has('(root)');
+      html += `<div class="folder-item">
+        <button class="folder-btn${isOpen ? ' open' : ''}" onclick="toggleFolder(this,'(root)')">
+          <svg class="folder-chevron" width="14" height="14" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          (root)
+          <span class="folder-count">${node._items.length}</span>
+        </button>
+        <div class="folder-children${isOpen ? ' open' : ''}">${itemsHtml}</div>
+      </div>`;
+    } else {
+      html += itemsHtml;
+    }
+  }
+  for (const key of Object.keys(node).filter(k => k !== '_items').sort()) {
+    const subPath = path ? path + '.' + key : key;
+    const isOpen = openFolders.has(subPath);
+    html += `<div class="folder-item">
+      <button class="folder-btn${isOpen ? ' open' : ''}" onclick="toggleFolder(this,'${esc(subPath)}')">
+        <svg class="folder-chevron" width="14" height="14" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        ${esc(key)}
+        <span class="folder-count">${countTreeItems(node[key])}</span>
+      </button>
+      <div class="folder-children${isOpen ? ' open' : ''}">
+        ${renderTreeNode(node[key], subPath, openFolders, selectedId)}
+      </div>
+    </div>`;
+  }
+  return html;
+}
+function renderBrowse(selectedId) {
+  const openFolders = window._openFolders || new Set();
+  const root = buildIdTree(_browseData);
+  let html = renderTreeNode(root, '', openFolders, selectedId);
+  if (!html.trim()) html = '<div class="browse-loading">No components found.</div>';
   document.getElementById('browseList').innerHTML = html;
   window._openFolders = openFolders;
 }
@@ -1412,8 +1447,17 @@ async function translateOne(vid, variantName) {
   setIndicator(vid, 'saving', 'Translating');
 
   const targetLabel = LANG_NAMES[String(variantName).toLowerCase().slice(0,2)] || variantName;
+
+  // Collect any already-translated variants as cross-references for Claude
+  const references = {};
+  for (const v of allVariants) {
+    if (v.id === vid) continue;
+    const existing = variantData[v.id]?.text || document.getElementById(`vtext-${v.id}`)?.value?.trim() || '';
+    if (existing) references[LANG_NAMES[String(v.name).toLowerCase().slice(0,2)] || v.name] = existing;
+  }
+
   try {
-    const result = await callClaude(apiKey, bt, targetLabel);
+    const result = await callClaude(apiKey, bt, targetLabel, references);
     ta.classList.remove('translating-shimmer');
     ta.value = result;
     autoResize(ta);
@@ -1455,12 +1499,16 @@ async function translateAll() {
   else toast('Nothing to translate — all variants filled', 'info');
 }
 
-async function callClaude(apiKey, sourceText, targetLanguage) {
+async function callClaude(apiKey, sourceText, targetLanguage, references) {
   const tone = window.TWEAKS.formality === 'formal'
       ? '\n- Use a FORMAL register (e.g. German "Sie", French "vous")'
     : window.TWEAKS.formality === 'casual'
       ? '\n- Use an INFORMAL register (e.g. German "du", French "tu")'
       : '';
+  const hasRefs = references && Object.keys(references).length > 0;
+  const refNote = hasRefs
+    ? '\n- You will receive the English source plus translations in other languages for cross-reference. Use them only to verify the intended meaning — always base your translation on the English.'
+    : '';
   const system = `You are a professional UI copy translator for vialytics — a municipal road infrastructure SaaS used by city planners and field workers in Germany and Europe.
 
 Translate the given UI string to ${targetLanguage}.
@@ -1470,9 +1518,13 @@ Rules:
 - Preserve any emoji exactly as-is
 - Preserve any {{VariableName}} placeholders exactly as-is
 - Match the tone: concise, professional, unambiguous UI copy for municipal software
-- Use sentence case unless the source uses Title Case${tone}${buildGlossaryPrompt()}`;
+- Use sentence case unless the source uses Title Case${tone}${refNote}${buildGlossaryPrompt()}`;
 
   const model = window.TWEAKS.model === 'quality' ? 'claude-sonnet-4-5-20250929' : 'claude-haiku-4-5-20251001';
+
+  const userContent = hasRefs
+    ? `English: ${sourceText}\n` + Object.entries(references).map(([lang, text]) => `${lang}: ${text}`).join('\n')
+    : sourceText;
 
   const res = await fetch(API_ANTHROPIC, {
     method: 'POST',
@@ -1482,7 +1534,7 @@ Rules:
       'anthropic-version': '2023-06-01',
       'anthropic-dangerous-direct-browser-access': 'true'
     },
-    body: JSON.stringify({ model, max_tokens: 500, system, messages: [{ role: 'user', content: sourceText }] })
+    body: JSON.stringify({ model, max_tokens: 500, system, messages: [{ role: 'user', content: userContent }] })
   });
 
   if (!res.ok) {
@@ -1513,6 +1565,17 @@ function revertVariant(vid) {
   updateChangesSummary();
 }
 
+function refreshSidePanelText(newText) {
+  if (selectedComp) selectedComp.text = newText;
+  const inResults = window._results?.find(c => c.id === selectedComp?.id);
+  if (inResults) inResults.text = newText;
+  const inBrowse = _browseData?.find(c => c.id === selectedComp?.id);
+  if (inBrowse) inBrowse.text = newText;
+  const card = document.querySelector('.result-item.selected, .comp-item.selected');
+  const textEl = card?.querySelector('.result-text');
+  if (textEl) textEl.innerHTML = highlightText(newText) || '<span class="muted">— no text —</span>';
+}
+
 async function saveVariant(vid) {
   const ta = document.getElementById(`vtext-${vid}`);
   const newText = ta?.value ?? '';
@@ -1525,6 +1588,7 @@ async function saveVariant(vid) {
     delete pendingChanges[vid];
     setIndicator(vid, 'saved', 'Saved');
     setTimeout(() => setIndicator(vid, '', ''), 2500);
+    if (vid === 'base') refreshSidePanelText(newText);
     updateChangesSummary();
   } catch(e) {
     setIndicator(vid, 'error', 'Error');
@@ -1538,7 +1602,7 @@ async function saveAll() {
   const btn = document.getElementById('saveAllBtn');
   btn.innerHTML = '<span class="spinner"></span> Saving…';
   btn.disabled = true;
-  let saved = 0;
+  let saved = 0, savedBaseText = null;
   for (const vid of vids) {
     try {
       const ta = document.getElementById(`vtext-${vid}`);
@@ -1550,9 +1614,11 @@ async function saveAll() {
       delete pendingChanges[vid];
       setIndicator(vid, 'saved', 'Saved');
       setTimeout(() => setIndicator(vid, '', ''), 2500);
+      if (vid === 'base') savedBaseText = text;
       saved++;
     } catch(e) { setIndicator(vid, 'error', 'Error'); }
   }
+  if (savedBaseText !== null) refreshSidePanelText(savedBaseText);
   btn.innerHTML = icon('check', 18) + 'Save all changes';
   updateChangesSummary();
   if (saved > 0) toast(`Saved ${saved} change${saved>1?'s':''}`, 'success');

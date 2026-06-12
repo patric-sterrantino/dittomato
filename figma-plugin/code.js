@@ -43,15 +43,35 @@ function collectTextNodes(node, results, parentHidden, ignored) {
 function suggestPrefix(sel) {
   if (!sel.length) return '';
   var start = sel[0];
-  // Walk up from the selected node (or its parent if it's a text node)
-  var current = (start.type === 'TEXT') ? start.parent : start;
-  var parts = [];
-  while (current && current.type !== 'PAGE' && parts.length < 2) {
-    if (['FRAME', 'SECTION', 'COMPONENT_SET'].indexOf(current.type) !== -1) {
-      parts.unshift(current.name);
-    }
-    current = current.parent;
+
+  // Collect all ancestors from the selection up to (but not including) PAGE.
+  // ancestors[0] = direct child of PAGE (top-most), last = nearest parent.
+  var ancestors = [];
+  var cur = (start.type === 'TEXT') ? start.parent : start;
+  while (cur && cur.type !== 'PAGE') {
+    ancestors.unshift(cur);
+    cur = cur.parent;
   }
+
+  // Find the section ancestor (if any) — scan all ancestors, not just the top one
+  var sectionIdx = -1;
+  for (var i = 0; i < ancestors.length; i++) {
+    if (ancestors[i].type === 'SECTION') { sectionIdx = i; break; }
+  }
+  // Find the top-level frame: first FRAME/COMPONENT_SET starting after the section
+  // (or from the top of the ancestry when there is no section)
+  var frameIdx = -1;
+  for (var i = sectionIdx + 1; i < ancestors.length; i++) {
+    if (ancestors[i].type === 'FRAME' || ancestors[i].type === 'COMPONENT_SET') {
+      frameIdx = i;
+      break;
+    }
+  }
+
+  var parts = [];
+  if (sectionIdx >= 0) parts.push(ancestors[sectionIdx].name);
+  if (frameIdx >= 0)   parts.push(ancestors[frameIdx].name);
+
   var fileName = figma.root ? figma.root.name : '';
   if (fileName) parts.unshift(fileName);
   var sanitized = parts
