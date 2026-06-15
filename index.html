@@ -166,6 +166,7 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 /* theme toggle */
 .theme-toggle{width:34px;height:34px;border-radius:var(--radius-md);border:1px solid var(--line2);background:var(--surface2);color:var(--txt2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background 150ms,color 150ms,border-color 150ms}
 .theme-toggle:hover{background:var(--surface3);color:var(--txt)}
+.theme-toggle.active{background:var(--blue-dim);color:var(--blue);border-color:color-mix(in srgb,var(--blue) 40%,transparent)}
 .theme-toggle svg{transition:transform 250ms cubic-bezier(.34,1.4,.5,1)}
 .theme-toggle .ti-moon{display:none}
 .theme-toggle .ti-sun{display:block}
@@ -346,6 +347,14 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .ph-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--font-mono);font-size:10px;line-height:15px;padding:1px 6px;border-radius:var(--radius-xs);background:var(--blue-dim);color:var(--blue);border:1px solid color-mix(in srgb,var(--blue) 26%,transparent)}
 .ph-chip.miss{background:color-mix(in srgb,var(--red) 18%,transparent);color:var(--red);border-color:color-mix(in srgb,var(--red) 30%,transparent)}
 .ph-chip.miss .ico{color:var(--red)}
+/* whitespace overlay — always-on visible spaces/breaks behind editor textareas */
+.ws-field{position:relative}
+.ws-field textarea{background:transparent !important}
+.ws-backdrop{position:absolute;inset:0;margin:0;pointer-events:none;z-index:0;color:transparent;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;overflow:hidden;box-sizing:border-box}
+.ws-field textarea{position:relative;z-index:1}
+.ws-backdrop .ws-dot{background:radial-gradient(circle at 50% 56%, #e5409a 0 1.6px, transparent 2px)}
+.ws-backdrop .ws-tab{color:#e5409a;opacity:.9}
+.ws-backdrop .ws-nl{display:inline-block;width:0;overflow:visible;color:#e5409a;font-weight:700}
 .tk-var{font-family:var(--font-mono);font-size:.88em;color:var(--blue);background:var(--blue-dim);border:1px solid color-mix(in srgb,var(--blue) 24%,transparent);border-radius:3px;padding:0 3px;white-space:nowrap}
 .tk-plural{font-family:var(--font-mono);font-size:.88em;color:var(--purple);background:var(--purple-dim);border:1px solid color-mix(in srgb,var(--purple) 28%,transparent);border-radius:3px;padding:0 3px;white-space:nowrap}
 
@@ -375,6 +384,36 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .gl-table tr:last-child td{border-bottom:none}
 .gl-table tr.hidden-row{display:none}
 .gl-empty{color:var(--txt3)}
+
+/* plural editor */
+.modal.modal-wide{width:min(880px,96vw)}
+.pl-hint{font-size:11px;color:var(--txt2);line-height:1.6;margin:0 0 4px}
+.pl-grid-wrap{overflow:auto;border:1px solid var(--line);border-radius:var(--radius-lg);min-height:0}
+.pl-grid{border-collapse:collapse;width:100%;min-width:520px}
+.pl-grid th,.pl-grid td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:7px 9px;vertical-align:top;text-align:left}
+.pl-grid th:last-child,.pl-grid td:last-child{border-right:none}
+.pl-grid thead th{position:sticky;top:0;background:var(--surface);z-index:1;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--txt3);white-space:nowrap}
+.pl-grid thead th.pl-base-col{color:var(--amber)}
+.pl-grid tbody tr:last-child td{border-bottom:none}
+.pl-form-cell{white-space:nowrap;background:var(--surface)}
+.pl-form-name{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:12px;color:var(--txt);font-weight:600}
+.pl-form-name .pl-master{font-size:8.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--amber);background:var(--amber-dim);padding:1px 5px;border-radius:var(--radius-pill)}
+.pl-rm{margin-top:6px;display:block;font-size:10.5px;color:var(--txt3);background:none;border:none;cursor:pointer;padding:0}
+.pl-rm:hover{color:var(--red)}
+.pl-move{display:inline-flex;flex-direction:column;line-height:0;margin-right:2px}
+.pl-move-btn{background:none;border:none;cursor:pointer;color:var(--txt3);font-size:8px;padding:0 1px;line-height:1.1}
+.pl-move-btn:hover:not(:disabled){color:var(--blue)}
+.pl-move-btn:disabled{opacity:.25;cursor:default}
+.pl-cell{display:flex;align-items:flex-start;gap:5px}
+.pl-tr{flex-shrink:0;width:24px;height:24px;border-radius:var(--radius-sm);border:1px solid var(--line2);background:var(--surface2);color:var(--purple);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:background 120ms}
+.pl-tr:hover{background:var(--purple-dim)}
+.pl-cell-ta{width:100%;min-width:130px;background:var(--surface2);border:1px solid var(--line2);border-radius:var(--radius-sm);color:var(--txt);font-family:inherit;font-size:12.5px;line-height:18px;padding:6px 8px;outline:none;resize:vertical;min-height:34px;transition:border-color 150ms,box-shadow 150ms}
+.pl-cell-ta:focus{border-color:var(--ring);box-shadow:0 0 0 2px var(--blue-dim)}
+.pl-cell-ta.mono{font-family:var(--font-mono);font-size:12px}
+.pl-addrow{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.pl-addrow select{height:32px;background:var(--surface2);border:1px solid var(--line2);border-radius:var(--radius-md);color:var(--txt);font-family:inherit;font-size:12.5px;padding:0 9px;outline:none}
+.pl-addrow select:focus{border-color:var(--ring);box-shadow:0 0 0 2px var(--blue-dim)}
+.pl-empty{padding:22px;text-align:center;color:var(--txt2);font-size:12.5px;line-height:1.6}
 
 /* new component modal */
 .nc-field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
@@ -626,6 +665,10 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
           </button>
         </div>
         <div style="flex:1"></div>
+        <button class="btn btn-ghost btn-sm" id="pluralsBtn" onclick="openPluralEditor()" title="Manage plural forms for this component">
+          <svg class="ico" width="15" height="15" viewBox="0 0 24 24"><path d="M4 7h7M4 12h7M4 17h7M15 8.5 17 7v6M20 13c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          Plurals<span id="pluralsBtnCount"></span>
+        </button>
         <button class="icon-btn danger" id="deleteCompBtn" onclick="deleteComponentPrompt()" title="Delete component">
           <svg width="16" height="16" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
         </button>
@@ -769,6 +812,30 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
           <svg class="ico" width="15" height="15" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
           Delete permanently
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- plural editor modal -->
+<div class="modal-overlay" id="pluralModal" onclick="if(event.target===this) closePluralEditor()">
+  <div class="modal modal-wide" role="dialog" aria-label="Plural forms">
+    <div class="modal-head">
+      <div class="modal-title">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M4 7h7M4 12h7M4 17h7M15 8.5 17 7v6M20 13c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        Plural forms
+        <code id="plCompId" style="font-family:var(--font-mono);font-size:11px;background:var(--surface3);padding:2px 6px;border-radius:4px;color:var(--blue)"></code>
+      </div>
+      <button class="icon-btn" onclick="closePluralEditor()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </button>
+    </div>
+    <div class="modal-sub">Define each plural form's text per language. The first form is the master — its text is the component's display text.</div>
+    <div class="modal-body" style="gap:12px">
+      <div id="plBody"></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:2px">
+        <button class="btn btn-ghost" onclick="closePluralEditor()">Cancel</button>
+        <button class="btn btn-primary" id="plSaveBtn" onclick="savePlurals()" disabled>Save plural forms</button>
       </div>
     </div>
   </div>
@@ -1043,6 +1110,49 @@ function clearSearch() {
 // legacy alias used elsewhere
 function switchLeftTab(tab) { if (tab === 'browse') showBrowse(); else showSearchResults(); }
 
+// ── Plurals ────────────────────────────────────────────────────────────────
+// Ditto returns each plural form as its own row: id "base_<form>" with a
+// `pluralForm` field, and the translations live on those form rows (not the base
+// row). So a plural form must NOT be treated as a standalone component, and a
+// component counts as translated for a variant only when every form is translated.
+function isPluralRow(c) { return c && c.pluralForm != null; }
+function baseIdOf(c) {
+  return (c.pluralForm && c.id && c.id.endsWith('_' + c.pluralForm))
+    ? c.id.slice(0, -(c.pluralForm.length + 1)) : c.id;
+}
+function buildCoverage(allRows) {
+  const requiredForms = new Map(); // baseId -> Set(form)  ('_base' = non-plural)
+  const got = new Map();           // baseId -> Map(variantId -> Set(form) translated)
+  for (const c of allRows) {
+    if (!c.text) continue;
+    const base = baseIdOf(c), form = c.pluralForm || '_base';
+    if (!c.variantId) {
+      if (!requiredForms.has(base)) requiredForms.set(base, new Set());
+      requiredForms.get(base).add(form);
+    } else {
+      if (!got.has(base)) got.set(base, new Map());
+      const m = got.get(base);
+      if (!m.has(c.variantId)) m.set(c.variantId, new Set());
+      m.get(c.variantId).add(form);
+    }
+  }
+  // For a pluralised component the base row is just an alias of the master form —
+  // drop '_base' so coverage is judged purely on the real plural forms.
+  for (const forms of requiredForms.values()) {
+    if ([...forms].some(f => f !== '_base')) forms.delete('_base');
+  }
+  return { requiredForms, got };
+}
+function missingVariantsFor(baseId, cov) {
+  const req  = cov.requiredForms.get(baseId) || new Set(['_base']);
+  const vmap = cov.got.get(baseId) || new Map();
+  return allVariants.filter(v => {
+    const has = vmap.get(v.id) || new Set();
+    for (const f of req) if (!has.has(f)) return true; // a form is untranslated → missing
+    return false;
+  }).map(v => v.name || v.id);
+}
+
 let _browseData = [];
 async function loadBrowse() {
   const k = getDittoKey();
@@ -1057,22 +1167,13 @@ async function loadBrowse() {
     ]);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
-    // Build variant coverage map
-    const coverageMap = new Map();
-    if (covRes && covRes.ok) {
-      const covRows = await covRes.json();
-      for (const c of covRows) {
-        if (!c.variantId || !c.text) continue;
-        if (!coverageMap.has(c.id)) coverageMap.set(c.id, new Set());
-        coverageMap.get(c.id).add(c.variantId);
-      }
-    }
-    // Only base components (no variantId), deduplicated by id
+    // Build plural-aware variant coverage from the all-variants fetch.
+    const cov = (covRes && covRes.ok) ? buildCoverage(await covRes.json()) : { requiredForms: new Map(), got: new Map() };
+    // Real components only: no variant rows, no plural-form rows; deduped by id.
     const seen = new Set();
-    _browseData = rows.filter(c => !c.variantId && !seen.has(c.id) && seen.add(c.id));
+    _browseData = rows.filter(c => !c.variantId && !isPluralRow(c) && !seen.has(c.id) && seen.add(c.id));
     for (const comp of _browseData) {
-      const covered = coverageMap.get(comp.id) || new Set();
-      comp._missingVariants = allVariants.filter(v => !covered.has(v.id)).map(v => v.name || v.id);
+      comp._missingVariants = missingVariantsFor(comp.id, cov);
     }
     _browseLoaded = true;
     const missingCount = _browseData.filter(c => c._missingVariants && c._missingVariants.length).length;
@@ -1167,8 +1268,37 @@ function renderBrowse(selectedId) {
   if (!html.trim()) html = _filterMissing
     ? '<div class="browse-loading">No components with missing translations.</div>'
     : '<div class="browse-loading">No components found.</div>';
-  document.getElementById('browseList').innerHTML = html;
+  const list = document.getElementById('browseList');
+  const scroll = list ? list.scrollTop : 0;        // keep position across re-renders
+  list.innerHTML = html;
+  list.scrollTop = scroll;
   window._openFolders = openFolders;
+}
+
+// Re-fetch the browse data and re-render in place, keeping expanded folders,
+// scroll position and selection — used after a change so the tree stays current.
+async function refreshBrowse() {
+  if (!_browseLoaded) return;
+  const k = getDittoKey();
+  if (!k) return;
+  try {
+    await ensureVariants();
+    const covFilter = encodeURIComponent(JSON.stringify({ variants: [{ id: 'all' }] }));
+    const [res, covRes] = await Promise.all([
+      fetch(`${API_DITTO}/components`, { headers: { Authorization: k } }),
+      allVariants.length ? fetch(`${API_DITTO}/components?filter=${covFilter}`, { headers: { Authorization: k } }) : Promise.resolve(null)
+    ]);
+    if (!res.ok) return;
+    const rows = await res.json();
+    const cov = (covRes && covRes.ok) ? buildCoverage(await covRes.json()) : { requiredForms: new Map(), got: new Map() };
+    const seen = new Set();
+    _browseData = rows.filter(c => !c.variantId && !isPluralRow(c) && !seen.has(c.id) && seen.add(c.id));
+    for (const comp of _browseData) comp._missingVariants = missingVariantsFor(comp.id, cov);
+    const missingCount = _browseData.filter(c => c._missingVariants && c._missingVariants.length).length;
+    const badge = document.getElementById('missingFilterCount');
+    if (badge) badge.textContent = missingCount || '';
+    renderBrowse(selectedComp?.id);
+  } catch(e) { /* keep the stale tree rather than blanking it */ }
 }
 
 function toggleFolder(btn, folder) {
@@ -1245,8 +1375,7 @@ async function applyRenameId() {
       selectedComp.id = newId;
       document.getElementById('editorId').textContent = newId;
       toast(`Renamed to "${newId}"`, 'success');
-      _browseLoaded = false;
-      showBrowse();
+      refreshBrowse();
     } else {
       toast('Rename failed: ' + (data.message || `HTTP ${res.status}`), 'error');
     }
@@ -1400,36 +1529,40 @@ async function doSearch() {
     const res = await fetch(`${API_DITTO}/components?filter=${filter}`, { headers: { Authorization: k } });
     if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message||`HTTP ${res.status}`); }
     const rows = await res.json();
+    const cov = buildCoverage(rows);
 
+    // Group by base id so plural forms fold into their component (never standalone).
     const groups = {};
     rows.forEach(c => {
-      const id = c.id;
-      if (!groups[id]) groups[id] = { base: null, variants: [] };
-      if (c.variantId) groups[id].variants.push(c);
-      else groups[id].base = c;
+      const bid = baseIdOf(c);
+      if (!groups[bid]) groups[bid] = { base: null, fallback: null, variants: [], texts: [] };
+      const g = groups[bid];
+      if (c.variantId) g.variants.push(c);
+      else if (!isPluralRow(c)) g.base = c;       // the real (non-plural) base row
+      else g.fallback = g.fallback || c;          // component represented only by plural forms
+      if (c.text) g.texts.push(c.text);           // source text of every form, for matching
     });
 
     const vName = id => (allVariants.find(v => v.id === id)?.name) || id;
     const matches = [];
-    for (const id in groups) {
-      const g = groups[id];
-      const base = g.base || g.variants[0];
+    for (const bid in groups) {
+      const g = groups[bid];
+      const base = g.base || g.fallback || g.variants[0];
       if (!base) continue;
       const normQ = q.replace(/[^a-z0-9]/g, '');
-      const normId = base.id ? base.id.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
-      const metaHit = (base.id && base.id.toLowerCase().includes(q)) ||
+      const normId = bid.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const metaHit = bid.toLowerCase().includes(q) ||
                       (normQ && normId.includes(normQ)) ||
                       (base.name && base.name.toLowerCase().includes(q)) ||
-                      (base.text && base.text.toLowerCase().includes(q));
+                      g.texts.some(t => t.toLowerCase().includes(q));
       const vHit = g.variants.find(v => v.text && v.text.toLowerCase().includes(q));
       if (!metaHit && !vHit) continue;
-      const item = { ...base };
+      const item = { ...base, id: bid };
       if (!metaHit && vHit) {
         item._matchLang = langName({ id: vHit.variantId, name: vName(vHit.variantId) }) || vName(vHit.variantId);
         item._matchText = vHit.text;
       }
-      const coveredIds = new Set(g.variants.filter(v => v.text).map(v => v.variantId));
-      item._missingVariants = allVariants.filter(v => !coveredIds.has(v.id)).map(v => v.name || v.id);
+      item._missingVariants = missingVariantsFor(bid, cov);
       matches.push(item);
     }
     matches.sort((a, b) => String(a.id).localeCompare(String(b.id)));
@@ -1495,6 +1628,11 @@ async function selectItem(i) {
       const vid = c.variantId ?? 'base';
       variantData[vid] = { text: c.text ?? '', originalText: c.text ?? '', status: c.status };
     });
+    // Plural-form count for this component (button badge)
+    const plForms = new Set();
+    all.forEach(c => { if (c.pluralForm && baseIdOf(c) === selectedComp.id) plForms.add(c.pluralForm); });
+    const plCount = document.getElementById('pluralsBtnCount');
+    if (plCount) plCount.textContent = plForms.size ? ` · ${plForms.size}` : '';
     renderVariantEditor();
     document.getElementById('editorFoot').style.display = 'flex';
     if (window.TWEAKS.autofill && getAnthropicKey()) {
@@ -1535,6 +1673,7 @@ function renderVariantEditor() {
   else                             editorBody = renderColumns(rows);
 
   document.getElementById('variantEditor').innerHTML = editorBody;
+  document.querySelectorAll('.variant-textarea').forEach(mountWs);
   document.querySelectorAll('.variant-textarea').forEach(autoResize);
   Object.keys(pendingChanges).forEach(vid => setIndicator(vid, 'unsaved', 'Unsaved'));
   updateTranslateAllBtn();
@@ -1676,7 +1815,42 @@ function renderTable(rows) {
     <tbody>${trs}</tbody></table></div>`;
 }
 
-function autoResize(ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+function autoResize(ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; syncWs(ta); }
+
+// ── Whitespace overlay (always-on, in the text editor only) ──────────────────
+// A backdrop div behind a transparent-background textarea paints a dot inside
+// every space and a ¶ at every line break, perfectly aligned with the text.
+function wsBackdropHtml(text) {
+  return esc(String(text ?? ''))
+    .replace(/ /g, '<span class="ws-dot"> </span>')
+    .replace(/\t/g, '<span class="ws-tab">\t</span>')
+    .replace(/\n/g, '<span class="ws-nl">¶</span>\n') + '​';
+}
+function syncWs(ta) {
+  const bd = ta && ta._wsBd;
+  if (bd) bd.innerHTML = wsBackdropHtml(ta.value);
+}
+function mountWs(ta) {
+  if (!ta || ta._wsMounted) { syncWs(ta); return; }
+  ta._wsMounted = true;
+  const wrap = document.createElement('div');
+  wrap.className = 'ws-field';
+  ta.parentNode.insertBefore(wrap, ta);
+  wrap.appendChild(ta);
+  const bd = document.createElement('div');
+  bd.className = 'ws-backdrop';
+  bd.setAttribute('aria-hidden', 'true');
+  wrap.insertBefore(bd, ta);
+  ta._wsBd = bd;
+  const cs = getComputedStyle(ta);
+  ['fontFamily','fontSize','fontWeight','fontStyle','lineHeight','letterSpacing','wordSpacing',
+   'paddingTop','paddingRight','paddingBottom','paddingLeft','borderTopWidth','borderRightWidth',
+   'borderBottomWidth','borderLeftWidth','textTransform','textIndent','tabSize'].forEach(p => { bd.style[p] = cs[p]; });
+  bd.style.borderStyle = 'solid';
+  bd.style.borderColor = 'transparent';
+  syncWs(ta);
+}
+function mountWsAll(sel) { document.querySelectorAll(sel).forEach(mountWs); }
 
 function onInput(vid, ta) {
   autoResize(ta);
@@ -1786,7 +1960,15 @@ async function translateAll() {
   else toast('Nothing to translate — all variants filled', 'info');
 }
 
-async function callClaude(apiKey, sourceText, targetLanguage, references) {
+const PLURAL_CONTEXT = {
+  zero:  "the ZERO plural form (used for a count of 0 in languages that distinguish it)",
+  one:   "the ONE/singular plural form (used for a count of exactly 1)",
+  two:   "the TWO/dual plural form (used for a count of exactly 2)",
+  few:   "the FEW plural form (used for small counts in languages like Polish/Russian)",
+  many:  "the MANY plural form (used for large counts in languages like Polish/Russian)",
+  other: "the OTHER/general plural form (the default, used for most counts)"
+};
+async function callClaude(apiKey, sourceText, targetLanguage, references, pluralForm) {
   const tone = window.TWEAKS.formality === 'formal'
       ? '\n- Use a FORMAL register (e.g. German "Sie", French "vous")'
     : window.TWEAKS.formality === 'casual'
@@ -1795,6 +1977,9 @@ async function callClaude(apiKey, sourceText, targetLanguage, references) {
   const hasRefs = references && Object.keys(references).length > 0;
   const refNote = hasRefs
     ? '\n- You will receive the English source plus translations in other languages for cross-reference. Use them only to verify the intended meaning — always base your translation on the English.'
+    : '';
+  const pluralNote = (pluralForm && PLURAL_CONTEXT[pluralForm])
+    ? `\n- This string is ${PLURAL_CONTEXT[pluralForm]}. Produce the grammatically correct wording for THAT plural form in ${targetLanguage} (its grammar may differ from English — e.g. some languages inflect the noun or verb). Keep the {{count}}-style placeholder even if the source omits a number.`
     : '';
   const system = `You are a professional UI copy translator for vialytics — a municipal road infrastructure SaaS used by city planners and field workers in Germany and Europe.
 
@@ -1805,7 +1990,7 @@ Rules:
 - Preserve any emoji exactly as-is
 - Preserve any {{VariableName}} placeholders exactly as-is
 - Match the tone: concise, professional, unambiguous UI copy for municipal software
-- Use sentence case unless the source uses Title Case${tone}${refNote}${buildGlossaryPrompt()}`;
+- Use sentence case unless the source uses Title Case${pluralNote}${tone}${refNote}${buildGlossaryPrompt()}`;
 
   const model = window.TWEAKS.model === 'quality' ? 'claude-sonnet-4-5-20250929' : 'claude-haiku-4-5-20251001';
 
@@ -1877,6 +2062,7 @@ async function saveVariant(vid) {
     setTimeout(() => setIndicator(vid, '', ''), 2500);
     if (vid === 'base') refreshSidePanelText(newText);
     updateChangesSummary();
+    refreshBrowse(); // keep the tree's text + missing indicators current
   } catch(e) {
     setIndicator(vid, 'error', 'Error');
     toast('Save failed: ' + e.message, 'error');
@@ -1908,7 +2094,7 @@ async function saveAll() {
   if (savedBaseText !== null) refreshSidePanelText(savedBaseText);
   btn.innerHTML = icon('check', 18) + 'Save all changes';
   updateChangesSummary();
-  if (saved > 0) toast(`Saved ${saved} change${saved>1?'s':''}`, 'success');
+  if (saved > 0) { toast(`Saved ${saved} change${saved>1?'s':''}`, 'success'); refreshBrowse(); }
 }
 
 async function patchDitto(vid, text) {
@@ -2223,12 +2409,219 @@ async function applyDeleteComponent() {
     document.getElementById('editor').style.display = 'none';
     document.getElementById('editorEmpty').style.display = 'flex';
     if (window._results) window._results = window._results.filter(c => c.id !== id);
-    _browseLoaded = false;
-    showBrowse();
+    refreshBrowse();
   } else {
     toast('Delete failed: ' + (result.message || 'unknown error') + (result.status ? ` (HTTP ${result.status})` : ''), 'error');
     btn.innerHTML = '<svg class="ico" width="15" height="15" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg> Delete permanently';
     updateDeleteConfirmState();
+  }
+}
+
+/* ── plural editor (full forms × languages matrix) ── */
+const PLURAL_ORDER = ['zero','one','two','few','many','other'];
+let _pl = null;
+const plCellKey = (form, colKey) => form + '|' + colKey;
+
+function pluralColumns() {
+  return [{ key: 'base', label: 'Base (source)', variantId: null, isBase: true },
+    ...allVariants.map(v => ({ key: v.id, label: langName(v) || v.name, variantId: v.id, isBase: false }))];
+}
+function orderForms(forms) {
+  return [...forms].sort((a, b) => PLURAL_ORDER.indexOf(a) - PLURAL_ORDER.indexOf(b));
+}
+
+async function openPluralEditor() {
+  if (!selectedComp) return;
+  const id = selectedComp.id;
+  document.getElementById('plCompId').textContent = id;
+  document.getElementById('plBody').innerHTML = '<div class="pl-empty"><span class="spinner spinner-dark"></span> Loading…</div>';
+  document.getElementById('plSaveBtn').disabled = true;
+  document.getElementById('pluralModal').classList.add('open');
+  try {
+    const filter = encodeURIComponent(JSON.stringify({ variants: [{ id: 'all' }] }));
+    const res = await fetch(`${API_DITTO}/components?filter=${filter}`, { headers: { Authorization: getDittoKey() } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = (await res.json()).filter(c => baseIdOf(c) === id);
+    const cells = {};        // 'form|colKey' -> text
+    const seed = {};         // colKey -> current non-plural text (for pluralising)
+    const formSet = new Set();
+    let aliasBaseText = '';
+    for (const c of rows) {
+      const colKey = c.variantId || 'base';
+      if (c.pluralForm) { formSet.add(c.pluralForm); cells[plCellKey(c.pluralForm, colKey)] = c.text || ''; }
+      else { seed[colKey] = c.text || ''; if (colKey === 'base') aliasBaseText = c.text || ''; }
+    }
+    let forms = orderForms(formSet);
+    // Put the master (its base text equals the component's display text) first.
+    const master = forms.find(f => (cells[plCellKey(f, 'base')] || '') === aliasBaseText && aliasBaseText);
+    if (master) forms = [master, ...forms.filter(f => f !== master)];
+    _pl = { id, forms, originalForms: forms.slice(), cells, seed, removed: new Set(), dirty: false };
+    renderPluralEditor();
+  } catch(e) {
+    document.getElementById('plBody').innerHTML = `<div class="pl-empty">Failed to load: ${esc(e.message)}</div>`;
+  }
+}
+function closePluralEditor() { document.getElementById('pluralModal').classList.remove('open'); _pl = null; }
+
+function renderPluralEditor() {
+  const body = document.getElementById('plBody');
+  const cols = pluralColumns();
+  const avail = PLURAL_ORDER.filter(f => !_pl.forms.includes(f));
+  const addRow = `<div class="pl-addrow">
+    ${avail.length ? `<select id="plAddSel">${avail.map(f => `<option value="${f}">${f}</option>`).join('')}</select>
+      <button class="btn btn-ghost btn-sm" onclick="plAddForm(document.getElementById('plAddSel').value)">+ Add form</button>` : '<span class="muted" style="font-size:11px">All six plural forms are defined.</span>'}
+  </div>`;
+
+  if (!_pl.forms.length) {
+    body.innerHTML = `<p class="pl-hint">This component has no plural forms. Add one to pluralise it — the master form is seeded from the current text.</p>${addRow}`;
+    document.getElementById('plSaveBtn').disabled = !_pl.dirty;
+    return;
+  }
+  const head = '<th>Form</th>' + cols.map(c => `<th class="${c.isBase ? 'pl-base-col' : ''}">${esc(c.label)}</th>`).join('');
+  const rows = _pl.forms.map((f, fi) => {
+    const cells = cols.map(c => {
+      const key = plCellKey(f, c.key);
+      const val = _pl.cells[key] ?? '';
+      const tr = c.isBase ? '' : `<button class="pl-tr" id="pltr-${esc(f)}-${esc(c.key)}" title="AI-translate this form to ${esc(c.label)} (with plural context)" onclick="plTranslateCell('${esc(f)}','${esc(c.key)}')">${sparkle(13)}</button>`;
+      return `<td><div class="pl-cell"><textarea class="pl-cell-ta${window.TWEAKS.monoText ? ' mono' : ''}" rows="1"
+        data-cell="${esc(f)}|${esc(c.key)}"
+        placeholder="${esc(c.isBase ? f + ' (source)' : c.label)}"
+        oninput="plOnInput('${esc(f)}','${esc(c.key)}',this)">${esc(val)}</textarea>${tr}</div></td>`;
+    }).join('');
+    const moveCtrls = _pl.forms.length > 1 ? `<span class="pl-move">
+      <button class="pl-move-btn" title="Move up${fi === 1 ? ' (make master)' : ''}" ${fi === 0 ? 'disabled' : ''} onclick="plMoveForm('${esc(f)}',-1)">▲</button>
+      <button class="pl-move-btn" title="Move down" ${fi === _pl.forms.length - 1 ? 'disabled' : ''} onclick="plMoveForm('${esc(f)}',1)">▼</button>
+    </span>` : '';
+    return `<tr><td class="pl-form-cell"><span class="pl-form-name">${moveCtrls}${esc(f)}${fi === 0 ? '<span class="pl-master">master</span>' : ''}</span>
+      <button class="pl-rm" onclick="plRemoveForm('${esc(f)}')">✕ remove</button></td>${cells}</tr>`;
+  }).join('');
+  body.innerHTML = `<p class="pl-hint">Each row is a plural form; each column a language. Use ▲▼ to reorder — the top form is the master (its text is the component's display text). Leave a cell empty to skip that translation.</p>
+    <div class="pl-grid-wrap"><table class="pl-grid"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>${addRow}`;
+  document.querySelectorAll('#plBody .pl-cell-ta').forEach(mountWs);
+  document.querySelectorAll('#plBody .pl-cell-ta').forEach(autoResize);
+  document.getElementById('plSaveBtn').disabled = !_pl.dirty;
+}
+function plOnInput(form, colKey, ta) { autoResize(ta); _pl.cells[plCellKey(form, colKey)] = ta.value; _pl.dirty = true; document.getElementById('plSaveBtn').disabled = false; }
+async function plTranslateCell(form, colKey) {
+  const apiKey = getAnthropicKey();
+  if (!apiKey) { toast('Add your Anthropic API key first', 'error'); toggleKeysPop(true); return; }
+  const src = (_pl.cells[plCellKey(form, 'base')] || '').trim();
+  if (!src) { toast(`Add the base text for the "${form}" form first`, 'error'); return; }
+  const col = pluralColumns().find(c => c.key === colKey);
+  if (!col || !col.variantId) return;
+  const targetLabel = LANG_NAMES[String(col.variantId).toLowerCase().slice(0, 2)] || col.label;
+  // Cross-reference: the same form already translated into other languages.
+  const refs = {};
+  for (const c of pluralColumns()) {
+    if (c.isBase || c.key === colKey) continue;
+    const t = (_pl.cells[plCellKey(form, c.key)] || '').trim();
+    if (t) refs[c.label] = t;
+  }
+  const btn = document.getElementById(`pltr-${form}-${colKey}`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner spinner-dark" style="width:12px;height:12px;border-width:1.5px"></span>'; }
+  try {
+    const result = await callClaude(apiKey, src, targetLabel, refs, form);
+    _pl.cells[plCellKey(form, colKey)] = result;
+    _pl.dirty = true;
+    const ta = document.querySelector(`#plBody textarea[data-cell="${form}|${colKey}"]`);
+    if (ta) { ta.value = result; autoResize(ta); }
+    document.getElementById('plSaveBtn').disabled = false;
+  } catch(e) {
+    toast('Translate failed: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = sparkle(13); }
+  }
+}
+function plAddForm(form) {
+  if (!form || _pl.forms.includes(form)) return;
+  if (!_pl.forms.length) { // first form → seed from the component's current texts
+    for (const colKey in _pl.seed) _pl.cells[plCellKey(form, colKey)] = _pl.seed[colKey];
+  }
+  _pl.forms = orderForms([..._pl.forms, form]);
+  // keep an existing master first; otherwise the just-added becomes master
+  _pl.removed.delete(form);
+  _pl.dirty = true;
+  renderPluralEditor();
+}
+function plRemoveForm(form) {
+  _pl.forms = _pl.forms.filter(f => f !== form);
+  pluralColumns().forEach(c => delete _pl.cells[plCellKey(form, c.key)]);
+  _pl.removed.add(form);
+  _pl.dirty = true;
+  renderPluralEditor();
+}
+function plMoveForm(form, dir) {
+  const i = _pl.forms.indexOf(form), j = i + dir;
+  if (i < 0 || j < 0 || j >= _pl.forms.length) return;
+  _pl.forms.splice(i, 1);
+  _pl.forms.splice(j, 0, form);
+  _pl.dirty = true;
+  renderPluralEditor();
+}
+
+function withVariant(body, col) { if (col.variantId) body.variantId = col.variantId; return body; }
+
+async function savePlurals() {
+  if (!_pl) return;
+  const k = getDittoKey();
+  if (!k) return;
+  const cols = pluralColumns();
+  const masterForm = _pl.forms[0];
+  if (masterForm && !((_pl.cells[plCellKey(masterForm, 'base')] || '').trim())) {
+    toast('The master form needs base text', 'error'); return;
+  }
+  // Did the order of the still-present forms change? Ditto only reorders forms by
+  // removing and re-adding them in the desired order, so a reorder needs two PATCHes.
+  const curOrder  = _pl.forms.filter(f => _pl.originalForms.includes(f)).join(',');
+  const origOrder = _pl.originalForms.filter(f => _pl.forms.includes(f)).join(',');
+  const reordered = curOrder !== origOrder;
+
+  const btn = document.getElementById('plSaveBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving…';
+  // Build PATCHes per column (variant). Forms are sent master-first; on reorder we
+  // first remove the forms, then re-add them in the new order.
+  const reqs = [];
+  for (const c of cols) {
+    const upsert = _pl.forms
+      .map(f => ({ form: f, text: _pl.cells[plCellKey(f, c.key)] ?? '' }))
+      .filter(u => u.text.trim() !== '');
+    const userRemoved = (c.isBase && _pl.removed.size) ? [..._pl.removed] : [];
+    if (reordered && upsert.length) {
+      // 1) clear the forms we're about to re-add (+ any user-removed), 2) re-add in order
+      const toRemove = upsert.map(u => u.form).concat(userRemoved);
+      reqs.push({ label: c.label + ' (clear)', body: withVariant({ updates: [{ developerId: _pl.id, plurals: { remove: toRemove } }] }, c) });
+      reqs.push({ label: c.label, body: withVariant({ updates: [{ developerId: _pl.id, plurals: { upsert } }] }, c) });
+    } else {
+      const plurals = {};
+      if (upsert.length) plurals.upsert = upsert;
+      if (userRemoved.length) plurals.remove = userRemoved;
+      if (!plurals.upsert && !plurals.remove) continue;
+      reqs.push({ label: c.label, body: withVariant({ updates: [{ developerId: _pl.id, plurals }] }, c) });
+    }
+  }
+  let ok = 0; const errors = [];
+  for (const r of reqs) {
+    try {
+      const res = await fetch(`${API_DITTO}/components`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: k },
+        body: JSON.stringify(r.body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success !== false) ok++;
+      else errors.push(`${r.label}: ${data.message || 'HTTP ' + res.status}`);
+    } catch(e) { errors.push(`${r.label}: ${e.message}`); }
+  }
+  btn.innerHTML = 'Save plural forms';
+  if (errors.length) {
+    toast(`Saved ${ok}/${reqs.length}. ${errors[0]}${errors.length > 1 ? ` (+${errors.length - 1} more)` : ''}`, 'error');
+    btn.disabled = false;
+  } else {
+    toast(reordered ? 'Saved plural forms · reordered' : 'Saved plural forms', 'success');
+    closePluralEditor();
+    // Reload the component (editor + missing detection) and refresh the tree in place.
+    const i = (window._results || []).findIndex(c => c.id === selectedComp?.id);
+    if (i >= 0) selectItem(i);
+    refreshBrowse();
   }
 }
 
@@ -2239,7 +2632,7 @@ function init() {
   buildVocab();
   syncBodyAttrs();
   if (!getDittoKey() || !getAnthropicKey()) setTimeout(() => toggleKeysPop(true), 350);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeVocab(); closeDeleteConfirm(); closeRenameConfirm(); } });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeVocab(); closeDeleteConfirm(); closeRenameConfirm(); closePluralEditor(); } });
   document.getElementById('searchQuery').focus();
   if (getDittoKey()) showBrowse();
 }
