@@ -303,6 +303,9 @@ textarea.id-input {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pick-text { font-size: 11px; color: var(--txt2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pick-empty { padding: 12px; text-align: center; color: var(--txt3); font-size: 11px; }
+.pick-tag { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; padding: 1px 5px; border-radius: 3px;
+  background: var(--green-dim, #d1fae5); color: var(--green, #059669); margin-left: 4px; vertical-align: middle; }
 
 /* ── Plural editor overlay ───────────────────────────────────────────────── */
 .pl-ov { position: absolute; inset: 0; z-index: 50; background: var(--bg);
@@ -542,7 +545,7 @@ function toggleTheme() {
 }
 
 const API = 'https://api.dittowords.com/v2';
-const VERSION = '1.20.4';
+const VERSION = '1.20.6';
 let _key  = ''; // loaded from figma.clientStorage via code.js
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -792,14 +795,24 @@ function existingMatches(item, query) {
     scored.sort(function(a, b) { return b.s - a.s || (a.c.id || '').length - (b.c.id || '').length; });
     return scored.slice(0, 8).map(function(x) { return x.c; });
   }
-  // Empty query — surface components whose text shares words with the new string.
+  // Empty query — exact text matches first, then word overlap.
+  var itlc = String(item.text || '').toLowerCase().trim();
+  var itnorm = norm(item.text || '');
   var wset = {};
-  String(item.text || '').toLowerCase().split(/[^a-z0-9]+/).forEach(function(w) { if (w) wset[w] = 1; });
-  var ranked = comps.map(function(c) {
-    var ov = 0, tw = (c.text || '').toLowerCase().split(/[^a-z0-9]+/);
-    for (var k = 0; k < tw.length; k++) if (tw[k] && wset[tw[k]]) ov++;
-    return { c: c, s: ov };
-  }).filter(function(x) { return x.s > 0; });
+  itlc.split(/[^a-z0-9]+/).forEach(function(w) { if (w) wset[w] = 1; });
+  var ranked = [];
+  for (var i = 0; i < comps.length; i++) {
+    var clc = (comps[i].text || '').toLowerCase().trim();
+    var cnorm = norm(comps[i].text || '');
+    var s = 0;
+    if (clc === itlc || cnorm === itnorm) s = 200;       // exact text match
+    else if (itlc && clc.indexOf(itlc) >= 0) s = 100;   // item text is substring of comp text
+    else {
+      var tw = clc.split(/[^a-z0-9]+/);
+      for (var k = 0; k < tw.length; k++) if (tw[k] && wset[tw[k]]) s++;
+    }
+    if (s > 0) ranked.push({ c: comps[i], s: s });
+  }
   ranked.sort(function(a, b) { return b.s - a.s || (a.c.id || '').length - (b.c.id || '').length; });
   return ranked.slice(0, 8).map(function(x) { return x.c; });
 }
@@ -811,10 +824,15 @@ function renderPickList(i) {
   if (!matches.length) {
     return '<div class="pick-empty">' + (item.pickQuery ? 'No matching components' : 'Type to search, or pick a suggestion above') + '</div>';
   }
+  var itlc = (item.text || '').toLowerCase().trim();
   return matches.map(function(c) {
     var id = String(c.id || '');
+    var isExact = !item.pickQuery && (c.text || '').toLowerCase().trim() === itlc;
     return '<button class="pick-row" onclick="applyExisting(' + i + ',\'' + id.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' +
-      '<span class="pick-id">' + esc(id) + '</span>' +
+      '<div style="display:flex;align-items:center;gap:4px">' +
+        '<span class="pick-id">' + esc(id) + '</span>' +
+        (isExact ? '<span class="pick-tag">exact</span>' : '') +
+      '</div>' +
       (c.text ? '<span class="pick-text">' + esc(trunc(c.text, 52)) + '</span>' : '') +
     '</button>';
   }).join('');
@@ -840,8 +858,62 @@ function filterPick(i, q) {
 }
 function applyExisting(i, id) {
   var item = st.newItems[i];
-  if (!item || !id) return;
+  if (!item || !id || item._applying) return;
+  item._applying = true;
+  item.picking = false;
+  renderResults();
   var renames = item.nodeIds.map(function(nid) { return { nodeId: nid, newName: id }; });
+  _silentRescan = true;
+  parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames: renames } }, '*');
+}
+
+// ── Near-match "Link to existing" picker ───────────────────────────────────
+function renderNearPickList(i) {
+  var n = st.near[i];
+  if (!n) return '';
+  var matches = existingMatches({ text: n.text }, n.pickQuery || '');
+  if (!matches.length) {
+    return '<div class="pick-empty">' + (n.pickQuery ? 'No matching components' : 'Type to search, or pick a suggestion above') + '</div>';
+  }
+  var itlc = (n.text || '').toLowerCase().trim();
+  return matches.map(function(c) {
+    var id = String(c.id || '');
+    var isExact = !n.pickQuery && (c.text || '').toLowerCase().trim() === itlc;
+    return '<button class="pick-row" onclick="applyNearExisting(' + i + ',\'' + id.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')">' +
+      '<div style="display:flex;align-items:center;gap:4px">' +
+        '<span class="pick-id">' + esc(id) + '</span>' +
+        (isExact ? '<span class="pick-tag">exact</span>' : '') +
+      '</div>' +
+      (c.text ? '<span class="pick-text">' + esc(trunc(c.text, 52)) + '</span>' : '') +
+    '</button>';
+  }).join('');
+}
+function startNearPickExisting(i) {
+  if (!st.near[i]) return;
+  st.near[i].picking = true;
+  st.near[i].pickQuery = '';
+  renderResults();
+  setTimeout(function() { var el = document.getElementById('near-pick-q-' + i); if (el) el.focus(); }, 0);
+}
+function cancelNearPick(i) {
+  if (!st.near[i]) return;
+  st.near[i].picking = false;
+  renderResults();
+}
+function filterNearPick(i, q) {
+  if (!st.near[i]) return;
+  st.near[i].pickQuery = q;
+  var list = document.getElementById('near-pick-list-' + i);
+  if (list) list.innerHTML = renderNearPickList(i);
+}
+function applyNearExisting(i, id) {
+  var n = st.near[i];
+  if (!n || !id || n._applying) return;
+  n._applying = true;
+  n.picking = false;
+  var el = document.getElementById('ni-near-' + i);
+  if (el) el.outerHTML = renderNear(n, i);
+  var renames = n.nodeIds.map(function(nid) { return { nodeId: nid, newName: id }; });
   _silentRescan = true;
   parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames: renames } }, '*');
 }
@@ -1321,6 +1393,13 @@ function renderResults() {
             : '<button class="btn btn-primary btn-sm" onclick="applyDittoToFigma(' + i + ')">Use Ditto text</button>') +
           '<span class="item-status" id="ms-' + i + '"></span>' +
         '</div>' +
+        (!m._pushing && !m._applying && !m.textIsId
+          ? '<div class="item-actions" style="justify-content:flex-start;gap:6px;padding-top:6px;border-top:1px solid var(--line)">' +
+              '<span style="font-size:10px;color:var(--txt3);flex:1">Copied this layer?</span>' +
+              '<button class="btn btn-ghost btn-sm" style="font-size:10.5px" onclick="detachMatched(' + i + ',\'new\')">Create new</button>' +
+              '<button class="btn btn-ghost btn-sm" style="font-size:10.5px" onclick="detachMatched(' + i + ',\'pick\')">Link to existing</button>' +
+            '</div>'
+          : '') +
         missingVariantHtml(m.comp.id) +
         pluralBtn(m.comp.id) +
         itemBadges(m) +
@@ -1378,6 +1457,16 @@ function renderResults() {
   document.getElementById('newBadge').textContent = newItems.length;
   document.getElementById('newBody').innerHTML = newItems.map((item, i) =>
     item.showTrans ? renderTransFields('new', i, item) :
+    item._applying ? (
+    '<div class="item item-new" id="ni-' + i + '">' +
+      '<div class="item-top">' +
+        '<span class="item-text">' + highlightText(item.text) + '</span>' +
+        '<span class="item-layers">' + layerLabel(item.nodeIds.length) + '</span>' +
+      '</div>' +
+      '<div class="item-actions" style="justify-content:flex-end">' +
+        '<button class="btn btn-primary btn-sm" disabled style="opacity:.45">Linking…</button>' +
+      '</div>' +
+    '</div>') :
     item.picking ? (
     '<div class="item item-new" id="ni-' + i + '">' +
       '<div class="item-top">' +
@@ -1489,7 +1578,23 @@ function renderNear(n, i) {
     </div>`;
   }
 
-  // Undecided
+  // Undecided — picker open
+  if (n.picking) return `
+    <div class="item item-near" id="ni-near-${i}">
+      <div class="item-top">
+        <span class="item-text">${highlightText(n.text)}</span>
+        <span class="item-layers">${layerLabel(n.nodeIds.length)}</span>
+      </div>
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3)">Link to existing component</div>
+      <input class="pick-search" id="near-pick-q-${i}" placeholder="Search by ID or text…" value="${esc(n.pickQuery || '')}"
+        oninput="filterNearPick(${i},this.value)" onkeydown="if(event.key==='Escape')cancelNearPick(${i})" />
+      <div class="pick-list" id="near-pick-list-${i}">${renderNearPickList(i)}</div>
+      <div class="item-actions" style="justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="cancelNearPick(${i})">Cancel</button>
+      </div>
+    </div>`;
+
+  // Undecided — normal
   return `
     <div class="item item-near" id="ni-near-${i}">
       <div class="item-top">
@@ -1508,6 +1613,7 @@ function renderNear(n, i) {
       </div>
       <div class="item-actions" style="justify-content:flex-end">
         <button class="btn btn-ghost btn-sm" style="color:var(--txt3);font-family:var(--mono);letter-spacing:0" onclick="ignoreNear(${i}, this)" title="Rename layer with // prefix to exclude from future scans">// Ignore</button>
+        <button class="btn btn-ghost btn-sm" ${n._applying || n._pushing ? 'disabled style="opacity:.45"' : `onclick="startNearPickExisting(${i})"`}>Link to existing</button>
         <button class="btn btn-ghost btn-sm" ${n._applying || n._pushing ? 'disabled style="opacity:.45"' : `onclick="setNearDecision(${i},'new')"`}>Create new</button>
         <button class="btn btn-ghost btn-sm" ${n._applying || n._pushing ? 'disabled style="opacity:.45"' : `onclick="updateNearComp(${i})"`}>${n._pushing ? 'Updating…' : 'Push Figma → Ditto'}</button>
         <button class="btn btn-primary btn-sm" ${n._applying || n._pushing ? 'disabled style="opacity:.45"' : `onclick="useNearDittoText(${i})"`}>${n._applying ? 'Applying…' : 'Use Ditto text'}</button>
@@ -1654,6 +1760,34 @@ function renameNear(i) {
   _silentRescan = true;
   parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames } }, '*');
 }
+// ── Actions: matched — detach (copied layer with new text) ────────────────
+// Moves a drifted matched item to the "New" section so the user can assign a
+// fresh ID or link to a different existing component.  Renames the Figma layer
+// away from the old comp ID so the next scan doesn't re-match it.
+function detachMatched(i, mode) {
+  const m = st.matched[i];
+  const newItem = {
+    text: m.text,
+    nodeIds: m.nodeIds,
+    layerNames: m.layerNames,
+    id: suggestId(m.text),
+    picking: mode === 'pick',
+    pickQuery: mode === 'pick' ? m.text : '',
+  };
+  st.matched.splice(i, 1);
+  st.newItems.unshift(newItem);
+  renderResults();
+  // Auto-expand the New section so the user sees the item immediately
+  var nb = document.getElementById('newBody');
+  var cn = document.getElementById('chevNew');
+  if (nb) nb.classList.remove('collapsed');
+  if (cn) cn.style.transform = 'rotate(90deg)';
+  // Rename layers to their text content so the next scan won't re-match by layer name
+  var renames = m.nodeIds.map(function(nid) { return { nodeId: nid, newName: m.text }; });
+  _silentRescan = true;
+  parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames: renames } }, '*');
+}
+
 // ── Actions: matched text sync ─────────────────────────────────────────────
 function applyDittoToFigma(i) {
   const m = st.matched[i];
@@ -1954,11 +2088,11 @@ window.onmessage = async (event) => {
       // buttons while an async operation is still in progress.
       const _editSnap = {};
       st.newItems.forEach(function(item) {
-        _editSnap['new|' + item.text] = { id: item.id, showTrans: item.showTrans };
+        _editSnap['new|' + item.text] = { id: item.id, showTrans: item.showTrans, picking: item.picking, pickQuery: item.pickQuery };
       });
       st.near.forEach(function(item) {
         var key = item.comp && item.comp.id;
-        if (key) _editSnap['near|' + key] = { nearId: item.nearId, decision: item.decision, showTrans: item.showTrans, _pushing: item._pushing, _applying: item._applying };
+        if (key) _editSnap['near|' + key] = { nearId: item.nearId, decision: item.decision, showTrans: item.showTrans, _pushing: item._pushing, _applying: item._applying, picking: item.picking, pickQuery: item.pickQuery };
       });
       // Matched items: preserve in-flight push/apply state so intermediate scans
       // (e.g. from selectionchange) don't re-enable buttons mid-operation.
@@ -1980,6 +2114,8 @@ window.onmessage = async (event) => {
         if (saved) {
           if (saved.id) item.id = saved.id;
           if (saved.showTrans) item.showTrans = saved.showTrans;
+          if (saved.picking) item.picking = saved.picking;
+          if (saved.pickQuery !== undefined) item.pickQuery = saved.pickQuery;
         }
       });
       st.near.forEach(function(item) {
@@ -1991,6 +2127,8 @@ window.onmessage = async (event) => {
           if (saved.showTrans) item.showTrans = saved.showTrans;
           if (saved._pushing) item._pushing = saved._pushing;
           if (saved._applying) item._applying = saved._applying;
+          if (saved.picking) item.picking = saved.picking;
+          if (saved.pickQuery !== undefined) item.pickQuery = saved.pickQuery;
         }
       });
       // Restore in-flight busy state on matched items — clears naturally once the
