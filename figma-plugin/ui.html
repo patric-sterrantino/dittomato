@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css');
 
 :root {
   color-scheme: dark;
@@ -397,10 +398,10 @@ textarea.id-input {
       <span class="toggle-track"><span class="toggle-thumb"></span></span>
       <span class="toggle-text">Skip hidden</span>
     </label>
-    <button class="btn btn-ghost btn-sm" id="scanBtn" onclick="rescan()" disabled>↺ Scan</button>
+    <button class="btn btn-ghost btn-sm" id="scanBtn" onclick="rescan()" disabled><i class="ph ph-arrow-clockwise" style="font-size:13px"></i> Scan</button>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light / dark theme" aria-label="Toggle theme">
-      <svg class="ti-sun" width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2M18.4 5.6l-1.4 1.4M7 17l-1.4 1.4M18.4 18.4 17 17M7 7 5.6 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <svg class="ti-moon" width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      <i class="ph ph-sun ti-sun" style="font-size:15px"></i>
+      <i class="ph ph-moon ti-moon" style="font-size:15px"></i>
     </button>
   </div>
 </div>
@@ -427,7 +428,7 @@ textarea.id-input {
   <!-- No selection -->
   <div id="sNone" style="display:none">
     <div class="state">
-      <p>Select a <strong>frame</strong> or <strong>section</strong> in Figma,<br>then click <strong>↺ Scan</strong>.</p>
+      <p>Select a <strong>frame</strong> or <strong>section</strong> in Figma,<br>then click <strong><i class="ph ph-arrow-clockwise"></i> Scan</strong>.</p>
     </div>
   </div>
 
@@ -444,7 +445,7 @@ textarea.id-input {
       <div class="section-head" id="secMatchedHead" onclick="toggleSec('matched')">
         <div class="section-title">
           <span class="chevron" id="chevMatched">▶</span>
-          ✅ Matched
+          <i class="ph ph-check-circle" style="font-size:14px"></i> Matched
           <span class="badge badge-green" id="matchedBadge">0</span>
         </div>
         <button class="btn btn-green btn-sm" id="renameAllBtn" onclick="event.stopPropagation();renameAllMatched()">Rename layers</button>
@@ -456,7 +457,7 @@ textarea.id-input {
     <div class="section" id="secNear" style="display:none">
       <div class="section-head" style="cursor:default">
         <div class="section-title">
-          🔍 Near match
+          <i class="ph ph-magnifying-glass" style="font-size:14px"></i> Near match
           <span class="badge badge-yellow" id="nearBadge">0</span>
         </div>
       </div>
@@ -467,7 +468,7 @@ textarea.id-input {
     <div class="section" id="secNew" style="display:none">
       <div class="section-head" style="cursor:default">
         <div class="section-title">
-          ➕ New
+          <i class="ph ph-plus" style="font-size:14px"></i> New
           <span class="badge badge-blue" id="newBadge">0</span>
         </div>
         <button class="btn btn-primary btn-sm" onclick="pushAllNew()">Push all</button>
@@ -512,7 +513,7 @@ textarea.id-input {
 <!-- Translate canvas bar — visible when matched items + variants exist -->
 <div id="translateBar" style="display:none;padding:12px 16px 14px;border-top:1px solid var(--line);background:var(--bg);flex-shrink:0">
   <div style="display:flex;align-items:center;gap:9px">
-    <span style="font-size:11px;font-weight:600;color:var(--txt2);white-space:nowrap;letter-spacing:.03em;text-transform:uppercase">🌐 Translate</span>
+    <span style="font-size:11px;font-weight:600;color:var(--txt2);white-space:nowrap;letter-spacing:.03em;text-transform:uppercase;display:inline-flex;align-items:center;gap:5px"><i class="ph ph-translate" style="font-size:14px"></i> Translate</span>
     <select id="translateVariantSel" class="id-select" style="flex:1;max-width:none" onchange="applyTranslation()"></select>
   </div>
   <div id="translateStatus" style="font-size:11px;color:var(--txt2);margin-top:5px;min-height:16px"></div>
@@ -521,9 +522,9 @@ textarea.id-input {
 <!-- Plural editor overlay -->
 <div class="pl-ov" id="plOverlay">
   <div class="pl-ov-hd">
-    <div class="pl-ov-title"><span>🔢 Plural forms</span><code id="plOvId"></code></div>
+    <div class="pl-ov-title"><span><i class="ph ph-list-numbers" style="font-size:15px"></i> Plural forms</span><code id="plOvId"></code></div>
     <button class="theme-toggle" onclick="closePluralPanel()" aria-label="Close" style="border:none;background:none">
-      <svg width="16" height="16" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <i class="ph ph-x" style="font-size:18px"></i>
     </button>
   </div>
   <div class="pl-ov-body" id="plOvBody"></div>
@@ -541,7 +542,7 @@ function toggleTheme() {
 }
 
 const API = 'https://api.dittowords.com/v2';
-const VERSION = '1.19.2';
+const VERSION = '1.20.1';
 let _key  = ''; // loaded from figma.clientStorage via code.js
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -685,7 +686,7 @@ function getMissingVariants(compId) {
 function missingVariantHtml(compId) {
   var missing = getMissingVariants(compId);
   if (!missing.length) return '';
-  return '<div style="font-size:10px;color:var(--amber);margin-top:5px">⚠ Missing translations: ' + esc(missing.join(', ')) + '</div>';
+  return '<div style="font-size:10px;color:var(--amber);margin-top:5px"><i class="ph ph-warning" style="font-size:11px;vertical-align:-1px"></i> Missing translations: ' + esc(missing.join(', ')) + '</div>';
 }
 function annotationBadge(item) {
   if (item.fromAnnotation) return '<span class="ann-tag" title="ID was set via a Figma annotation">annotation</span> ';
@@ -699,7 +700,7 @@ function variantTag(m) {
 }
 function pluralBtn(compId) {
   if (!_justPushed.has(compId)) return ''; // only after this component was pushed from here
-  return '<div><button class="btn btn-ghost btn-sm" style="margin-top:6px;font-size:10px;padding:4px 9px" onclick="openPluralPanel(\'' + esc(compId).replace(/'/g, "\\'") + '\')">🔢 Add plural forms</button></div>';
+  return '<div><button class="btn btn-ghost btn-sm" style="margin-top:6px;font-size:10px;padding:4px 9px" onclick="openPluralPanel(\'' + esc(compId).replace(/'/g, "\\'") + '\')"><i class="ph ph-list-numbers"></i> Add plural forms</button></div>';
 }
 function itemBadges(m) {
   var b = annotationBadge(m) + variantTag(m);
@@ -1033,16 +1034,44 @@ function matchNodes(nodes, comps, variantRows) {
     variantsByComp.get(base2.id).push(variant);
   }
 
+  // Index plural-form texts per base component so a Figma layer holding e.g.
+  // "Images" (the _other form of "Image") is recognised as synced, not drift.
+  const pluralsByComp = new Map(); // base comp id -> [{ form, text }]
+  for (const c of comps) {
+    if (!isPluralRow(c) || !c.text) continue;
+    const bid = baseIdOf(c);
+    const base = canonical.get(bid);
+    if (!base) continue;
+    if (!pluralsByComp.has(base.id)) pluralsByComp.set(base.id, []);
+    pluralsByComp.get(base.id).push({ form: c.pluralForm, text: c.text });
+  }
+
   // For an already-linked layer (name === component id) whose text differs from
-  // the base, return the matching translation so it is recognised as synced —
-  // not mis-flagged as drifted/changed text.
+  // the base, return the matching translation or plural form so it is recognised
+  // as synced — not mis-flagged as drifted/changed text.
   function resolveDisplayVariant(comp, text) {
     if (!comp || !comp.text || text === comp.text) return null;
-    var arr = variantsByComp.get(comp.id);
-    if (!arr) return null;
     var lc = text.toLowerCase(), nn = norm(text);
-    for (var k = 0; k < arr.length; k++) {
-      if (arr[k].text && (arr[k].text.toLowerCase() === lc || norm(arr[k].text) === nn)) return arr[k];
+    var arr = variantsByComp.get(comp.id);
+    if (arr) {
+      for (var k = 0; k < arr.length; k++) {
+        if (arr[k].text && (arr[k].text.toLowerCase() === lc || norm(arr[k].text) === nn)) return arr[k];
+      }
+    }
+    // Check plural forms — "Images" is the _other form of "Image"
+    var pforms = pluralsByComp.get(comp.id);
+    if (pforms) {
+      for (var k = 0; k < pforms.length; k++) {
+        if (pforms[k].text && (pforms[k].text.toLowerCase() === lc || norm(pforms[k].text) === nn)) {
+          return { id: '_plural_' + pforms[k].form, name: pforms[k].form, text: pforms[k].text, isPluralForm: true };
+        }
+      }
+    }
+    // byExact fallback: if this text maps to the same base comp via any indexed row
+    // (covers plural forms even when pluralsByComp is incomplete)
+    var exactHits = byExact.get(lc);
+    if (exactHits && exactHits.some(function(c2) { return c2.id === comp.id; })) {
+      return { id: '_plural', name: 'plural form', text: text, isPluralForm: true };
     }
     return null;
   }
@@ -1099,7 +1128,11 @@ function matchNodes(nodes, comps, variantRows) {
       }
       var selectedComp   = appliedComp || exactAll[0];
       var alreadyApplied = appliedComp !== null;
-      matched.push({ text, nodeIds, layerNames, comp: selectedComp, candidates: exactAll, alreadyApplied });
+      // If the layer text doesn't equal the comp base text, the match came via a
+      // plural-form row (e.g. "Images" matched _other of "Image"). Treat as synced.
+      var formMatch = selectedComp.text && text.toLowerCase() !== selectedComp.text.toLowerCase()
+        ? { id: '_plural', name: 'plural form', text: text, isPluralForm: true } : null;
+      matched.push({ text, nodeIds, layerNames, comp: selectedComp, candidates: exactAll, alreadyApplied, matchedVariant: formMatch });
       continue;
     }
 
@@ -1203,47 +1236,11 @@ function plpMove(form, dir) {
 }
 function plpBody(pl, c) { var b = { updates: [{ developerId: _plp.compId, plurals: pl }] }; if (c.variantId) b.variantId = c.variantId; return b; }
 function setPlpError(msg) { var b = document.getElementById('plOvBody'); var d = document.createElement('div'); d.style.cssText = 'color:var(--red);font-size:11px;padding:6px 0'; d.textContent = msg; b.insertBefore(d, b.firstChild); }
-function openPluralPanelCreate(i) {
-  var item = st.newItems[i]; if (!item) return;
-  var id = sanitizeIdFinal(_newPrefix + (item.id || suggestId(item.text)));
-  document.getElementById('plOvId').textContent = id;
-  document.getElementById('plOvSave').disabled = true;
-  _plp = { compId: id, forms: [], originalForms: [], cells: {}, seed: { base: item.text }, removed: new Set(), dirty: false, create: true, newIndex: i };
-  document.getElementById('plOverlay').classList.add('open');
-  renderPluralPanel();
-}
-
 async function savePluralPanel() {
   if (!_plp) return;
   var k = getDittoKey(); if (!k) return;
   var cols = plpCols(), masterForm = _plp.forms[0];
   if (masterForm && !((_plp.cells[plpKey(masterForm, 'base')] || '').trim())) { setPlpError('The master form needs base text'); return; }
-
-  // Push-time: create the component with its plural forms, then rename the layers.
-  if (_plp.create) {
-    if (!_plp.forms.length) { setPlpError('Add at least one plural form'); return; }
-    var btnC = document.getElementById('plOvSave'); btnC.disabled = true; btnC.textContent = 'Creating…';
-    try {
-      var baseUpsert = _plp.forms.map(function(f) { return { form: f, text: _plp.cells[plpKey(f, 'base')] || '' }; }).filter(function(u) { return u.text.trim() !== ''; });
-      if (!baseUpsert.length) { setPlpError('Add the master form base text'); btnC.disabled = false; btnC.textContent = 'Save plural forms'; return; }
-      var cRes = await fetch(API + '/components', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: k },
-        body: JSON.stringify({ components: [{ name: _plp.compId, text: baseUpsert[0].text, developerId: _plp.compId, plurals: baseUpsert }] }) });
-      if (!cRes.ok) { var ce = await cRes.json().catch(function() { return {}; }); setPlpError('Create failed: ' + (ce.message || 'HTTP ' + cRes.status)); btnC.disabled = false; btnC.textContent = 'Save plural forms'; return; }
-      for (var ci = 0; ci < cols.length; ci++) {
-        var col = cols[ci]; if (!col.variantId) continue;
-        var vUp = _plp.forms.map(function(f) { return { form: f, text: _plp.cells[plpKey(f, col.key)] || '' }; }).filter(function(u) { return u.text.trim() !== ''; });
-        if (!vUp.length) continue;
-        await fetch(API + '/components', { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: k },
-          body: JSON.stringify({ updates: [{ developerId: _plp.compId, plurals: { upsert: vUp } }], variantId: col.variantId }) });
-      }
-      var item = st.newItems[_plp.newIndex];
-      var renames = (item ? item.nodeIds : []).map(function(nid) { return { nodeId: nid, newName: _plp.compId }; });
-      closePluralPanel();
-      _silentRescan = true;
-      parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames: renames } }, '*');
-    } catch(e) { setPlpError('Create failed: ' + e.message); btnC.disabled = false; btnC.textContent = 'Save plural forms'; }
-    return;
-  }
 
   var curOrder = _plp.forms.filter(function(f) { return _plp.originalForms.indexOf(f) >= 0; }).join(',');
   var origOrder = _plp.originalForms.filter(function(f) { return _plp.forms.indexOf(f) >= 0; }).join(',');
@@ -1285,7 +1282,7 @@ function renderResults() {
 
   // Matched
   var hasPending = matched.some(function(m) { return !m.alreadyApplied; });
-  var hasDrift   = matched.some(function(m) { return m.comp.text && m.text !== m.comp.text; });
+  var hasDrift   = matched.some(function(m) { return !m.matchedVariant && m.comp.text && m.text !== m.comp.text; });
   document.getElementById('secMatched').style.display = matched.length ? '' : 'none';
   document.getElementById('matchedBadge').textContent = matched.length;
   document.getElementById('renameAllBtn').style.display = hasPending ? '' : 'none';
@@ -1330,12 +1327,12 @@ function renderResults() {
       '<div class="item item-matched" style="opacity:0.65">' +
         '<div class="item-top">' +
           '<span style="display:flex;align-items:flex-start;gap:7px;flex:1">' +
-            '<span style="color:#10b981;font-size:13px;flex-shrink:0;margin-top:1px">✓</span>' +
+            '<i class="ph ph-check-circle" style="color:#10b981;font-size:15px;flex-shrink:0;margin-top:1px"></i>' +
             '<span class="item-text">' + highlightText(m.text) + '</span>' +
           '</span>' +
           '<span class="item-layers">' + layerLabel(m.nodeIds.length) + '</span>' +
         '</div>' +
-        '<div class="item-id" style="color:#10b981">✓ ' + esc(m.comp.id) + '</div>' +
+        '<div class="item-id" style="color:#10b981"><i class="ph ph-check" style="vertical-align:-1px"></i> ' + esc(m.comp.id) + '</div>' +
         missingVariantHtml(m.comp.id) +
         pluralBtn(m.comp.id) +
         itemBadges(m) +
@@ -1611,7 +1608,7 @@ async function confirmPush(type, i, developerId) {
       if (val) variantTexts[v.id] = val;
     }
     await postComp(k, item.text, item.text, developerId, variantTexts);
-    if (s) { s.textContent = '✅'; s.className = 'item-status ok'; }
+    if (s) { s.innerHTML = '<i class="ph ph-check-circle"></i>'; s.className = 'item-status ok'; }
     _justPushed.add(developerId); // enables the Plurals button on this component post-push
     const renames = item.nodeIds.map(nid => ({ nodeId: nid, newName: developerId }));
     setTimeout(() => {
@@ -1622,7 +1619,7 @@ async function confirmPush(type, i, developerId) {
       parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames } }, '*');
     }, 900);
   } catch(e) {
-    if (s) { s.textContent = '❌ ' + e.message; s.className = 'item-status err'; }
+    if (s) { s.innerHTML = '<i class="ph ph-x-circle"></i> ' + esc(e.message); s.className = 'item-status err'; }
   }
 }
 
@@ -1664,11 +1661,11 @@ async function pushMatchedToDitto(i) {
       body: JSON.stringify({ updates: [{ developerId: m.comp.id, text: m.text }] }),
     });
     if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || `HTTP ${res.status}`); }
-    if (s) { s.textContent = '✅'; s.className = 'item-status ok'; }
+    if (s) { s.innerHTML = '<i class="ph ph-check-circle"></i>'; s.className = 'item-status ok'; }
     _silentRescan = true;
     parent.postMessage({ pluginMessage: { type: 'rescan' } }, '*');
   } catch(e) {
-    if (s) { s.textContent = '❌ ' + e.message; s.className = 'item-status err'; }
+    if (s) { s.innerHTML = '<i class="ph ph-x-circle"></i> ' + esc(e.message); s.className = 'item-status err'; }
   }
 }
 
@@ -1693,12 +1690,12 @@ async function updateNearComp(i) {
       body: JSON.stringify({ updates: [{ developerId: n.comp.id, text: n.text }] }),
     });
     if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || `HTTP ${res.status}`); }
-    if (s) { s.textContent = '✅'; s.className = 'item-status ok'; }
+    if (s) { s.innerHTML = '<i class="ph ph-check-circle"></i>'; s.className = 'item-status ok'; }
     const renames = n.nodeIds.map(nid => ({ nodeId: nid, newName: n.comp.id }));
     _silentRescan = true;
     parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames } }, '*');
   } catch(e) {
-    if (s) { s.textContent = '❌ ' + e.message; s.className = 'item-status err'; }
+    if (s) { s.innerHTML = '<i class="ph ph-x-circle"></i> ' + esc(e.message); s.className = 'item-status err'; }
   }
 }
 // pushNearAsNew now goes through openTransFields (defined above)
@@ -1718,12 +1715,12 @@ async function pushAllNew() {
     if (s) s.textContent = 'Pushing…';
     try {
       await postComp(k, item.text, item.text, id);
-      if (s) { s.textContent = '✅'; s.className = 'item-status ok'; }
+      if (s) { s.innerHTML = '<i class="ph ph-check-circle"></i>'; s.className = 'item-status ok'; }
       _justPushed.add(id);
       item.nodeIds.forEach(nid => allRenames.push({ nodeId: nid, newName: id }));
       item._done = true;
     } catch(e) {
-      if (s) { s.textContent = '❌ ' + e.message; s.className = 'item-status err'; }
+      if (s) { s.innerHTML = '<i class="ph ph-x-circle"></i> ' + esc(e.message); s.className = 'item-status err'; }
     }
   }));
   setTimeout(() => {

@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
 <style>
 /* ── design tokens ─────────────────────────────────────────────────────────── */
 :root {
@@ -164,14 +165,17 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .icon-btn:disabled{opacity:.3;cursor:default}
 
 /* theme toggle */
-.theme-toggle{width:34px;height:34px;border-radius:var(--radius-md);border:1px solid var(--line2);background:var(--surface2);color:var(--txt2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background 150ms,color 150ms,border-color 150ms}
+.theme-toggle{width:30px;height:30px;border-radius:var(--radius-md);border:1px solid var(--line2);background:var(--surface2);color:var(--txt2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background 150ms,color 150ms,border-color 150ms}
 .theme-toggle:hover{background:var(--surface3);color:var(--txt)}
 .theme-toggle.active{background:var(--blue-dim);color:var(--blue);border-color:color-mix(in srgb,var(--blue) 40%,transparent)}
-.theme-toggle svg{transition:transform 250ms cubic-bezier(.34,1.4,.5,1)}
 .theme-toggle .ti-moon{display:none}
 .theme-toggle .ti-sun{display:block}
 [data-theme="light"] .theme-toggle .ti-sun{display:none}
 [data-theme="light"] .theme-toggle .ti-moon{display:block}
+/* top-right control row — uniform height + Phosphor icon sizing */
+.topbar .btn-sm{height:30px}
+.topbar .ph{font-size:17px;line-height:1}
+.theme-toggle .ph{font-size:17px}
 .icon-btn.danger:hover:not(:disabled){background:var(--red-dim);color:var(--red)}
 .btn-danger{background:var(--red);color:#fff;border-color:var(--red)}
 .btn-danger:hover:not(:disabled){background:color-mix(in srgb,var(--red) 85%,#000);border-color:color-mix(in srgb,var(--red) 85%,#000)}
@@ -190,7 +194,7 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .left{width:360px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
 .left-foot{flex-shrink:0;height:52px;box-sizing:border-box;padding:0 14px;border-top:1px solid var(--line);display:flex;align-items:center}
 .left-foot .btn{width:100%;justify-content:center}
-.search-head{height:70px;box-sizing:border-box;padding:0 14px;display:flex;flex-direction:column;justify-content:center;gap:8px;border-bottom:1px solid var(--line)}
+.search-head{height:70px;box-sizing:border-box;padding:0 14px;display:flex;flex-direction:column;justify-content:center;gap:8px}
 .search-row{display:flex;gap:8px}
 #searchBtn{width:36px;padding:0;flex-shrink:0}
 .search-field{position:relative;flex:1}
@@ -254,7 +258,7 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .editor-empty h2{font-size:15px;font-weight:600;color:var(--txt);margin:0}
 .editor-empty p{font-size:12px;margin:0;max-width:300px}
 .editor{flex:1;display:none;flex-direction:column;min-width:0}
-.editor-head{height:70px;box-sizing:border-box;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--line);padding:0 32px;display:flex;align-items:center;gap:12px}
+.editor-head{height:70px;box-sizing:border-box;flex-shrink:0;background:var(--surface);padding:0 32px;display:flex;align-items:center;gap:12px}
 .editor-head .eh-label{font-size:15px;font-weight:600;letter-spacing:-.1px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .editor-head .eh-id{font-family:var(--font-mono);font-size:11px;color:var(--blue);background:var(--blue-dim);padding:3px 8px;border-radius:var(--radius-sm);white-space:nowrap;flex-shrink:0;border:1px solid color-mix(in srgb,var(--blue) 26%,transparent);cursor:pointer;transition:background 100ms}
 .editor-head .eh-id:hover{background:color-mix(in srgb,var(--blue) 24%,transparent)}
@@ -431,8 +435,8 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .loading-variants{display:flex;align-items:center;gap:10px;padding:24px;color:var(--txt2);font-size:12px}
 
 /* github usages */
-.usages-wrap{border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:14px}
-.usages-head{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;background:var(--surface);user-select:none;font-size:12px;font-weight:500;color:var(--txt2);transition:background 150ms}
+.usages-wrap{border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:14px;background:var(--surface2)}
+.usages-head{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;background:var(--surface2);user-select:none;font-size:12px;font-weight:500;color:var(--txt2);transition:background 150ms}
 .usages-head:hover{background:var(--surface3)}
 .usages-head.open{border-bottom:1px solid var(--line);color:var(--txt)}
 .usages-badge{font-size:10px;font-weight:600;padding:1px 6px;border-radius:var(--radius-pill);background:var(--surface3);color:var(--txt3)}
@@ -446,7 +450,7 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .usage-path{font-family:var(--font-mono);font-size:11px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
 .usage-ext-link{flex-shrink:0;color:var(--blue);opacity:.6;display:inline-flex;transition:opacity 150ms}
 .usage-ext-link:hover{opacity:1}
-.usage-fragment{font-family:var(--font-mono);font-size:10.5px;line-height:16px;color:var(--txt3);background:var(--surface2);border-radius:var(--radius-sm);padding:4px 9px;border:1px solid var(--line);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:8px}
+.usage-fragment{font-family:var(--font-mono);font-size:10.5px;line-height:16px;color:var(--txt3);background:var(--surface3);border-radius:var(--radius-sm);padding:4px 9px;border:1px solid var(--line);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:8px}
 .usages-empty{padding:14px;text-align:center;color:var(--txt3);font-size:12px;display:flex;align-items:center;justify-content:center;gap:10px}
 
 /* spinner */
@@ -467,7 +471,7 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .toast.info{border-left:3px solid var(--purple);color:var(--txt)}
 
 /* canvas / frame / spacing appearance */
-body[data-canvas="white"] .right{background:var(--canvas)}
+body[data-canvas="white"] .right{background:var(--surface)}
 body[data-canvas="grey"] .right{background:var(--bg)}
 body[data-frame="open"] .vtable-wrap{border:none;border-radius:0;background:transparent}
 body[data-frame="card"] .vtable-wrap{border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--surface)}
@@ -535,12 +539,12 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
   <div class="topbar-spacer"></div>
 
   <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light / dark theme" aria-label="Toggle theme">
-    <svg class="ti-sun" width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2M18.4 5.6l-1.4 1.4M7 17l-1.4 1.4M18.4 18.4 17 17M7 7 5.6 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    <svg class="ti-moon" width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    <i class="ph ph-sun ti-sun"></i>
+    <i class="ph ph-moon ti-moon"></i>
   </button>
 
   <button class="btn btn-ghost btn-sm" id="vocabBtn" onclick="openVocab()">
-    <svg class="ico" width="16" height="16" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7zM14 3v4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+    <i class="ph ph-translate"></i>
     Vocabulary
   </button>
 
@@ -597,14 +601,14 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
     <div class="search-head">
       <div class="search-row">
         <div class="search-field">
-          <svg class="ico" width="18" height="18" viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <i class="ph ph-magnifying-glass ico" style="font-size:18px"></i>
           <input type="text" id="searchQuery" placeholder="Search components…" onkeydown="if(event.key==='Enter')doSearch()" oninput="onSearchInput(this.value)" />
           <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Clear search" style="display:none" title="Clear search">
-            <svg width="12" height="12" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <i class="ph ph-x" style="font-size:12px"></i>
           </button>
         </div>
         <button class="btn btn-primary" id="searchBtn" onclick="doSearch()" aria-label="Search">
-          <svg class="ico" width="18" height="18" viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <i class="ph ph-magnifying-glass ico" style="font-size:18px"></i>
         </button>
       </div>
     </div>
@@ -632,7 +636,7 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
 
     <div class="left-foot">
       <button class="btn btn-ghost" id="newCompBtn" onclick="openNewComp()">
-        <svg class="ico" width="16" height="16" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+        <i class="ph ph-plus ico" style="font-size:16px"></i>
         New component
       </button>
     </div>
@@ -642,7 +646,7 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
   <section class="right">
     <div class="editor-empty" id="editorEmpty">
       <div class="ee-badge">
-        <svg width="26" height="26" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7zM14 3v4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <i class="ph ph-file-text" style="font-size:26px"></i>
       </div>
       <h2>No component selected</h2>
       <p>Pick a result on the left to view its base text and translation variants side by side.</p>
@@ -655,22 +659,22 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
           <span class="eh-id" id="editorId" role="button" title="Click to copy ID" onclick="copyId(this.textContent.trim())"></span>
           <input class="eh-id-edit" id="editorIdInput" type="text" oninput="var v=sanitizeId(this.value);this.value=v" onkeydown="if(event.key==='Enter')saveComponentId();else if(event.key==='Escape')cancelEditId()" />
           <button class="icon-btn eh-id-editbtn" id="editIdBtn" onclick="startEditId()" title="Edit component ID">
-            <svg width="14" height="14" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            <i class="ph ph-pencil-simple" style="font-size:15px"></i>
           </button>
           <button class="icon-btn" id="saveIdBtn" onclick="saveComponentId()" title="Save ID" style="display:none">
-            <svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            <i class="ph ph-check" style="font-size:15px"></i>
           </button>
           <button class="icon-btn" id="cancelIdBtn" onclick="cancelEditId()" title="Cancel" style="display:none">
-            <svg width="14" height="14" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            <i class="ph ph-x" style="font-size:15px"></i>
           </button>
         </div>
         <div style="flex:1"></div>
         <button class="btn btn-ghost btn-sm" id="pluralsBtn" onclick="openPluralEditor()" title="Manage plural forms for this component">
-          <svg class="ico" width="15" height="15" viewBox="0 0 24 24"><path d="M4 7h7M4 12h7M4 17h7M15 8.5 17 7v6M20 13c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <i class="ph ph-list-numbers ico" style="font-size:15px"></i>
           Plurals<span id="pluralsBtnCount"></span>
         </button>
         <button class="icon-btn danger" id="deleteCompBtn" onclick="deleteComponentPrompt()" title="Delete component">
-          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <i class="ph ph-trash" style="font-size:17px"></i>
         </button>
       </div>
       <div class="editor-body">
@@ -678,10 +682,10 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
         <div id="usagesSection" style="display:none">
           <div class="usages-wrap">
             <div class="usages-head" id="usagesHead" onclick="toggleUsages()">
-              <svg width="14" height="14" viewBox="0 0 24 24"><path d="M16 18 22 12 16 6M8 6 2 12 8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+              <i class="ph ph-code" style="font-size:15px"></i>
               Usages in code
               <span class="usages-badge" id="usagesBadge" style="display:none"></span>
-              <svg class="usages-chevron" width="14" height="14" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+              <i class="ph ph-caret-right usages-chevron" style="font-size:14px"></i>
             </div>
             <div class="usages-body" id="usagesBody" style="display:none"></div>
           </div>
@@ -691,15 +695,15 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
         <span class="changes-summary" id="changesSummary">No unsaved changes</span>
         <div class="spacer"></div>
         <button class="btn btn-magic btn-sm" id="magicAllBtn" onclick="translateAll()" style="display:none">
-          <svg width="15" height="15" viewBox="0 0 24 25" fill="none"><path d="M8.68 16.24 5.05 14.9a.55.55 0 0 1 0-1.04l3.63-1.34a.55.55 0 0 0 .33-.33l1.34-3.63a.55.55 0 0 1 1.04 0l1.34 3.63c.06.16.17.28.33.33l3.63 1.34a.55.55 0 0 1 0 1.04l-3.63 1.34a.55.55 0 0 0-.33.33l-1.34 3.63a.55.55 0 0 1-1.04 0l-1.34-3.63a.55.55 0 0 0-.33-.33Z" fill="#ce99ef" stroke="#500081" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <i class="ph ph-sparkle" style="font-size:15px"></i>
           Translate all
         </button>
         <button class="btn btn-ghost btn-sm" id="resetBtn" onclick="resetAll()" disabled>
-          <svg class="ico" width="16" height="16" viewBox="0 0 24 24"><path d="M5 12a7 7 0 1 0 2-4.9M7 4v3.5h3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <i class="ph ph-arrow-counter-clockwise ico" style="font-size:16px"></i>
           Reset
         </button>
         <button class="btn btn-primary btn-sm" id="saveAllBtn" onclick="saveAll()" disabled>
-          <svg class="ico" width="16" height="16" viewBox="0 0 24 24"><path d="M5 12.5 10 17 19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <i class="ph ph-check ico" style="font-size:16px"></i>
           Save all changes
         </button>
       </div>
@@ -714,11 +718,11 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
   <div class="modal" role="dialog" aria-label="Create new component">
     <div class="modal-head">
       <div class="modal-title">
-        <span class="gl-ico"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></span>
+        <span class="gl-ico"><i class="ph ph-plus" style="font-size:18px"></i></span>
         New component
       </div>
       <button class="icon-btn" onclick="closeNewComp()" aria-label="Close">
-        <svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <i class="ph ph-x" style="font-size:20px"></i>
       </button>
     </div>
     <div class="modal-sub" id="ncSub">Creates a new component in Ditto.</div>
@@ -756,7 +760,7 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
   <div class="modal" role="dialog" style="max-width:420px" aria-label="Confirm ID rename">
     <div class="modal-head">
       <div class="modal-title">
-        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <i class="ph ph-warning" style="font-size:18px"></i>
         Rename component ID
       </div>
     </div>
@@ -784,7 +788,7 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
   <div class="modal" role="dialog" style="max-width:440px" aria-label="Delete component">
     <div class="modal-head">
       <div class="modal-title" style="color:var(--red)">
-        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <i class="ph ph-trash" style="font-size:18px"></i>
         Delete component
       </div>
     </div>
@@ -809,7 +813,7 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:2px">
         <button class="btn btn-ghost" onclick="closeDeleteConfirm()">Cancel</button>
         <button class="btn btn-danger" id="delConfirmBtn" disabled onclick="applyDeleteComponent()">
-          <svg class="ico" width="15" height="15" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <i class="ph ph-trash ico" style="font-size:15px"></i>
           Delete permanently
         </button>
       </div>
@@ -822,12 +826,12 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
   <div class="modal modal-wide" role="dialog" aria-label="Plural forms">
     <div class="modal-head">
       <div class="modal-title">
-        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M4 7h7M4 12h7M4 17h7M15 8.5 17 7v6M20 13c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <i class="ph ph-list-numbers" style="font-size:18px"></i>
         Plural forms
         <code id="plCompId" style="font-family:var(--font-mono);font-size:11px;background:var(--surface3);padding:2px 6px;border-radius:4px;color:var(--blue)"></code>
       </div>
       <button class="icon-btn" onclick="closePluralEditor()" aria-label="Close">
-        <svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <i class="ph ph-x" style="font-size:20px"></i>
       </button>
     </div>
     <div class="modal-sub">Define each plural form's text per language. The first form is the master — its text is the component's display text.</div>
@@ -846,18 +850,18 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
   <div class="modal" role="dialog" aria-label="vialytics vocabulary">
     <div class="modal-head">
       <div class="modal-title">
-        <span class="gl-ico"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7zM14 3v4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>
+        <span class="gl-ico"><i class="ph ph-translate" style="font-size:18px"></i></span>
         vialytics vocabulary
         <span class="gl-pill" id="vocabCount">terms</span>
       </div>
       <button class="icon-btn" onclick="closeVocab()" aria-label="Close">
-        <svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <i class="ph ph-x" style="font-size:20px"></i>
       </button>
     </div>
     <div class="modal-sub">Canonical product terminology enforced on every AI translation.</div>
     <div class="modal-body">
       <div class="gl-search">
-        <svg width="16" height="16" viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <i class="ph ph-magnifying-glass" style="font-size:16px"></i>
         <input type="text" id="vocabSearch" placeholder="Filter terms…" oninput="filterGlossary(this.value)" />
       </div>
       <div class="gl-table-wrap">
@@ -918,28 +922,22 @@ let pendingChanges = {};
 
 window.TWEAKS = {
   editorLayout: 'table', monoText: true, filter: 'all', labelStyle: 'language', showSource: false,
-  canvas: 'grey', frame: 'card', spacing: 'airy',
+  canvas: 'white', frame: 'card', spacing: 'airy',
   formality: 'neutral', model: 'fast', autofill: false, placeholders: true, showChars: true
 };
 
 /* ── icons ── */
+// Phosphor icon names mapped to the app's semantic icon keys.
 const ICONS = {
-  search:  '<path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
-  key:     '<path d="M15 7a4 4 0 1 1-3.9 5H7v3H4v-3l3.1-.0A4 4 0 0 1 15 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="16" cy="9" r="1.2" fill="currentColor"/>',
-  check:   '<path d="M5 12.5 10 17 19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
-  close:   '<path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
-  reset:   '<path d="M5 12a7 7 0 1 0 2-4.9M7 4v3.5h3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
-  doc:     '<path d="M7 3h7l4 4v14H7zM14 3v4h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
-  alert:   '<path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M12 4 3 19h18Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>',
+  search: 'ph-magnifying-glass', key: 'ph-key', check: 'ph-check', close: 'ph-x',
+  reset: 'ph-arrow-counter-clockwise', doc: 'ph-file-text', alert: 'ph-warning',
 };
+// Render a Phosphor icon. `size` sets the glyph font-size in px.
 function icon(name, size = 20) {
-  return `<svg class="ico" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+  return `<i class="ph ${ICONS[name] || ''} ico" style="font-size:${size}px" aria-hidden="true"></i>`;
 }
 function sparkle(size = 16) {
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 25" fill="none" aria-hidden="true">
-    <path d="M8.68 16.24 5.05 14.9a.55.55 0 0 1 0-1.04l3.63-1.34a.55.55 0 0 0 .33-.33l1.34-3.63a.55.55 0 0 1 1.04 0l1.34 3.63c.06.16.17.28.33.33l3.63 1.34a.55.55 0 0 1 0 1.04l-3.63 1.34a.55.55 0 0 0-.33.33l-1.34 3.63a.55.55 0 0 1-1.04 0l-1.34-3.63a.55.55 0 0 0-.33-.33Z" fill="#ce99ef" stroke="#500081" stroke-width="1.5" stroke-linejoin="round"/>
-    <path d="M17.63 7.25v4.13M14.25 4.81v2.25M15.56 9.31h4.13M13.13 5.94h2.25" stroke="#500081" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`;
+  return `<i class="ph ph-sparkle" style="font-size:${size}px" aria-hidden="true"></i>`;
 }
 
 /* ── keys ── */
@@ -1225,7 +1223,7 @@ function renderTreeNode(node, path, openFolders, selectedId) {
       const isOpen = openFolders.has('(root)');
       html += `<div class="folder-item">
         <button class="folder-btn${isOpen ? ' open' : ''}" onclick="toggleFolder(this,'(root)')">
-          <svg class="folder-chevron" width="14" height="14" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <i class="ph ph-caret-right folder-chevron" style="font-size:14px"></i>
           (root)
           <span class="folder-count">${node._items.length}</span>
         </button>
@@ -1240,7 +1238,7 @@ function renderTreeNode(node, path, openFolders, selectedId) {
     const isOpen = openFolders.has(subPath);
     html += `<div class="folder-item">
       <button class="folder-btn${isOpen ? ' open' : ''}" onclick="toggleFolder(this,'${esc(subPath)}')">
-        <svg class="folder-chevron" width="14" height="14" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <i class="ph ph-caret-right folder-chevron" style="font-size:14px"></i>
         ${esc(key)}
         <span class="folder-count">${countTreeItems(node[key])}</span>
       </button>
@@ -2224,7 +2222,7 @@ function renderUsages(data, body) {
         return '<div class="usage-file">' +
           '<span class="usage-path" title="' + esc(item.path) + '">' + esc(item.path) + '</span>' +
           '<a href="' + esc(item.html_url) + '" target="_blank" rel="noopener" class="usage-ext-link" title="Open in GitHub">' +
-            '<svg width="13" height="13" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>' +
+            '<i class="ph ph-arrow-square-out" style="font-size:14px"></i>' +
           '</a>' +
         '</div>' +
         (fragment ? '<div class="usage-fragment">' + esc(fragment) + '</div>' : '');
@@ -2349,9 +2347,9 @@ async function deleteComponentPrompt() {
 }
 
 function usageIcon(kind) {
-  if (kind === 'safe') return '<svg class="ico" width="15" height="15" viewBox="0 0 24 24"><path d="M5 12.5 10 17 19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
-  if (kind === 'warn') return '<svg class="ico" width="15" height="15" viewBox="0 0 24 24"><path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M12 4 3 19h18Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/></svg>';
-  return '<svg class="ico" width="15" height="15" viewBox="0 0 24 24"><path d="M12 8h.01M11 12h1v4h1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/></svg>';
+  if (kind === 'safe') return '<i class="ph ph-check ico" style="font-size:15px"></i>';
+  if (kind === 'warn') return '<i class="ph ph-warning ico" style="font-size:15px"></i>';
+  return '<i class="ph ph-info ico" style="font-size:15px"></i>';
 }
 
 function renderDeleteUsage(count) {
@@ -2412,7 +2410,7 @@ async function applyDeleteComponent() {
     refreshBrowse();
   } else {
     toast('Delete failed: ' + (result.message || 'unknown error') + (result.status ? ` (HTTP ${result.status})` : ''), 'error');
-    btn.innerHTML = '<svg class="ico" width="15" height="15" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg> Delete permanently';
+    btn.innerHTML = '<i class="ph ph-trash ico" style="font-size:15px"></i> Delete permanently';
     updateDeleteConfirmState();
   }
 }
