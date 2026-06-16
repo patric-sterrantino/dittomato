@@ -239,7 +239,7 @@ html, body { transition: background-color 200ms ease; }
 .item-status.ok  { color: var(--green); font-weight: 500; }
 .item-status.err { color: var(--red);   font-weight: 500; }
 /* whitespace overlay — always-on visible spaces/breaks behind editor textareas */
-.ws-field{position:relative}
+.ws-field{position:relative;flex:1;min-width:0}
 .ws-field textarea{background:transparent !important;position:relative;z-index:1}
 .ws-backdrop{position:absolute;inset:0;margin:0;pointer-events:none;z-index:0;color:transparent;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;overflow:hidden;box-sizing:border-box}
 .ws-backdrop .ws-dot{background:radial-gradient(circle at 50% 56%, #e5409a 0 1.6px, transparent 2px)}
@@ -542,7 +542,7 @@ function toggleTheme() {
 }
 
 const API = 'https://api.dittowords.com/v2';
-const VERSION = '1.20.1';
+const VERSION = '1.20.4';
 let _key  = ''; // loaded from figma.clientStorage via code.js
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -1313,8 +1313,12 @@ function renderResults() {
         '</div>' +
         '<div class="item-actions" style="justify-content:flex-end">' +
           '<span class="item-layers">' + layerLabel(m.nodeIds.length) + '</span>' +
-          (m.textIsId ? '' : '<button class="btn btn-ghost btn-sm" onclick="pushMatchedToDitto(' + i + ')">Push Figma → Ditto</button>') +
-          '<button class="btn btn-primary btn-sm" onclick="applyDittoToFigma(' + i + ')">Use Ditto text</button>' +
+          ((m._pushing || m._applying)
+            ? '<button class="btn btn-ghost btn-sm" disabled style="opacity:.45">' + (m._pushing ? 'Updating…' : 'Push Figma → Ditto') + '</button>'
+            : (m.textIsId ? '' : '<button class="btn btn-ghost btn-sm" onclick="pushMatchedToDitto(' + i + ')">Push Figma → Ditto</button>')) +
+          ((m._pushing || m._applying)
+            ? '<button class="btn btn-primary btn-sm" disabled style="opacity:.45">' + (m._applying ? 'Applying…' : 'Use Ditto text') + '</button>'
+            : '<button class="btn btn-primary btn-sm" onclick="applyDittoToFigma(' + i + ')">Use Ditto text</button>') +
           '<span class="item-status" id="ms-' + i + '"></span>' +
         '</div>' +
         missingVariantHtml(m.comp.id) +
@@ -1402,7 +1406,9 @@ function renderResults() {
         esc(item.id) +
       '</div>' +
       '<div class="item-actions" style="justify-content:flex-end">' +
-        '<button class="btn btn-primary btn-sm" id="npushbtn-' + i + '" onclick="openTransFields(\'new\',' + i + ')">Push</button>' +
+        (item._pushing
+          ? '<button class="btn btn-primary btn-sm" disabled style="opacity:.45">Pushing…</button>'
+          : '<button class="btn btn-primary btn-sm" id="npushbtn-' + i + '" onclick="openTransFields(\'new\',' + i + ')">Push</button>') +
         '<button class="btn btn-sm" id="nlinkbtn-' + i + '" style="display:none;background:var(--green);color:#fff;border-color:var(--green)" onclick="linkToExisting(' + i + ')">Link</button>' +
         '<button class="btn btn-ghost btn-sm" onclick="startPickExisting(' + i + ')">Select existing</button>' +
         '<button class="btn btn-ghost btn-sm" style="color:var(--txt3)" onclick="ignoreNew(' + i + ', this)" title="Rename layer with // prefix to exclude from future scans">// Ignore</button>' +
@@ -1438,6 +1444,9 @@ function renderResults() {
     bar.style.display = matched.length > 0 ? '' : 'none';
     if (matched.length > 0) populateVariantDropdown();
   }
+
+  // Mount whitespace overlay on any translation textareas rendered this cycle
+  document.querySelectorAll('textarea.id-input').forEach(mountWs);
 
   show('sResults');
 }
@@ -1499,9 +1508,9 @@ function renderNear(n, i) {
       </div>
       <div class="item-actions" style="justify-content:flex-end">
         <button class="btn btn-ghost btn-sm" style="color:var(--txt3);font-family:var(--mono);letter-spacing:0" onclick="ignoreNear(${i}, this)" title="Rename layer with // prefix to exclude from future scans">// Ignore</button>
-        <button class="btn btn-ghost btn-sm" onclick="setNearDecision(${i},'new')">Create new</button>
-        <button class="btn btn-ghost btn-sm" onclick="updateNearComp(${i})">Push Figma → Ditto</button>
-        <button class="btn btn-primary btn-sm" onclick="useNearDittoText(${i})">Use Ditto text</button>
+        <button class="btn btn-ghost btn-sm" ${n._applying || n._pushing ? 'disabled style="opacity:.45"' : `onclick="setNearDecision(${i},'new')"`}>Create new</button>
+        <button class="btn btn-ghost btn-sm" ${n._applying || n._pushing ? 'disabled style="opacity:.45"' : `onclick="updateNearComp(${i})"`}>${n._pushing ? 'Updating…' : 'Push Figma → Ditto'}</button>
+        <button class="btn btn-primary btn-sm" ${n._applying || n._pushing ? 'disabled style="opacity:.45"' : `onclick="useNearDittoText(${i})"`}>${n._applying ? 'Applying…' : 'Use Ditto text'}</button>
         <span class="item-status" id="nupd-${i}"></span>
       </div>
     </div>`;
@@ -1562,8 +1571,8 @@ function renderTransFields(type, i, item) {
       </div>
       ${fields}` : ''}
       <div class="item-actions" style="margin-top:6px;justify-content:flex-end">
-        <button class="btn btn-ghost btn-sm" onclick="cancelTrans('${type}',${i})">Back</button>
-        <button class="btn btn-primary btn-sm" onclick="confirmPush('${type}',${i},'${esc(devId)}')">Push to Ditto</button>
+        <button class="btn btn-ghost btn-sm" ${item._pushing ? 'disabled style="opacity:.45"' : `onclick="cancelTrans('${type}',${i})"`}>Back</button>
+        <button class="btn btn-primary btn-sm" ${item._pushing ? 'disabled style="opacity:.45"' : `onclick="confirmPush('${type}',${i},'${esc(devId)}')"`}>${item._pushing ? 'Pushing…' : 'Push to Ditto'}</button>
         <span class="item-status" id="ts-${type}-${i}"></span>
       </div>
     </div>`;
@@ -1596,19 +1605,22 @@ function cancelTrans(type, i) {
 
 async function confirmPush(type, i, developerId) {
   const item = type === 'new' ? st.newItems[i] : st.near[i];
-  const s    = document.getElementById(`ts-${type}-${i}`);
+  // Collect translation values before re-render (inputs will be gone after renderResults)
+  const variantTexts = {};
+  for (const v of (_variants || [])) {
+    const el = document.getElementById('tr_' + type + '_' + i + '_' + v.id);
+    const val = el ? el.value.trim() : '';
+    if (val) variantTexts[v.id] = val;
+  }
+  item._pushing = true;
+  renderResults(); // lock buttons immediately
+  const s = document.getElementById(`ts-${type}-${i}`);
   if (s) { s.textContent = 'Pushing…'; s.className = 'item-status'; }
   try {
     const k = getDittoKey();
-    // Collect translations from form fields before POST (avoids a separate PATCH)
-    const variantTexts = {};
-    for (const v of (_variants || [])) {
-      const el = document.getElementById('tr_' + type + '_' + i + '_' + v.id);
-      const val = el ? el.value.trim() : '';
-      if (val) variantTexts[v.id] = val;
-    }
     await postComp(k, item.text, item.text, developerId, variantTexts);
-    if (s) { s.innerHTML = '<i class="ph ph-check-circle"></i>'; s.className = 'item-status ok'; }
+    const s2 = document.getElementById(`ts-${type}-${i}`);
+    if (s2) { s2.innerHTML = '<i class="ph ph-check-circle"></i>'; s2.className = 'item-status ok'; }
     _justPushed.add(developerId); // enables the Plurals button on this component post-push
     const renames = item.nodeIds.map(nid => ({ nodeId: nid, newName: developerId }));
     setTimeout(() => {
@@ -1619,7 +1631,10 @@ async function confirmPush(type, i, developerId) {
       parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames } }, '*');
     }, 900);
   } catch(e) {
-    if (s) { s.innerHTML = '<i class="ph ph-x-circle"></i> ' + esc(e.message); s.className = 'item-status err'; }
+    item._pushing = false;
+    renderResults(); // restore buttons
+    const s2 = document.getElementById(`ts-${type}-${i}`);
+    if (s2) { s2.innerHTML = '<i class="ph ph-x-circle"></i> ' + esc(e.message); s2.className = 'item-status err'; }
   }
 }
 
@@ -1643,6 +1658,10 @@ function renameNear(i) {
 function applyDittoToFigma(i) {
   const m = st.matched[i];
   if (!m.comp.text) return;
+  m._applying = true;
+  renderResults();
+  const s = document.getElementById(`ms-${i}`);
+  if (s) { s.textContent = 'Applying…'; s.className = 'item-status'; }
   const textMap = {};
   m.nodeIds.forEach(nid => { textMap[nid] = m.comp.text; });
   _silentRescan = true;
@@ -1651,6 +1670,8 @@ function applyDittoToFigma(i) {
 
 async function pushMatchedToDitto(i) {
   const m = st.matched[i];
+  m._pushing = true;
+  renderResults();
   const s = document.getElementById(`ms-${i}`);
   if (s) { s.textContent = 'Updating…'; s.className = 'item-status'; }
   try {
@@ -1661,16 +1682,26 @@ async function pushMatchedToDitto(i) {
       body: JSON.stringify({ updates: [{ developerId: m.comp.id, text: m.text }] }),
     });
     if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || `HTTP ${res.status}`); }
-    if (s) { s.innerHTML = '<i class="ph ph-check-circle"></i>'; s.className = 'item-status ok'; }
+    m._pushing = false;
+    const s2 = document.getElementById(`ms-${i}`);
+    if (s2) { s2.innerHTML = '<i class="ph ph-check-circle"></i>'; s2.className = 'item-status ok'; }
     _silentRescan = true;
     parent.postMessage({ pluginMessage: { type: 'rescan' } }, '*');
   } catch(e) {
-    if (s) { s.innerHTML = '<i class="ph ph-x-circle"></i> ' + esc(e.message); s.className = 'item-status err'; }
+    m._pushing = false;
+    renderResults();
+    const s2 = document.getElementById(`ms-${i}`);
+    if (s2) { s2.innerHTML = '<i class="ph ph-x-circle"></i> ' + esc(e.message); s2.className = 'item-status err'; }
   }
 }
 
 function useNearDittoText(i) {
   const n = st.near[i];
+  n._applying = true;
+  const el = document.getElementById(`ni-near-${i}`);
+  if (el) el.outerHTML = renderNear(n, i);
+  const s = document.getElementById(`nupd-${i}`);
+  if (s) { s.textContent = 'Applying…'; s.className = 'item-status'; }
   const textMap = {};
   if (n.comp.text) n.nodeIds.forEach(nid => { textMap[nid] = n.comp.text; });
   const renames = n.nodeIds.map(nid => ({ nodeId: nid, newName: n.comp.id }));
@@ -1707,6 +1738,10 @@ async function pushAllNew() {
     const id = suffix ? sanitizeIdFinal(sanitizeIdFinal(_newPrefix) + sanitizeIdFinal(suffix)) : null;
     return { item, i, id };
   }).filter(t => t.id);
+
+  // Lock all targeted items immediately
+  targets.forEach(t => { t.item._pushing = true; });
+  renderResults();
 
   const k = getDittoKey();
   const allRenames = [];
@@ -1914,12 +1949,56 @@ window.onmessage = async (event) => {
           }
         } catch(e) { /* non-critical — missing-variant warnings won't show */ }
       }
+      // Snapshot user-edited state (typed IDs, open forms, near decisions, in-flight
+      // push/apply flags) so a post-push silent rescan doesn't wipe edits or unlock
+      // buttons while an async operation is still in progress.
+      const _editSnap = {};
+      st.newItems.forEach(function(item) {
+        _editSnap['new|' + item.text] = { id: item.id, showTrans: item.showTrans };
+      });
+      st.near.forEach(function(item) {
+        var key = item.comp && item.comp.id;
+        if (key) _editSnap['near|' + key] = { nearId: item.nearId, decision: item.decision, showTrans: item.showTrans, _pushing: item._pushing, _applying: item._applying };
+      });
+      // Matched items: preserve in-flight push/apply state so intermediate scans
+      // (e.g. from selectionchange) don't re-enable buttons mid-operation.
+      const _matchedBusy = new Map();
+      st.matched.forEach(function(m) {
+        if (m._pushing || m._applying) _matchedBusy.set(m.comp.id, { _pushing: m._pushing, _applying: m._applying });
+      });
+
       // Pass base rows + variant rows so translated (non-base) text also matches
       const result = matchNodes(msg.nodes, allRows, variantRows);
       st.matched  = result.matched;
       st.near     = result.near;
       st.newItems = result.newItems;
       st.ignored  = msg.ignored || [];
+
+      // Restore edits onto items that survived the rescan
+      st.newItems.forEach(function(item) {
+        var saved = _editSnap['new|' + item.text];
+        if (saved) {
+          if (saved.id) item.id = saved.id;
+          if (saved.showTrans) item.showTrans = saved.showTrans;
+        }
+      });
+      st.near.forEach(function(item) {
+        var key = item.comp && item.comp.id;
+        var saved = key && _editSnap['near|' + key];
+        if (saved) {
+          if (saved.nearId) item.nearId = saved.nearId;
+          if (saved.decision) item.decision = saved.decision;
+          if (saved.showTrans) item.showTrans = saved.showTrans;
+          if (saved._pushing) item._pushing = saved._pushing;
+          if (saved._applying) item._applying = saved._applying;
+        }
+      });
+      // Restore in-flight busy state on matched items — clears naturally once the
+      // operation completes and the item moves out of the drift state.
+      st.matched.forEach(function(m) {
+        var b = _matchedBusy.get(m.comp.id);
+        if (b) { m._pushing = b._pushing; m._applying = b._applying; }
+      });
       // Auto-fill prefix from file/frame context on every explicit scan
       if (!silent && msg.suggestedPrefix !== undefined) {
         _newPrefix = msg.suggestedPrefix;
