@@ -251,6 +251,63 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .empty-sm .ico{color:var(--txt3)}
 .empty-sm p{margin:0;font-size:12px}
 
+/* ── left panel tab bar ─────────────────────────────────────────────────── */
+.left-tabs{display:flex;flex-shrink:0;border-bottom:1px solid var(--line);background:var(--surface)}
+.left-tab{flex:1;height:40px;background:none;border:none;cursor:pointer;font-size:12px;font-weight:500;color:var(--txt3);font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:6px;position:relative;transition:color 150ms}
+.left-tab:hover{color:var(--txt2)}
+.left-tab.active{color:var(--txt)}
+.left-tab.active::after{content:'';position:absolute;bottom:0;left:12px;right:12px;height:2px;background:var(--blue);border-radius:2px 2px 0 0}
+
+/* ── variables panel (left) ─────────────────────────────────────────────── */
+#varPanel{display:none;flex:1;flex-direction:column;min-height:0}
+.var-search-head{height:52px;box-sizing:border-box;padding:0 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;border-bottom:1px solid var(--line)}
+.var-search-head .search-field{flex:1}
+.var-type-pills{display:flex;align-items:center;gap:5px;padding:7px 14px;border-bottom:1px solid var(--line);flex-shrink:0;flex-wrap:wrap}
+.vtpill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 10px;border-radius:var(--radius-pill);border:1px solid var(--line2);background:none;cursor:pointer;color:var(--txt3);font-family:inherit;transition:all 150ms}
+.vtpill:hover{background:var(--surface3);color:var(--txt2)}
+.vtpill.active{background:var(--blue-dim);border-color:color-mix(in srgb,var(--blue) 42%,transparent);color:var(--blue)}
+.vtpill-count{font-size:10px;font-weight:600;padding:1px 5px;border-radius:var(--radius-pill);background:var(--surface3);color:inherit;opacity:.7}
+.vtpill.active .vtpill-count{background:color-mix(in srgb,var(--blue) 28%,transparent)}
+.var-list{flex:1;overflow-y:auto;min-height:0;display:flex;flex-direction:column;gap:0}
+.var-list-item{width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);padding:9px 14px;cursor:pointer;display:flex;align-items:center;gap:9px;font-family:inherit;transition:background 150ms;flex-shrink:0}
+.var-list-item:hover{background:var(--hover)}
+.var-list-item.selected{background:var(--blue-dim)}
+.var-item-name{flex:1;min-width:0;font-size:12px;font-weight:500;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.var-item-preview{font-size:11px;color:var(--txt3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px;flex-shrink:0}
+.vtype-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:var(--radius-pill);flex-shrink:0;white-space:nowrap}
+.vtype-badge.type-string{background:var(--blue-dim);color:var(--blue)}
+.vtype-badge.type-number{background:var(--green-dim);color:var(--green)}
+.vtype-badge.type-hyperlink{background:var(--purple-dim);color:var(--purple)}
+.vtype-badge.type-list{background:var(--amber-dim);color:var(--amber)}
+.vtype-badge.type-map{background:var(--red-dim);color:var(--red)}
+.vtype-badge.type-unknown{background:var(--surface3);color:var(--txt3)}
+.var-list-empty{padding:32px 16px;text-align:center;color:var(--txt2);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.var-list-empty .ico{color:var(--txt3)}
+.var-list-error{padding:20px 16px;color:var(--red);font-size:12px;display:flex;align-items:center;gap:10px}
+
+/* ── variable editor (right) ────────────────────────────────────────────── */
+#varEditor{flex:1;display:none;flex-direction:column;min-width:0}
+.ve-head{height:70px;box-sizing:border-box;flex-shrink:0;background:var(--surface);padding:0 32px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line)}
+.ve-head .ve-title{font-size:15px;font-weight:600;letter-spacing:-.1px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.ve-body{flex:1;overflow-y:auto;padding:24px 32px;min-height:0;display:flex;flex-direction:column;gap:16px}
+.ve-foot{flex-shrink:0;display:flex;align-items:center;gap:12px;background:var(--surface);border-top:1px solid var(--line);height:52px;box-sizing:border-box;padding:0 32px}
+.ve-foot .spacer{flex:1}
+.ve-field{display:flex;flex-direction:column;gap:5px}
+.ve-field label{font-size:11px;font-weight:500;color:var(--txt2)}
+.ve-field input,.ve-field select{font-size:12.5px}
+.ve-field .ve-hint{font-size:10px;color:var(--txt3);margin-top:1px}
+.ve-section-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);margin-bottom:4px}
+.ve-list-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.ve-list-row input{flex:1}
+.ve-map-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.ve-map-row input{flex:1}
+.ve-map-sep{color:var(--txt3);flex-shrink:0;font-size:14px;font-weight:300}
+.ve-add-btn{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:500;padding:4px 10px;border-radius:var(--radius-sm);border:1px dashed var(--line2);background:none;cursor:pointer;color:var(--txt3);font-family:inherit;margin-top:2px;transition:all 150ms}
+.ve-add-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
+.ve-readonly-note{font-size:11px;color:var(--txt3);display:flex;align-items:center;gap:5px}
+.ve-field select{height:36px;background:var(--surface2);border:1px solid var(--line2);border-radius:var(--radius-md);color:var(--txt);font-family:inherit;font-size:12.5px;padding:0 9px;outline:none;transition:border-color 150ms,box-shadow 150ms;width:100%}
+.ve-field select:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
+
 /* right pane */
 .right{flex:1;position:relative;min-width:0;display:flex;background:var(--bg)}
 .editor-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;color:var(--txt2);padding:40px}
@@ -351,6 +408,19 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .ph-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--font-mono);font-size:10px;line-height:15px;padding:1px 6px;border-radius:var(--radius-xs);background:var(--blue-dim);color:var(--blue);border:1px solid color-mix(in srgb,var(--blue) 26%,transparent)}
 .ph-chip.miss{background:color-mix(in srgb,var(--red) 18%,transparent);color:var(--red);border-color:color-mix(in srgb,var(--red) 30%,transparent)}
 .ph-chip.miss .ico{color:var(--red)}
+/* ── variable picker dropdown ──────────────────────────────────────────────── */
+.var-picker{position:fixed;z-index:99999;background:var(--surface);border:1px solid var(--line2);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:288px;display:flex;flex-direction:column;overflow:hidden}
+.var-picker-search{padding:8px;border-bottom:1px solid var(--line)}
+.var-picker-search input{width:100%;box-sizing:border-box}
+.var-picker-list{max-height:224px;overflow-y:auto}
+.var-picker-row{display:flex;align-items:center;gap:7px;padding:6px 10px;cursor:pointer;border-bottom:1px solid var(--line);transition:background 100ms}
+.var-picker-row:last-child{border-bottom:none}
+.var-picker-row:hover,.var-picker-row.vp-focused{background:var(--blue-dim)}
+.var-picker-row-name{flex:1;font-size:12px;font-weight:500;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.var-picker-row-preview{font-size:11px;color:var(--txt3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:82px;flex-shrink:0}
+.var-picker-empty{padding:16px;text-align:center;font-size:11.5px;color:var(--txt3)}
+.vp-insert-btn{width:20px;height:20px;border-radius:var(--radius-xs);border:none;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--txt3);transition:background 120ms,color 120ms;padding:0;flex-shrink:0;font-family:inherit;font-size:11px;font-weight:600;letter-spacing:-.02em}
+.vp-insert-btn:hover{background:var(--surface3);color:var(--blue)}
 /* whitespace overlay — always-on visible spaces/breaks behind editor textareas */
 .ws-field{position:relative}
 .ws-field textarea{background:transparent !important}
@@ -598,52 +668,97 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
 <div class="workspace">
   <!-- left: search + browse -->
   <aside class="left">
-    <div class="search-head">
-      <div class="search-row">
+    <!-- tab bar -->
+    <div class="left-tabs">
+      <button class="left-tab active" id="tabComps" onclick="showCompsTab()">
+        <i class="ph ph-file-text" style="font-size:15px"></i>
+        Components
+      </button>
+      <button class="left-tab" id="tabVars" onclick="showVarsTab()">
+        <i class="ph ph-code-block" style="font-size:15px"></i>
+        Variables
+      </button>
+    </div>
+
+    <!-- components panel -->
+    <div id="compPanel" style="display:contents">
+      <div class="search-head">
+        <div class="search-row">
+          <div class="search-field">
+            <i class="ph ph-magnifying-glass ico" style="font-size:18px"></i>
+            <input type="text" id="searchQuery" placeholder="Search components…" onkeydown="if(event.key==='Enter')doSearch()" oninput="onSearchInput(this.value)" />
+            <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Clear search" style="display:none" title="Clear search">
+              <i class="ph ph-x" style="font-size:12px"></i>
+            </button>
+          </div>
+          <button class="btn btn-primary" id="searchBtn" onclick="doSearch()" aria-label="Search">
+            <i class="ph ph-magnifying-glass ico" style="font-size:18px"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- search results (shown when a search has been run) -->
+      <div id="searchResults" style="display:none;flex:1;flex-direction:column;min-height:0">
+        <div class="results-head">
+          <span class="rh-title">Results</span>
+          <span class="rh-count" id="resultCount"></span>
+        </div>
+        <div class="results" id="results"></div>
+      </div>
+
+      <!-- browse tree (shown by default) -->
+      <div id="browsePanel" style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <div class="browse-filters">
+          <button class="bfilt-btn" id="missingFilterBtn" onclick="toggleMissingFilter()" title="Show only components with missing translations">
+            Missing only <span class="bfilt-count" id="missingFilterCount"></span>
+          </button>
+        </div>
+        <div class="browse-panel" id="browseList">
+          <div class="browse-loading"><span class="spinner spinner-dark"></span> Loading…</div>
+        </div>
+      </div>
+
+      <div class="left-foot">
+        <button class="btn btn-ghost" id="newCompBtn" onclick="openNewComp()">
+          <i class="ph ph-plus ico" style="font-size:16px"></i>
+          New component
+        </button>
+      </div>
+    </div><!-- end #compPanel -->
+
+    <!-- variables panel -->
+    <div id="varPanel">
+      <div class="var-search-head">
         <div class="search-field">
-          <i class="ph ph-magnifying-glass ico" style="font-size:18px"></i>
-          <input type="text" id="searchQuery" placeholder="Search components…" onkeydown="if(event.key==='Enter')doSearch()" oninput="onSearchInput(this.value)" />
-          <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Clear search" style="display:none" title="Clear search">
+          <i class="ph ph-magnifying-glass ico" style="font-size:16px"></i>
+          <input type="text" id="varSearchInput" placeholder="Filter variables…" oninput="onVarSearch(this.value)" />
+          <button class="search-clear" id="varSearchClear" onclick="clearVarSearch()" aria-label="Clear" style="display:none" title="Clear">
             <i class="ph ph-x" style="font-size:12px"></i>
           </button>
         </div>
-        <button class="btn btn-primary" id="searchBtn" onclick="doSearch()" aria-label="Search">
-          <i class="ph ph-magnifying-glass ico" style="font-size:18px"></i>
+      </div>
+      <div class="var-type-pills" id="varTypePills">
+        <!-- rendered by JS -->
+      </div>
+      <div class="var-list" id="varList">
+        <!-- rendered by JS -->
+      </div>
+      <div class="left-foot">
+        <button class="btn btn-ghost" id="newVarBtn" onclick="openNewVarEditor()">
+          <i class="ph ph-plus ico" style="font-size:16px"></i>
+          New variable
         </button>
       </div>
-    </div>
-
-    <!-- search results (shown when a search has been run) -->
-    <div id="searchResults" style="display:none;flex:1;display:none;flex-direction:column;min-height:0">
-      <div class="results-head">
-        <span class="rh-title">Results</span>
-        <span class="rh-count" id="resultCount"></span>
-      </div>
-      <div class="results" id="results"></div>
-    </div>
-
-    <!-- browse tree (shown by default) -->
-    <div id="browsePanel" style="flex:1;display:flex;flex-direction:column;min-height:0">
-      <div class="browse-filters">
-        <button class="bfilt-btn" id="missingFilterBtn" onclick="toggleMissingFilter()" title="Show only components with missing translations">
-          Missing only <span class="bfilt-count" id="missingFilterCount"></span>
-        </button>
-      </div>
-      <div class="browse-panel" id="browseList">
-        <div class="browse-loading"><span class="spinner spinner-dark"></span> Loading…</div>
-      </div>
-    </div>
-
-    <div class="left-foot">
-      <button class="btn btn-ghost" id="newCompBtn" onclick="openNewComp()">
-        <i class="ph ph-plus ico" style="font-size:16px"></i>
-        New component
-      </button>
-    </div>
+    </div><!-- end #varPanel -->
   </aside>
 
   <!-- right: editor -->
   <section class="right">
+    <!-- variable editor (shown when a variable is selected) -->
+    <div id="varEditor">
+      <!-- populated by JS: ve-head + ve-body + ve-foot -->
+    </div>
+
     <div class="editor-empty" id="editorEmpty">
       <div class="ee-badge">
         <i class="ph ph-file-text" style="font-size:26px"></i>
@@ -1709,6 +1824,7 @@ function statusPill(v) {
 function cellActions(v) {
   return `<div class="vcell-actions">
     <span id="vsave-${esc(v.id)}" class="save-ind"></span>
+    <button class="vp-insert-btn" onclick="openVarPickerForVariant('${esc(v.id)}')" title="Insert variable  (or type {{)">&#x7B;&#x7D;</button>
     ${!v.isBase ? `<button class="icon-btn magic" id="vmagic-${esc(v.id)}" onclick="translateOne('${esc(v.id)}','${esc(v.name)}')" title="Translate with AI" style="${variantData[v.id]?.text ? 'display:none' : ''}">${sparkle(16)}</button>` : ''}
     <button class="btn btn-ghost btn-xs" id="vsavebtn-${esc(v.id)}" style="display:none" onclick="saveVariant('${esc(v.id)}')">Save</button>
   </div>`;
@@ -1852,6 +1968,9 @@ function mountWsAll(sel) { document.querySelectorAll(sel).forEach(mountWs); }
 
 function onInput(vid, ta) {
   autoResize(ta);
+  // {{ trigger: open variable picker inline
+  const caret = ta.selectionStart;
+  if (caret >= 2 && ta.value.slice(caret - 2, caret) === '{{') openVarPicker(ta, caret);
   const newText  = ta.value;
   const original = variantData[vid]?.originalText ?? '';
   const chars = document.getElementById(`vchars-${vid}`);
@@ -2623,6 +2742,550 @@ async function savePlurals() {
   }
 }
 
+/* ── Variables section ──────────────────────────────────────────────────── */
+let _varsData = null;      // null = not loaded yet
+let _varsLoaded = false;
+let _selectedVarId = null;
+let _varTypeFilter = '';
+let _varSearchQ = '';
+let _leftTab = 'comps';    // 'comps' | 'vars'
+
+// ── Tab switching ──────────────────────────────────────────────────────────
+function showCompsTab() {
+  _leftTab = 'comps';
+  document.getElementById('tabComps').classList.add('active');
+  document.getElementById('tabVars').classList.remove('active');
+  // compPanel uses display:contents so we control its direct children
+  const cp = document.getElementById('compPanel');
+  if (cp) cp.style.display = 'contents';
+  const vp = document.getElementById('varPanel');
+  if (vp) vp.style.display = 'none';
+  // hide varEditor
+  const ve = document.getElementById('varEditor');
+  if (ve) ve.style.display = 'none';
+  // restore the components right-panel state
+  const editorEl = document.getElementById('editor');
+  const emptyEl  = document.getElementById('editorEmpty');
+  if (selectedComp) {
+    // a component was previously selected — show its editor
+    if (editorEl) editorEl.style.display = 'flex';
+    if (emptyEl)  emptyEl.style.display  = 'none';
+  } else {
+    // no component selected — show empty state with component copy
+    if (emptyEl) {
+      emptyEl.style.display = 'flex';
+      emptyEl.innerHTML = `
+        <div class="ee-badge"><i class="ph ph-file-text" style="font-size:26px"></i></div>
+        <h2>No component selected</h2>
+        <p>Pick a result on the left to view its base text and translation variants side by side.</p>`;
+    }
+    if (editorEl) editorEl.style.display = 'none';
+  }
+}
+
+function showVarsTab() {
+  _leftTab = 'vars';
+  document.getElementById('tabComps').classList.remove('active');
+  document.getElementById('tabVars').classList.add('active');
+  const cp = document.getElementById('compPanel');
+  if (cp) cp.style.display = 'none';
+  const vp = document.getElementById('varPanel');
+  if (vp) vp.style.display = 'flex';
+  // hide the component editor; varEditor or empty will take over the right panel
+  const editorEl = document.getElementById('editor');
+  if (editorEl) editorEl.style.display = 'none';
+  if (_selectedVarId && _varsLoaded) {
+    const v = (_varsData || []).find(x => x.id === _selectedVarId);
+    if (v) { openVarEditor(v); return; }
+  }
+  showVarEmpty();
+  if (!_varsLoaded) loadVars();
+}
+
+function showVarEmpty() {
+  const ve = document.getElementById('varEditor');
+  if (ve) ve.style.display = 'none';
+  const editorEl = document.getElementById('editor');
+  if (editorEl) editorEl.style.display = 'none';
+  const ee = document.getElementById('editorEmpty');
+  if (ee) {
+    ee.style.display = 'flex';
+    ee.innerHTML = `
+      <div class="ee-badge"><i class="ph ph-code-block" style="font-size:26px"></i></div>
+      <h2>No variable selected</h2>
+      <p>Pick a variable from the list on the left to inspect it, or create a new one.</p>`;
+  }
+}
+
+// ── Load & render vars list ────────────────────────────────────────────────
+async function loadVars() {
+  const k = getDittoKey();
+  if (!k) {
+    document.getElementById('varList').innerHTML =
+      '<div class="var-list-error"><i class="ph ph-warning" style="font-size:16px"></i> Add your Ditto API key first.</div>';
+    return;
+  }
+  document.getElementById('varList').innerHTML =
+    '<div class="browse-loading"><span class="spinner spinner-dark"></span> Loading variables…</div>';
+  try {
+    const res = await fetch(`${API_DITTO}/variables`, { headers: { Authorization: k } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    _varsData = await res.json();
+    _varsLoaded = true;
+    renderVarTypePills();
+    renderVarsList();
+  } catch(e) {
+    document.getElementById('varList').innerHTML =
+      `<div class="var-list-error"><i class="ph ph-warning" style="font-size:16px"></i> ${esc(e.message)}</div>`;
+  }
+}
+
+function typeCounts() {
+  const counts = {};
+  (_varsData || []).forEach(v => { counts[v.type] = (counts[v.type] || 0) + 1; });
+  return counts;
+}
+
+function renderVarTypePills() {
+  const counts = typeCounts();
+  const total  = (_varsData || []).length;
+  const types  = ['string','number','hyperlink','list','map'];
+  const pills  = [{ key: '', label: 'All', count: total }]
+    .concat(types.filter(t => counts[t]).map(t => ({ key: t, label: t.charAt(0).toUpperCase() + t.slice(1), count: counts[t] })));
+  document.getElementById('varTypePills').innerHTML = pills.map(p => `
+    <button class="vtpill${_varTypeFilter === p.key ? ' active' : ''}" onclick="setVarTypeFilter('${esc(p.key)}')">
+      ${esc(p.label)}
+      <span class="vtpill-count">${p.count}</span>
+    </button>`).join('');
+}
+
+function renderVarsList() {
+  if (!_varsData) return;
+  let items = _varsData;
+  if (_varTypeFilter) items = items.filter(v => v.type === _varTypeFilter);
+  if (_varSearchQ)    items = items.filter(v => v.name.toLowerCase().includes(_varSearchQ));
+  const el = document.getElementById('varList');
+  if (!items.length) {
+    el.innerHTML = `<div class="var-list-empty"><i class="ph ph-magnifying-glass ico" style="font-size:22px"></i><p>No variables match.</p></div>`;
+    return;
+  }
+  el.innerHTML = items.map(v => `
+    <button class="var-list-item${v.id === _selectedVarId ? ' selected' : ''}" onclick="selectVar('${esc(v.id)}')">
+      <span class="var-item-name" title="${esc(v.name)}">${esc(v.name)}</span>
+      <span class="vtype-badge type-${esc(v.type || 'unknown')}">${esc(v.type || '?')}</span>
+      <span class="var-item-preview" title="${esc(varPreview(v))}">${esc(varPreview(v))}</span>
+    </button>`).join('');
+}
+
+function setVarTypeFilter(t) {
+  _varTypeFilter = t;
+  renderVarTypePills();
+  renderVarsList();
+}
+
+function onVarSearch(q) {
+  _varSearchQ = q.toLowerCase();
+  const cl = document.getElementById('varSearchClear');
+  if (cl) cl.style.display = q ? '' : 'none';
+  if (_varsLoaded) renderVarsList();
+}
+
+function clearVarSearch() {
+  const inp = document.getElementById('varSearchInput');
+  if (inp) inp.value = '';
+  onVarSearch('');
+}
+
+function varPreview(v) {
+  if (!v || !v.data) return '';
+  if (v.type === 'list') {
+    const arr = Array.isArray(v.data) ? v.data : [];
+    return arr.length ? arr[0] + (arr.length > 1 ? `, +${arr.length - 1}` : '') : '';
+  }
+  if (v.type === 'hyperlink') return v.data.text || v.data.url || '';
+  if (v.type === 'map') {
+    const keys = Object.keys(v.data);
+    return keys.length ? keys[0] + ': ' + v.data[keys[0]] : '';
+  }
+  // string / number
+  return String(v.data.example ?? v.data.fallback ?? '');
+}
+
+// ── Select & open var editor ───────────────────────────────────────────────
+function selectVar(id) {
+  _selectedVarId = id;
+  // update selection highlight
+  document.querySelectorAll('.var-list-item').forEach(el =>
+    el.classList.toggle('selected', el.getAttribute('onclick') === `selectVar('${id}')`));
+  const v = (_varsData || []).find(x => x.id === id);
+  if (v) openVarEditor(v);
+}
+
+function openVarEditor(v) {
+  const ee = document.getElementById('editorEmpty');
+  if (ee) ee.style.display = 'none';
+  document.getElementById('editor').style.display = 'none';
+  const ve = document.getElementById('varEditor');
+  ve.style.display = 'flex';
+  ve.innerHTML = `
+    <div class="ve-head">
+      <span class="ve-title">${esc(v.name)}</span>
+      <span class="vtype-badge type-${esc(v.type || 'unknown')}" style="font-size:11px">${esc(v.type || '?')}</span>
+    </div>
+    <div class="ve-body">
+      ${varEditorFields(v)}
+    </div>
+    <div class="ve-foot">
+      <span class="ve-readonly-note"><i class="ph ph-lock" style="font-size:14px"></i> Read-only — edit variables in the Ditto web app</span>
+      <div class="spacer"></div>
+      <button class="btn btn-primary btn-sm" disabled title="Variables can't be edited via Ditto's API — make changes in the Ditto web app" onclick="saveVar()">
+        <i class="ph ph-check ico" style="font-size:15px"></i>
+        Save
+      </button>
+    </div>`;
+}
+
+function varEditorFields(v) {
+  const nameField = `
+    <div class="ve-field">
+      <label>Name (ID)</label>
+      <input type="text" value="${esc(v.name)}" readonly style="font-family:var(--font-mono);font-size:12px;opacity:.7;cursor:default" />
+    </div>`;
+
+  if (v.type === 'string' || v.type === 'number') {
+    return nameField + `
+      <div class="ve-field">
+        <label>Example</label>
+        <input type="text" value="${esc(String(v.data?.example ?? ''))}" readonly style="opacity:.7;cursor:default" />
+      </div>
+      <div class="ve-field">
+        <label>Fallback</label>
+        <input type="text" value="${esc(String(v.data?.fallback ?? ''))}" placeholder="—" readonly style="opacity:.7;cursor:default" />
+      </div>`;
+  }
+
+  if (v.type === 'hyperlink') {
+    return nameField + `
+      <div class="ve-field">
+        <label>Link text</label>
+        <input type="text" value="${esc(v.data?.text ?? '')}" readonly style="opacity:.7;cursor:default" />
+      </div>
+      <div class="ve-field">
+        <label>URL</label>
+        <input type="text" value="${esc(v.data?.url ?? '')}" readonly style="opacity:.7;cursor:default" />
+      </div>`;
+  }
+
+  if (v.type === 'list') {
+    const arr = Array.isArray(v.data) ? v.data : [];
+    const rows = arr.map((item, i) => `
+      <div class="ve-list-row">
+        <input type="text" value="${esc(item)}" data-list-idx="${i}" readonly style="opacity:.7;cursor:default" />
+      </div>`).join('');
+    return nameField + `
+      <div class="ve-field">
+        <span class="ve-section-label">Items (${arr.length})</span>
+        ${rows || '<p style="font-size:12px;color:var(--txt3);margin:0">No items</p>'}
+      </div>`;
+  }
+
+  if (v.type === 'map') {
+    const entries = v.data && typeof v.data === 'object' && !Array.isArray(v.data)
+      ? Object.entries(v.data) : [];
+    const rows = entries.map(([k, val]) => `
+      <div class="ve-map-row">
+        <input type="text" value="${esc(k)}" readonly style="opacity:.7;cursor:default" />
+        <span class="ve-map-sep">→</span>
+        <input type="text" value="${esc(String(val))}" readonly style="opacity:.7;cursor:default" />
+      </div>`).join('');
+    return nameField + `
+      <div class="ve-field">
+        <span class="ve-section-label">Entries (${entries.length})</span>
+        ${rows || '<p style="font-size:12px;color:var(--txt3);margin:0">No entries</p>'}
+      </div>`;
+  }
+
+  return nameField + `<p style="font-size:12px;color:var(--txt3);margin:0">Unknown type: ${esc(v.type)}</p>`;
+}
+
+function openNewVarEditor() {
+  _selectedVarId = null;
+  document.querySelectorAll('.var-list-item').forEach(el => el.classList.remove('selected'));
+  const ee = document.getElementById('editorEmpty');
+  if (ee) ee.style.display = 'none';
+  document.getElementById('editor').style.display = 'none';
+  const ve = document.getElementById('varEditor');
+  ve.style.display = 'flex';
+  ve.innerHTML = `
+    <div class="ve-head">
+      <span class="ve-title">New variable</span>
+      <span class="vtype-badge type-unknown">new</span>
+    </div>
+    <div class="ve-body" id="newVarBody">
+      <div class="ve-field">
+        <label>Name</label>
+        <input type="text" id="newVarName" placeholder="variable.name" />
+      </div>
+      <div class="ve-field">
+        <label>Type</label>
+        <select id="newVarType" onchange="renderNewVarDataFields()">
+          <option value="string">String</option>
+          <option value="number">Number</option>
+          <option value="hyperlink">Hyperlink</option>
+          <option value="list">List</option>
+          <option value="map">Map</option>
+        </select>
+      </div>
+      <div id="newVarDataFields"></div>
+    </div>
+    <div class="ve-foot">
+      <span class="ve-readonly-note"><i class="ph ph-lock" style="font-size:14px"></i> Read-only — edit variables in the Ditto web app</span>
+      <div class="spacer"></div>
+      <button class="btn btn-primary btn-sm" disabled title="Variables can't be edited via Ditto's API — make changes in the Ditto web app" onclick="saveVar()">
+        <i class="ph ph-check ico" style="font-size:15px"></i>
+        Save
+      </button>
+    </div>`;
+  renderNewVarDataFields();
+}
+
+function renderNewVarDataFields() {
+  const type = document.getElementById('newVarType')?.value || 'string';
+  const el = document.getElementById('newVarDataFields');
+  if (!el) return;
+  if (type === 'string' || type === 'number') {
+    el.innerHTML = `
+      <div class="ve-field">
+        <label>Example</label>
+        <input type="text" id="newVarExample" placeholder="${type === 'number' ? '42' : 'e.g. Hello World'}" />
+      </div>
+      <div class="ve-field">
+        <label>Fallback <span style="font-size:10px;color:var(--txt3)">(optional)</span></label>
+        <input type="text" id="newVarFallback" placeholder="Fallback value" />
+      </div>`;
+  } else if (type === 'hyperlink') {
+    el.innerHTML = `
+      <div class="ve-field">
+        <label>Link text</label>
+        <input type="text" id="newVarLinkText" placeholder="Click here" />
+      </div>
+      <div class="ve-field">
+        <label>URL</label>
+        <input type="text" id="newVarUrl" placeholder="https://…" />
+      </div>`;
+  } else if (type === 'list') {
+    el.innerHTML = `
+      <div class="ve-field">
+        <span class="ve-section-label">Items</span>
+        <div id="newVarListRows">
+          <div class="ve-list-row">
+            <input type="text" placeholder="Item 1" />
+            <button class="icon-btn danger" onclick="removeListItem(this)" title="Remove"><i class="ph ph-x" style="font-size:13px"></i></button>
+          </div>
+        </div>
+        <button class="ve-add-btn" onclick="addListItem()">
+          <i class="ph ph-plus" style="font-size:13px"></i> Add item
+        </button>
+      </div>`;
+  } else if (type === 'map') {
+    el.innerHTML = `
+      <div class="ve-field">
+        <span class="ve-section-label">Entries</span>
+        <div id="newVarMapRows">
+          <div class="ve-map-row">
+            <input type="text" placeholder="key" />
+            <span class="ve-map-sep">→</span>
+            <input type="text" placeholder="value" />
+            <button class="icon-btn danger" onclick="removeMapEntry(this)" title="Remove"><i class="ph ph-x" style="font-size:13px"></i></button>
+          </div>
+        </div>
+        <button class="ve-add-btn" onclick="addMapEntry()">
+          <i class="ph ph-plus" style="font-size:13px"></i> Add entry
+        </button>
+      </div>`;
+  }
+}
+
+function addListItem() {
+  const rows = document.getElementById('newVarListRows');
+  if (!rows) return;
+  const count = rows.children.length + 1;
+  const div = document.createElement('div');
+  div.className = 've-list-row';
+  div.innerHTML = `<input type="text" placeholder="Item ${count}" /><button class="icon-btn danger" onclick="removeListItem(this)" title="Remove"><i class="ph ph-x" style="font-size:13px"></i></button>`;
+  rows.appendChild(div);
+}
+
+function removeListItem(btn) {
+  btn.closest('.ve-list-row')?.remove();
+}
+
+function addMapEntry() {
+  const rows = document.getElementById('newVarMapRows');
+  if (!rows) return;
+  const div = document.createElement('div');
+  div.className = 've-map-row';
+  div.innerHTML = `<input type="text" placeholder="key" /><span class="ve-map-sep">→</span><input type="text" placeholder="value" /><button class="icon-btn danger" onclick="removeMapEntry(this)" title="Remove"><i class="ph ph-x" style="font-size:13px"></i></button>`;
+  rows.appendChild(div);
+}
+
+function removeMapEntry(btn) {
+  btn.closest('.ve-map-row')?.remove();
+}
+
+function getVarEditorValues() {
+  const type = document.getElementById('newVarType')?.value || 'string';
+  if (type === 'string' || type === 'number') {
+    return { type, data: {
+      example:  document.getElementById('newVarExample')?.value ?? '',
+      fallback: document.getElementById('newVarFallback')?.value || undefined
+    }};
+  }
+  if (type === 'hyperlink') {
+    return { type, data: {
+      text: document.getElementById('newVarLinkText')?.value ?? '',
+      url:  document.getElementById('newVarUrl')?.value ?? ''
+    }};
+  }
+  if (type === 'list') {
+    const inputs = document.querySelectorAll('#newVarListRows input');
+    return { type, data: [...inputs].map(i => i.value).filter(Boolean) };
+  }
+  if (type === 'map') {
+    const rows = document.querySelectorAll('#newVarMapRows .ve-map-row');
+    const data = {};
+    rows.forEach(row => {
+      const [k, v] = row.querySelectorAll('input');
+      if (k?.value) data[k.value] = v?.value ?? '';
+    });
+    return { type, data };
+  }
+  return { type, data: {} };
+}
+
+function saveVar() {
+  toast("Variables can't be saved via Ditto's API — make this change in the Ditto web app.", 'error');
+}
+
+/* ── end Variables section ──────────────────────────────────────────────── */
+
+/* ── Variable picker (inline {{ trigger + button) ────────────────────────── */
+let _vpTarget = null;   // textarea that opened the picker
+let _vpCursorPos = 0;   // caret position when picker was opened
+let _vpQuery = '';
+let _vpFocused = 0;
+
+function openVarPickerForVariant(vid) {
+  const ta = document.getElementById('vtext-' + vid);
+  if (!ta) return;
+  openVarPicker(ta, ta.selectionStart);
+}
+
+function openVarPicker(ta, cursorPos) {
+  if (!ta) return;
+  // Ensure variables are loaded before opening
+  if (!_varsData) {
+    loadVars().then(() => openVarPicker(ta, cursorPos));
+    return;
+  }
+  _vpTarget = ta;
+  _vpCursorPos = cursorPos;
+  _vpQuery = '';
+  _vpFocused = 0;
+  const picker = document.getElementById('varPicker');
+  const q = document.getElementById('varPickerQ');
+  if (!picker) return;
+  if (q) q.value = '';
+  // Position relative to the textarea
+  const rect = ta.getBoundingClientRect();
+  const pickerH = 280;
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const top = spaceBelow > pickerH ? rect.bottom + 4 : Math.max(4, rect.top - pickerH - 4);
+  const left = Math.min(rect.left, window.innerWidth - 296);
+  picker.style.top = top + 'px';
+  picker.style.left = left + 'px';
+  picker.style.display = 'flex';
+  renderVarPickerList();
+  setTimeout(() => { if (q) q.focus(); }, 0);
+}
+
+function closeVarPicker() {
+  const picker = document.getElementById('varPicker');
+  if (picker) picker.style.display = 'none';
+  _vpTarget = null;
+}
+
+function onVarPickerSearch(q) {
+  _vpQuery = q;
+  _vpFocused = 0;
+  renderVarPickerList();
+}
+
+function renderVarPickerList() {
+  const list = document.getElementById('varPickerList');
+  if (!list) return;
+  const lq = _vpQuery.toLowerCase();
+  const items = (_varsData || []).filter(v => {
+    if (!lq) return true;
+    return v.id.toLowerCase().includes(lq) ||
+      (v.data && !Array.isArray(v.data) && String(v.data.example ?? '').toLowerCase().includes(lq));
+  }).slice(0, 24);
+  if (!items.length) {
+    list.innerHTML = '<div class="var-picker-empty">No variables match</div>';
+    return;
+  }
+  list.innerHTML = items.map((v, i) => {
+    const prev = varPreview(v);
+    return `<div class="var-picker-row${i === _vpFocused ? ' vp-focused' : ''}" onclick="insertVar('${esc(v.id)}')" data-vp-idx="${i}">` +
+      `<span class="vtype-badge type-${esc(v.type)}">${esc(v.type)}</span>` +
+      `<span class="var-picker-row-name">${esc(v.id)}</span>` +
+      (prev ? `<span class="var-picker-row-preview">${esc(String(prev))}</span>` : '') +
+    `</div>`;
+  }).join('');
+}
+
+function onVarPickerKey(e) {
+  const rows = document.querySelectorAll('#varPickerList .var-picker-row');
+  if (e.key === 'Escape') { closeVarPicker(); if (_vpTarget) _vpTarget.focus(); return; }
+  if (e.key === 'ArrowDown') { e.preventDefault(); _vpFocused = Math.min(_vpFocused + 1, rows.length - 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); _vpFocused = Math.max(_vpFocused - 1, 0); }
+  else if (e.key === 'Enter' && rows[_vpFocused]) { e.preventDefault(); rows[_vpFocused].click(); return; }
+  rows.forEach((el, i) => el.classList.toggle('vp-focused', i === _vpFocused));
+  if (rows[_vpFocused]) rows[_vpFocused].scrollIntoView({ block: 'nearest' });
+}
+
+function insertVar(varId) {
+  const ta = _vpTarget;
+  closeVarPicker();
+  if (!ta) return;
+  const token = '{{' + varId + '}}';
+  const val = ta.value;
+  const pos = _vpCursorPos;
+  let newVal, newCursor;
+  if (pos >= 2 && val.slice(pos - 2, pos) === '{{') {
+    // Replace the {{ that triggered the picker
+    newVal = val.slice(0, pos - 2) + token + val.slice(pos);
+    newCursor = pos - 2 + token.length;
+  } else {
+    // Button-triggered: insert at captured cursor position
+    newVal = val.slice(0, pos) + token + val.slice(pos);
+    newCursor = pos + token.length;
+  }
+  ta.value = newVal;
+  ta.setSelectionRange(newCursor, newCursor);
+  ta.dispatchEvent(new Event('input'));
+  ta.focus();
+}
+
+// Close picker when clicking outside
+document.addEventListener('mousedown', function(e) {
+  const picker = document.getElementById('varPicker');
+  if (picker && picker.style.display !== 'none' && !picker.contains(e.target)) {
+    // Don't close if click was on the insert button — openVarPicker will reopen it
+    if (!e.target.closest('.vp-insert-btn')) closeVarPicker();
+  }
+});
+
 /* ── init ── */
 function init() {
   loadKeys();
@@ -2833,5 +3496,15 @@ fetch('./package.json').then(r=>r.json()).then(p=>{
   if(el&&p.version)el.textContent='v'+p.version;
 }).catch(()=>{});
 </script>
+
+<!-- ── variable picker popup ─────────────────────────────────────────────── -->
+<div id="varPicker" class="var-picker" style="display:none">
+  <div class="var-picker-search">
+    <input type="text" id="varPickerQ" placeholder="Search variables…"
+      oninput="onVarPickerSearch(this.value)"
+      onkeydown="onVarPickerKey(event)" />
+  </div>
+  <div class="var-picker-list" id="varPickerList"></div>
+</div>
 </body>
 </html>
