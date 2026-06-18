@@ -225,11 +225,7 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .comp-item{text-align:left;width:100%;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);padding:9px 12px;display:flex;flex-direction:column;gap:4px;font-family:inherit;transition:background 150ms,border-color 150ms}
 .comp-item:hover{background:var(--surface2);border-color:var(--line2)}
 .comp-item.selected{background:var(--blue-dim);border-color:color-mix(in srgb,var(--blue) 40%,transparent)}
-/* edit-id inline */
 .eh-id-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.eh-id-edit{display:none;font-family:var(--font-mono);font-size:11px;padding:3px 8px;border:1px solid var(--blue);border-radius:var(--radius-sm);background:var(--surface2);color:var(--txt);box-shadow:0 0 0 2px var(--blue-dim);outline:none;min-width:180px}
-.eh-id-editbtn{opacity:0;transition:opacity 150ms}
-.editor-head:hover .eh-id-editbtn{opacity:1}
 .results-head .rh-title{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3)}
 .results-head .rh-count{font-size:11px;color:var(--txt2)}
 .results{flex:1;overflow-y:auto;padding:0 10px 10px;min-height:0;display:flex;flex-direction:column;gap:5px}
@@ -772,16 +768,6 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
         <span class="eh-label" id="editorLabel">Component</span>
         <div class="eh-id-wrap">
           <span class="eh-id" id="editorId" role="button" title="Click to copy ID" onclick="copyId(this.textContent.trim())"></span>
-          <input class="eh-id-edit" id="editorIdInput" type="text" oninput="var v=sanitizeId(this.value);this.value=v" onkeydown="if(event.key==='Enter')saveComponentId();else if(event.key==='Escape')cancelEditId()" />
-          <button class="icon-btn eh-id-editbtn" id="editIdBtn" onclick="startEditId()" title="Edit component ID">
-            <i class="ph ph-pencil-simple" style="font-size:15px"></i>
-          </button>
-          <button class="icon-btn" id="saveIdBtn" onclick="saveComponentId()" title="Save ID" style="display:none">
-            <i class="ph ph-check" style="font-size:15px"></i>
-          </button>
-          <button class="icon-btn" id="cancelIdBtn" onclick="cancelEditId()" title="Cancel" style="display:none">
-            <i class="ph ph-x" style="font-size:15px"></i>
-          </button>
         </div>
         <div style="flex:1"></div>
         <button class="btn btn-ghost btn-sm" id="pluralsBtn" onclick="openPluralEditor()" title="Manage plural forms for this component">
@@ -870,29 +856,23 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
   </div>
 </div>
 
-<!-- rename ID confirm modal -->
-<div class="modal-overlay" id="renameConfirmModal">
-  <div class="modal" role="dialog" style="max-width:420px" aria-label="Confirm ID rename">
+<!-- unsaved changes modal -->
+<div class="modal-overlay" id="unsavedModal">
+  <div class="modal" role="dialog" style="max-width:360px" aria-label="Unsaved changes">
     <div class="modal-head">
       <div class="modal-title">
         <i class="ph ph-warning" style="font-size:18px"></i>
-        Rename component ID
+        Unsaved changes
       </div>
     </div>
-    <div class="modal-body" style="gap:12px">
+    <div class="modal-body" style="gap:14px">
       <p style="font-size:13px;line-height:1.6;color:var(--txt);margin:0">
-        Renaming <code id="rcOldId" style="font-family:var(--font-mono);font-size:11px;background:var(--surface3);padding:2px 6px;border-radius:4px;color:var(--blue)"></code> to <code id="rcNewId" style="font-family:var(--font-mono);font-size:11px;background:var(--surface3);padding:2px 6px;border-radius:4px;color:var(--blue)"></code>.
+        You have <strong id="ucCount"></strong>. Save before switching?
       </p>
-      <p style="font-size:12px;line-height:1.6;color:var(--txt2);margin:0">
-        If this ID is used in your codebase (e.g. <code style="font-family:var(--font-mono);font-size:11px;color:var(--txt2)">&lt;Ditto componentId="…" /&gt;</code>), you must update those references manually — Ditto does not do this automatically.
-      </p>
-      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:10px 12px;background:var(--surface3);border-radius:var(--radius-md)">
-        <input type="checkbox" id="rcAck" style="margin-top:2px;flex-shrink:0;accent-color:var(--blue)" onchange="document.getElementById('rcConfirmBtn').disabled=!this.checked">
-        <span style="font-size:12px;color:var(--txt)">I understand and will update any code references</span>
-      </label>
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
-        <button class="btn btn-ghost" onclick="closeRenameConfirm()">Cancel</button>
-        <button class="btn btn-primary" id="rcConfirmBtn" disabled onclick="applyRenameId()">Rename</button>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="btn btn-ghost" onclick="closeUnsavedModal()">Cancel</button>
+        <button class="btn btn-ghost" style="color:var(--red);border-color:color-mix(in srgb,var(--red) 30%,transparent)" onclick="unsavedDiscardAndSwitch()">Discard</button>
+        <button class="btn btn-primary" id="ucSaveBtn" onclick="unsavedSaveAndSwitch()">Save &amp; switch</button>
       </div>
     </div>
   </div>
@@ -1431,72 +1411,6 @@ function selectBrowseComp(idx) {
   selectItem(idx);
 }
 
-// ── Edit component ID ──────────────────────────────────────────────────────
-function startEditId() {
-  const id = selectedComp?.id;
-  if (!id) return;
-  document.getElementById('editorId').style.display = 'none';
-  document.getElementById('editIdBtn').style.display = 'none';
-  const inp = document.getElementById('editorIdInput');
-  inp.value = id;
-  inp.style.display = 'inline-block';
-  document.getElementById('saveIdBtn').style.display = 'inline-flex';
-  document.getElementById('cancelIdBtn').style.display = 'inline-flex';
-  inp.focus();
-  inp.select();
-}
-
-function cancelEditId() {
-  document.getElementById('editorId').style.display = '';
-  document.getElementById('editIdBtn').style.display = '';
-  document.getElementById('editorIdInput').style.display = 'none';
-  document.getElementById('saveIdBtn').style.display = 'none';
-  document.getElementById('cancelIdBtn').style.display = 'none';
-}
-
-function saveComponentId() {
-  const newId = sanitizeIdFinal(document.getElementById('editorIdInput').value);
-  const oldId = selectedComp?.id;
-  if (!newId || newId === oldId) { cancelEditId(); return; }
-  // show confirmation modal before applying
-  document.getElementById('rcOldId').textContent = oldId;
-  document.getElementById('rcNewId').textContent = newId;
-  document.getElementById('rcAck').checked = false;
-  document.getElementById('rcConfirmBtn').disabled = true;
-  document.getElementById('renameConfirmModal').classList.add('open');
-}
-
-function closeRenameConfirm() {
-  document.getElementById('renameConfirmModal').classList.remove('open');
-}
-
-async function applyRenameId() {
-  const newId = document.getElementById('rcNewId').textContent;
-  const oldId = selectedComp?.id;
-  closeRenameConfirm();
-  const k = getDittoKey();
-  if (!k) return;
-  document.getElementById('saveIdBtn').innerHTML = '<span class="spinner"></span>';
-  try {
-    const res = await fetch(`${API_DITTO}/components`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', Authorization: k },
-      body: JSON.stringify({ updates: [{ developerId: oldId, newDeveloperId: newId }] }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (res.ok && data.success) {
-      selectedComp.id = newId;
-      document.getElementById('editorId').textContent = newId;
-      toast(`Renamed to "${newId}"`, 'success');
-      refreshBrowse();
-    } else {
-      toast('Rename failed: ' + (data.message || `HTTP ${res.status}`), 'error');
-    }
-  } catch(e) {
-    toast('Network error: ' + e.message, 'error');
-  }
-  cancelEditId();
-}
 
 function openNewComp() {
   const k = getDittoKey();
@@ -1713,6 +1627,14 @@ function renderResults(items) {
 }
 
 async function selectItem(i) {
+  if (Object.keys(pendingChanges).length) {
+    confirmSwitch(() => _doSelectItem(i));
+    return;
+  }
+  await _doSelectItem(i);
+}
+
+async function _doSelectItem(i) {
   selectedComp   = window._results[i];
   pendingChanges = {};
   resetUsages();
@@ -2231,6 +2153,40 @@ function resetAll() {
   pendingChanges = {};
   renderVariantEditor();
   toast('Reverted unsaved changes', 'info');
+}
+
+// ── Unsaved-changes guard ────────────────────────────────────────────────────
+let _switchAction = null;
+
+function confirmSwitch(action) {
+  const n = Object.keys(pendingChanges).length;
+  if (!n) { action(); return; }
+  _switchAction = action;
+  const el = document.getElementById('ucCount');
+  if (el) el.textContent = `${n} unsaved change${n > 1 ? 's' : ''}`;
+  document.getElementById('unsavedModal').classList.add('open');
+}
+
+function closeUnsavedModal() {
+  document.getElementById('unsavedModal').classList.remove('open');
+  _switchAction = null;
+}
+
+async function unsavedSaveAndSwitch() {
+  document.getElementById('unsavedModal').classList.remove('open');
+  const fn = _switchAction;
+  _switchAction = null;
+  await saveAll();
+  if (fn) fn();
+}
+
+function unsavedDiscardAndSwitch() {
+  document.getElementById('unsavedModal').classList.remove('open');
+  pendingChanges = {};
+  updateChangesSummary();
+  const fn = _switchAction;
+  _switchAction = null;
+  if (fn) fn();
 }
 
 /* ── tweaks integration ── */
@@ -3293,7 +3249,7 @@ function init() {
   buildVocab();
   syncBodyAttrs();
   if (!getDittoKey() || !getAnthropicKey()) setTimeout(() => toggleKeysPop(true), 350);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeVocab(); closeDeleteConfirm(); closeRenameConfirm(); closePluralEditor(); } });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeVocab(); closeDeleteConfirm(); closeUnsavedModal(); closePluralEditor(); } });
   document.getElementById('searchQuery').focus();
   if (getDittoKey()) showBrowse();
 }

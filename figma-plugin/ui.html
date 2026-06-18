@@ -545,7 +545,7 @@ function toggleTheme() {
 }
 
 const API = 'https://api.dittowords.com/v2';
-const VERSION = '1.20.6';
+const VERSION = '1.20.7';
 let _key  = ''; // loaded from figma.clientStorage via code.js
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -1689,7 +1689,7 @@ async function openTransFields(type, i) {
   if (type === 'new') {
     // st.newItems[i].id is kept in sync by suffixInput on every keystroke
     st.newItems[i].id = sanitizeIdFinal(st.newItems[i].id || '');
-    st.newItems[i].fullId = sanitizeIdFinal(_newPrefix) + st.newItems[i].id;
+    st.newItems[i].fullId = sanitizeIdFinal(_newPrefix + st.newItems[i].id);
     await ensureVariants();
     if (!_variants.length) { await confirmPush('new', i, st.newItems[i].fullId); return; }
     st.newItems[i].showTrans = true;
@@ -1869,7 +1869,7 @@ async function pushAllNew() {
   // Collect all before any splice
   const targets = st.newItems.map((item, i) => {
     const suffix = st.newItems[i].id;
-    const id = suffix ? sanitizeIdFinal(sanitizeIdFinal(_newPrefix) + sanitizeIdFinal(suffix)) : null;
+    const id = suffix ? sanitizeIdFinal(_newPrefix + suffix) : null;
     return { item, i, id };
   }).filter(t => t.id);
 
