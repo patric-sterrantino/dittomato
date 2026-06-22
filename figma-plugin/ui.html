@@ -545,7 +545,7 @@ function toggleTheme() {
 }
 
 const API = 'https://api.dittowords.com/v2';
-const VERSION = '1.20.7';
+const VERSION = '1.20.10';
 let _key  = ''; // loaded from figma.clientStorage via code.js
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -671,9 +671,9 @@ function setAutoScan(val) {
   parent.postMessage({ pluginMessage: { type: 'set-options', options: { autoScan: val } } }, '*');
 }
 
-// Returns an array of variant names/ids missing a translation for the given compId.
+// Returns an array of variant objects missing a translation for the given compId.
 // Plural-aware: a variant is covered only when every plural form is translated.
-function getMissingVariants(compId) {
+function getMissingVariantObjects(compId) {
   if (!compId || !_variants || !_variants.length) return [];
   var cov = _compVariantCoverage || { requiredForms: new Map(), got: new Map() };
   var req = cov.requiredForms.get(compId) || new Set(['_base']);
@@ -683,17 +683,50 @@ function getMissingVariants(compId) {
     var missing = false;
     req.forEach(function(f) { if (!has.has(f)) missing = true; });
     return missing;
-  }).map(function(v) { return v.name || v.id; });
+  });
 }
 
-function missingVariantHtml(compId) {
-  var missing = getMissingVariants(compId);
+function missingVariantHtml(m, i) {
+  var missing = getMissingVariantObjects(m.comp.id);
   if (!missing.length) return '';
-  return '<div style="font-size:10px;color:var(--amber);margin-top:5px"><i class="ph ph-warning" style="font-size:11px;vertical-align:-1px"></i> Missing translations: ' + esc(missing.join(', ')) + '</div>';
+  var names = missing.map(function(v) { return v.name || v.id; }).join(', ');
+
+  if (m._missingTransSaving) {
+    return '<div style="font-size:10px;color:var(--amber);margin-top:5px;display:flex;align-items:center;gap:5px">' +
+      '<i class="ph ph-warning" style="font-size:11px;flex-shrink:0"></i>' +
+      '<span>Saving translations…</span>' +
+    '</div>';
+  }
+
+  var warn = '<div style="font-size:10px;color:var(--amber);margin-top:5px;display:flex;align-items:center;gap:5px">' +
+    '<i class="ph ph-warning" style="font-size:11px;flex-shrink:0"></i>' +
+    '<span style="flex:1">Missing: ' + esc(names) + '</span>' +
+    (!m._showMissingTrans
+      ? '<button class="btn btn-ghost btn-xs" style="flex-shrink:0" onclick="toggleMissingTrans(' + i + ')">Translate</button>'
+      : '') +
+  '</div>';
+
+  if (!m._showMissingTrans) return warn;
+
+  var fields = missing.map(function(v) {
+    return '<div style="display:flex;align-items:flex-start;gap:8px;margin-top:5px">' +
+      '<span style="font-size:10px;color:var(--txt2);min-width:56px;padding-top:6px;flex-shrink:0">' + esc(v.name || v.id) + '</span>' +
+      '<textarea class="id-input" id="mt-' + i + '-' + esc(v.id) + '" placeholder="Translation…" rows="1"' +
+        ' oninput="this.style.height=\'auto\';this.style.height=this.scrollHeight+\'px\'"></textarea>' +
+    '</div>';
+  }).join('');
+
+  return warn + fields +
+    '<div class="item-actions" style="justify-content:flex-end;padding-top:6px;margin-top:4px">' +
+      '<span class="item-status" id="mts-' + i + '"></span>' +
+      '<button class="btn btn-ghost btn-sm" onclick="toggleMissingTrans(' + i + ')">Cancel</button>' +
+      '<button class="btn btn-primary btn-sm" onclick="saveMissingTranslations(' + i + ')">Save translations</button>' +
+    '</div>';
 }
 function annotationBadge(item) {
   if (item.fromAnnotation) return '<span class="ann-tag" title="ID was set via a Figma annotation">annotation</span> ';
   if (item.textIsId) return '<span class="ann-tag" title="Layer text is a Ditto ID">ID in layer</span> ';
+  if (item.fromLayerName) return '<span class="ann-tag" title="Layer name looks like a Ditto ID: ' + esc(item.fromLayerName) + '">name is ID</span> ';
   return '';
 }
 function variantTag(m) {
@@ -743,7 +776,8 @@ function checkNewIdMatch(i) {
   var item = st.newItems[i];
   if (!item) return;
   var local = item.id || '';
-  var composed = sanitizeIdFinal(_newPrefix + local);
+  var pfx = item.noPrefix ? '' : _newPrefix;
+  var composed = sanitizeIdFinal(pfx + local);
   var raw = sanitizeIdFinal(local);
   var found = (composed && _allComps.find(function(c) { return c.id === composed; })) ||
               (raw && raw !== composed && _allComps.find(function(c) { return c.id === raw; }));
@@ -756,6 +790,19 @@ function checkNewIdMatch(i) {
     if (pushBtn) pushBtn.style.display = '';
     if (linkBtn) linkBtn.style.display = 'none';
   }
+}
+
+function toggleItemPrefix(i) {
+  var item = st.newItems[i];
+  if (!item || !item.fromLayerName) return;
+  item.noPrefix = !item.noPrefix;
+  if (item.noPrefix) {
+    item.id = item.fromLayerName;
+  } else {
+    var ln = item.fromLayerName;
+    item.id = (_newPrefix && ln.startsWith(_newPrefix)) ? ln.slice(_newPrefix.length) : ln;
+  }
+  renderResults();
 }
 
 // Rename the Figma layers for New item i to the matched existing component ID,
@@ -1229,7 +1276,11 @@ function matchNodes(nodes, comps, variantRows) {
     }
     const close = byNorm.get(n) || byId.get(n);
     if (close)  { near.push({ text, nodeIds, layerNames, comp: close, decision: null }); continue; }
-    newItems.push({ text, nodeIds, layerNames, id: suggestId(text) });
+    var _lnId = null;
+    for (var _lni = 0; _lni < layerNames.length; _lni++) {
+      if (/^[a-z][a-z0-9]*(?:[.\-][a-z0-9]+)+$/.test(layerNames[_lni])) { _lnId = layerNames[_lni]; break; }
+    }
+    newItems.push({ text, nodeIds, layerNames, id: _lnId || suggestId(text), fromLayerName: _lnId || null });
   }
   return { matched, near, newItems };
 }
@@ -1400,7 +1451,7 @@ function renderResults() {
               '<button class="btn btn-ghost btn-sm" style="font-size:10.5px" onclick="detachMatched(' + i + ',\'pick\')">Link to existing</button>' +
             '</div>'
           : '') +
-        missingVariantHtml(m.comp.id) +
+        missingVariantHtml(m, i) +
         pluralBtn(m.comp.id) +
         itemBadges(m) +
       '</div>');
@@ -1416,7 +1467,7 @@ function renderResults() {
           '<span class="item-layers">' + layerLabel(m.nodeIds.length) + '</span>' +
         '</div>' +
         '<div class="item-id" style="color:#10b981"><i class="ph ph-check" style="vertical-align:-1px"></i> ' + esc(m.comp.id) + '</div>' +
-        missingVariantHtml(m.comp.id) +
+        missingVariantHtml(m, i) +
         pluralBtn(m.comp.id) +
         itemBadges(m) +
       '</div>');
@@ -1441,7 +1492,7 @@ function renderResults() {
           '<span class="item-layers">' + layerLabel(m.nodeIds.length) + '</span>' +
         '</div>' +
         idPart +
-        missingVariantHtml(m.comp.id) +
+        missingVariantHtml(m, i) +
         pluralBtn(m.comp.id) +
         itemBadges(m) +
       '</div>');
@@ -1486,14 +1537,20 @@ function renderResults() {
         '<span class="item-text">' + highlightText(item.text) + '</span>' +
         '<span class="item-layers">' + layerLabel(item.nodeIds.length) + '</span>' +
       '</div>' +
-      (item.fromAnnotation ? '<div style="margin:2px 0">' + annotationBadge(item) + '</div>' : '') +
+      ((item.fromAnnotation || item.fromLayerName) ? '<div style="margin:2px 0">' + annotationBadge(item) + '</div>' : '') +
       '<div class="id-prefix-wrap" id="nid-' + i + '" contenteditable="true" spellcheck="false" ' +
         'oninput="suffixInput(' + i + ',this)" ' +
         'onkeydown="if(event.key===\'Enter\')event.preventDefault()" ' +
         'onpaste="event.preventDefault();document.execCommand(\'insertText\',false,(event.clipboardData||window.clipboardData).getData(\'text/plain\'))">' +
-        (_newPrefix ? '<span contenteditable="false" style="color:var(--txt3)">' + esc(_newPrefix) + '</span>' : '') +
+        (!item.noPrefix && _newPrefix ? '<span contenteditable="false" style="color:var(--txt3)">' + esc(_newPrefix) + '</span>' : '') +
         esc(item.id) +
       '</div>' +
+      (item.fromLayerName && _newPrefix
+        ? '<div style="margin-top:3px;font-size:10px;color:var(--txt3);display:flex;align-items:center;gap:6px">' +
+            'Prefix: <button class="btn btn-ghost btn-xs" onclick="toggleItemPrefix(' + i + ')">' +
+            (item.noPrefix ? '+ Restore prefix' : '− Skip prefix') + '</button>' +
+          '</div>'
+        : '') +
       '<div class="item-actions" style="justify-content:flex-end">' +
         (item._pushing
           ? '<button class="btn btn-primary btn-sm" disabled style="opacity:.45">Pushing…</button>'
@@ -1534,8 +1591,7 @@ function renderResults() {
     if (matched.length > 0) populateVariantDropdown();
   }
 
-  // Mount whitespace overlay on any translation textareas rendered this cycle
-  document.querySelectorAll('textarea.id-input').forEach(mountWs);
+  // Plural-editor textareas get their own mountWs call; translation prose textareas don't need it.
 
   show('sResults');
 }
@@ -1689,7 +1745,8 @@ async function openTransFields(type, i) {
   if (type === 'new') {
     // st.newItems[i].id is kept in sync by suffixInput on every keystroke
     st.newItems[i].id = sanitizeIdFinal(st.newItems[i].id || '');
-    st.newItems[i].fullId = sanitizeIdFinal(_newPrefix + st.newItems[i].id);
+    var _pfx = st.newItems[i].noPrefix ? '' : _newPrefix;
+    st.newItems[i].fullId = sanitizeIdFinal(_pfx + st.newItems[i].id);
     await ensureVariants();
     if (!_variants.length) { await confirmPush('new', i, st.newItems[i].fullId); return; }
     st.newItems[i].showTrans = true;
@@ -1786,6 +1843,90 @@ function detachMatched(i, mode) {
   var renames = m.nodeIds.map(function(nid) { return { nodeId: nid, newName: m.text }; });
   _silentRescan = true;
   parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames: renames } }, '*');
+}
+
+// ── Actions: missing translations ─────────────────────────────────────────
+function toggleMissingTrans(i) {
+  var m = st.matched[i];
+  if (!m) return;
+  m._showMissingTrans = !m._showMissingTrans;
+  renderResults();
+}
+
+async function saveMissingTranslations(i) {
+  var m = st.matched[i];
+  if (!m) return;
+  var missing = getMissingVariantObjects(m.comp.id);
+  var k = getDittoKey();
+  if (!k) return;
+
+  // Collect values before any DOM rebuild
+  var toSave = missing.map(function(v) {
+    var el = document.getElementById('mt-' + i + '-' + v.id);
+    return { v: v, text: el ? el.value.trim() : '' };
+  }).filter(function(x) { return x.text; });
+
+  if (!toSave.length) { m._showMissingTrans = false; renderResults(); return; }
+
+  m._missingTransSaving = true;
+  renderResults();
+
+  var saved = 0, failed = 0;
+  for (var j = 0; j < toSave.length; j++) {
+    var item = toSave[j];
+    try {
+      var res = await fetch(API + '/components', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: k },
+        body: JSON.stringify({ updates: [{ developerId: m.comp.id, text: item.text }], variantId: item.v.id }),
+      });
+      var data = await res.json().catch(function() { return {}; });
+      if (res.ok && data.success) {
+        saved++;
+        // Update local coverage so the warning disappears for saved variants
+        var vmap = _compVariantCoverage.got.get(m.comp.id);
+        if (!vmap) { vmap = new Map(); _compVariantCoverage.got.set(m.comp.id, vmap); }
+        var req = _compVariantCoverage.requiredForms.get(m.comp.id) || new Set(['_base']);
+        if (!vmap.has(item.v.id)) vmap.set(item.v.id, new Set());
+        req.forEach(function(f) { vmap.get(item.v.id).add(f); });
+      } else {
+        failed++;
+      }
+    } catch(e) {
+      failed++;
+    }
+  }
+
+  m._missingTransSaving = false;
+  m._showMissingTrans = false;
+  renderResults();
+
+  // Show inline status on the item (if it's still in the DOM after re-render)
+  if (saved || failed) {
+    var s = document.getElementById('mts-' + i);
+    // mts- is gone after re-render (showMissingTrans=false), so use a brief DOM banner
+    if (saved > 0 && failed === 0) {
+      // Flash a transient ok status — inject it before the first child of the item
+      var itemEl = document.querySelector('#matchedBody .item-matched:nth-child(' + (i + 1) + ')');
+      if (itemEl) {
+        var flash = document.createElement('div');
+        flash.style.cssText = 'font-size:10px;color:var(--green);margin-top:4px;display:flex;align-items:center;gap:4px';
+        flash.innerHTML = '<i class="ph ph-check-circle" style="font-size:11px"></i> ' + saved + ' translation' + (saved > 1 ? 's' : '') + ' saved';
+        itemEl.appendChild(flash);
+        setTimeout(function() { if (flash.parentNode) flash.parentNode.removeChild(flash); }, 2500);
+      }
+    }
+    if (failed > 0) {
+      var itemEl2 = document.querySelector('#matchedBody .item-matched:nth-child(' + (i + 1) + ')');
+      if (itemEl2) {
+        var flash2 = document.createElement('div');
+        flash2.style.cssText = 'font-size:10px;color:var(--red);margin-top:4px;display:flex;align-items:center;gap:4px';
+        flash2.innerHTML = '<i class="ph ph-x-circle" style="font-size:11px"></i> ' + failed + ' failed to save';
+        itemEl2.appendChild(flash2);
+        setTimeout(function() { if (flash2.parentNode) flash2.parentNode.removeChild(flash2); }, 3000);
+      }
+    }
+  }
 }
 
 // ── Actions: matched text sync ─────────────────────────────────────────────

@@ -1724,6 +1724,21 @@ function updateMagicVis(vid) {
   const b = document.getElementById(`vmagic-${vid}`);
   if (b) b.style.display = isFilled(vid) ? 'none' : 'inline-flex';
 }
+
+function refreshVariantPill(vid, text) {
+  if (vid === 'base') return;
+  const tag = document.getElementById(`vtag-${vid}`);
+  if (tag) { tag.className = 'vpill ok'; tag.innerHTML = icon('check', 13) + 'Translated'; }
+  const block = document.getElementById(`vblock-${vid}`);
+  if (block) block.classList.remove('is-missing');
+  const ta = document.getElementById(`vtext-${vid}`);
+  if (ta) ta.classList.remove('is-empty');
+  const chars = document.getElementById(`vchars-${vid}`);
+  if (chars) { chars.textContent = `${text.length} chars`; chars.className = 'char-count' + charWarnClass(text.length, vid); }
+  refreshPh(vid);
+  updateMagicVis(vid);
+  updateTranslateAllBtn();
+}
 function updateTranslateAllBtn() {
   const btn = document.getElementById('magicAllBtn');
   if (!btn) return;
@@ -1957,7 +1972,7 @@ async function translateOne(vid, variantName) {
   }
 
   try {
-    const result = await callClaude(apiKey, bt, targetLabel, references);
+    const result = await callClaude(apiKey, bt, targetLabel, references, undefined, vid);
     ta.classList.remove('translating-shimmer');
     ta.value = result;
     autoResize(ta);
@@ -2007,7 +2022,55 @@ const PLURAL_CONTEXT = {
   many:  "the MANY plural form (used for large counts in languages like Polish/Russian)",
   other: "the OTHER/general plural form (the default, used for most counts)"
 };
-async function callClaude(apiKey, sourceText, targetLanguage, references, pluralForm) {
+var _txMemory = new Map(); // vid -> [{base, trans}] sorted shortest-first
+
+async function buildTranslationMemory(vid) {
+  if (_txMemory.has(vid)) return _txMemory.get(vid);
+  const k = getDittoKey();
+  if (!k) { _txMemory.set(vid, []); return []; }
+  try {
+    const res = await fetch(`${API_DITTO}/components?filter=${encodeURIComponent(vid)}`, { headers: { Authorization: k } });
+    if (!res.ok) { _txMemory.set(vid, []); return []; }
+    const rows = await res.json();
+    // Base texts from already-fetched browse data; fetch fresh only if empty
+    const baseMap = new Map();
+    for (const c of (_browseData || [])) { if (c.id && c.text) baseMap.set(c.id, c.text); }
+    if (!baseMap.size) {
+      const br = await fetch(`${API_DITTO}/components`, { headers: { Authorization: k } }).catch(() => null);
+      if (br?.ok) { for (const c of await br.json()) { if (c.id && c.text) baseMap.set(c.id, c.text); } }
+    }
+    const pairs = [];
+    for (const row of rows) {
+      const base = baseMap.get(row.id || row.developerId);
+      if (base && row.text) pairs.push({ base, trans: row.text });
+    }
+    pairs.sort((a, b) => a.base.length - b.base.length); // UI labels first
+    _txMemory.set(vid, pairs);
+    return pairs;
+  } catch(e) { _txMemory.set(vid, []); return []; }
+}
+
+var _txSkills = null;
+async function loadTranslationSkills() {
+  if (_txSkills !== null) return _txSkills;
+  try {
+    const [pa, ru] = await Promise.all([
+      fetch('.claude/skills/translation-persona.md').then(r => r.ok ? r.text() : null).catch(() => null),
+      fetch('.claude/skills/translation-rules.md').then(r => r.ok ? r.text() : null).catch(() => null)
+    ]);
+    _txSkills = { persona: pa?.trim() || null, rules: ru?.trim() || null };
+  } catch(e) { _txSkills = { persona: null, rules: null }; }
+  return _txSkills;
+}
+
+async function callClaude(apiKey, sourceText, targetLanguage, references, pluralForm, vid) {
+  const skills = await loadTranslationSkills();
+  const memory = vid ? await buildTranslationMemory(vid) : [];
+  const memSample = memory.filter(p => p.base !== sourceText).slice(0, 25);
+  const memNote = memSample.length
+    ? `\n\nExisting ${targetLanguage} translations — use these for consistent terminology and phrasing:\n` +
+      memSample.map(p => `• ${p.base} → ${p.trans}`).join('\n')
+    : '';
   const tone = window.TWEAKS.formality === 'formal'
       ? '\n- Use a FORMAL register (e.g. German "Sie", French "vous")'
     : window.TWEAKS.formality === 'casual'
@@ -2015,21 +2078,26 @@ async function callClaude(apiKey, sourceText, targetLanguage, references, plural
       : '';
   const hasRefs = references && Object.keys(references).length > 0;
   const refNote = hasRefs
-    ? '\n- You will receive the English source plus translations in other languages for cross-reference. Use them only to verify the intended meaning — always base your translation on the English.'
+    ? '\n- You will receive the English source plus translations in other languages for cross-reference, each with its character count. Use them to verify meaning and calibrate length — always base your translation on the English.'
     : '';
   const pluralNote = (pluralForm && PLURAL_CONTEXT[pluralForm])
     ? `\n- This string is ${PLURAL_CONTEXT[pluralForm]}. Produce the grammatically correct wording for THAT plural form in ${targetLanguage} (its grammar may differ from English — e.g. some languages inflect the noun or verb). Keep the {{count}}-style placeholder even if the source omits a number.`
     : '';
-  const system = `You are a professional UI copy translator for vialytics — a municipal road infrastructure SaaS used by city planners and field workers in Germany and Europe.
 
-Translate the given UI string to ${targetLanguage}.
-
-Rules:
+  const persona = skills.persona || `You are a professional UI copy translator for vialytics — a municipal road infrastructure SaaS used by city planners and field workers in Germany and Europe.`;
+  const rulesBlock = skills.rules || `Rules:
 - Return ONLY the translated string — no explanation, no quotes, no markdown
 - Preserve any emoji exactly as-is
 - Preserve any {{VariableName}} placeholders exactly as-is
 - Match the tone: concise, professional, unambiguous UI copy for municipal software
-- Use sentence case unless the source uses Title Case${pluralNote}${tone}${refNote}${buildGlossaryPrompt()}`;
+- Use sentence case unless the source uses Title Case`;
+
+  const lengthNote = `\n- The source string is ${sourceText.length} characters — aim for similar or shorter; do not exceed it significantly`;
+  const system = `${persona}
+
+Translate the given UI string to ${targetLanguage}.
+
+${rulesBlock}${lengthNote}${pluralNote}${tone}${refNote}${buildGlossaryPrompt()}${memNote}`;
 
   const model = window.TWEAKS.model === 'quality' ? 'claude-sonnet-4-5-20250929' : 'claude-haiku-4-5-20251001';
 
@@ -2100,6 +2168,7 @@ async function saveVariant(vid) {
     setIndicator(vid, 'saved', 'Saved');
     setTimeout(() => setIndicator(vid, '', ''), 2500);
     if (vid === 'base') refreshSidePanelText(newText);
+    refreshVariantPill(vid, newText);
     updateChangesSummary();
     refreshBrowse(); // keep the tree's text + missing indicators current
   } catch(e) {
@@ -2127,6 +2196,7 @@ async function saveAll() {
       setIndicator(vid, 'saved', 'Saved');
       setTimeout(() => setIndicator(vid, '', ''), 2500);
       if (vid === 'base') savedBaseText = text;
+      refreshVariantPill(vid, text);
       saved++;
     } catch(e) { setIndicator(vid, 'error', 'Error'); }
   }
@@ -2593,7 +2663,7 @@ async function plTranslateCell(form, colKey) {
   const btn = document.getElementById(`pltr-${form}-${colKey}`);
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner spinner-dark" style="width:12px;height:12px;border-width:1.5px"></span>'; }
   try {
-    const result = await callClaude(apiKey, src, targetLabel, refs, form);
+    const result = await callClaude(apiKey, src, targetLabel, refs, form, col.variantId);
     _pl.cells[plCellKey(form, colKey)] = result;
     _pl.dirty = true;
     const ta = document.querySelector(`#plBody textarea[data-cell="${form}|${colKey}"]`);
