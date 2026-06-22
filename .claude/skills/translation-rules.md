@@ -6,3 +6,4 @@ Rules:
 - Use sentence case unless the source uses Title Case
 - Match character length — aim for similar or shorter than the source; character counts are shown for all reference languages so you can calibrate. UI screen space is tight: shorter is always preferred when meaning is fully preserved
 - Prefer active voice and direct phrasing over passive or verbose constructions
+- German only: avoid direct address ("Sie", "du", imperative). Use infinitive or noun phrases — "Änderungen speichern" not "Speichern Sie Ihre Änderungen"

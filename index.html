@@ -1311,6 +1311,22 @@ function renderCompItem(comp, selectedId) {
 }
 function renderTreeNode(node, path, openFolders, selectedId) {
   let html = '';
+  // Sub-folders first
+  for (const key of Object.keys(node).filter(k => k !== '_items').sort()) {
+    const subPath = path ? path + '.' + key : key;
+    const isOpen = openFolders.has(subPath);
+    html += `<div class="folder-item">
+      <button class="folder-btn${isOpen ? ' open' : ''}" onclick="toggleFolder(this,'${esc(subPath)}')">
+        <i class="ph ph-caret-right folder-chevron" style="font-size:14px"></i>
+        ${esc(key)}
+        <span class="folder-count">${countTreeItems(node[key])}</span>
+      </button>
+      <div class="folder-children${isOpen ? ' open' : ''}">
+        ${renderTreeNode(node[key], subPath, openFolders, selectedId)}
+      </div>
+    </div>`;
+  }
+  // Then items at this level
   if (node._items.length) {
     const itemsHtml = [...node._items].sort((a,b) => a.id.localeCompare(b.id)).map(c => renderCompItem(c, selectedId)).join('');
     if (!path) {
@@ -1327,20 +1343,6 @@ function renderTreeNode(node, path, openFolders, selectedId) {
     } else {
       html += itemsHtml;
     }
-  }
-  for (const key of Object.keys(node).filter(k => k !== '_items').sort()) {
-    const subPath = path ? path + '.' + key : key;
-    const isOpen = openFolders.has(subPath);
-    html += `<div class="folder-item">
-      <button class="folder-btn${isOpen ? ' open' : ''}" onclick="toggleFolder(this,'${esc(subPath)}')">
-        <i class="ph ph-caret-right folder-chevron" style="font-size:14px"></i>
-        ${esc(key)}
-        <span class="folder-count">${countTreeItems(node[key])}</span>
-      </button>
-      <div class="folder-children${isOpen ? ' open' : ''}">
-        ${renderTreeNode(node[key], subPath, openFolders, selectedId)}
-      </div>
-    </div>`;
   }
   return html;
 }
@@ -2054,21 +2056,33 @@ var _txSkills = null;
 async function loadTranslationSkills() {
   if (_txSkills !== null) return _txSkills;
   try {
-    const [pa, ru] = await Promise.all([
+    const [pa, ru, sg] = await Promise.all([
       fetch('.claude/skills/translation-persona.md').then(r => r.ok ? r.text() : null).catch(() => null),
-      fetch('.claude/skills/translation-rules.md').then(r => r.ok ? r.text() : null).catch(() => null)
+      fetch('.claude/skills/translation-rules.md').then(r => r.ok ? r.text() : null).catch(() => null),
+      fetch('.claude/skills/style-guide.md').then(r => r.ok ? r.text() : null).catch(() => null)
     ]);
-    _txSkills = { persona: pa?.trim() || null, rules: ru?.trim() || null };
-  } catch(e) { _txSkills = { persona: null, rules: null }; }
+    _txSkills = { persona: pa?.trim() || null, rules: ru?.trim() || null, styleGuide: sg?.trim() || null };
+  } catch(e) { _txSkills = { persona: null, rules: null, styleGuide: null }; }
   return _txSkills;
+}
+
+function pickRelevantMemory(memory, sourceText, max = 8) {
+  const words = new Set(sourceText.toLowerCase().split(/\W+/).filter(w => w.length > 2));
+  const pool = memory.filter(p => p.base !== sourceText);
+  if (!words.size) return pool.slice(0, max);
+  const scored = pool.map(p => {
+    const overlap = p.base.toLowerCase().split(/\W+/).filter(w => words.has(w)).length;
+    return { p, overlap };
+  }).filter(x => x.overlap > 0).sort((a, b) => b.overlap - a.overlap || a.p.base.length - b.p.base.length);
+  return (scored.length ? scored.map(x => x.p) : pool).slice(0, max);
 }
 
 async function callClaude(apiKey, sourceText, targetLanguage, references, pluralForm, vid) {
   const skills = await loadTranslationSkills();
   const memory = vid ? await buildTranslationMemory(vid) : [];
-  const memSample = memory.filter(p => p.base !== sourceText).slice(0, 25);
+  const memSample = pickRelevantMemory(memory, sourceText);
   const memNote = memSample.length
-    ? `\n\nExisting ${targetLanguage} translations — use these for consistent terminology and phrasing:\n` +
+    ? `\n\nExisting ${targetLanguage} translations — use for consistent terminology:\n` +
       memSample.map(p => `• ${p.base} → ${p.trans}`).join('\n')
     : '';
   const tone = window.TWEAKS.formality === 'formal'
@@ -2076,6 +2090,9 @@ async function callClaude(apiKey, sourceText, targetLanguage, references, plural
     : window.TWEAKS.formality === 'casual'
       ? '\n- Use an INFORMAL register (e.g. German "du", French "tu")'
       : '';
+  const deNote = /^de\b/i.test(targetLanguage) || targetLanguage === 'German'
+    ? '\n- German only: avoid direct address ("Sie", "du", imperative). Use infinitive or noun phrases instead — e.g. "Änderungen speichern" not "Speichern Sie Ihre Änderungen", "Konto erstellen" not "Erstellen Sie ein Konto"'
+    : '';
   const hasRefs = references && Object.keys(references).length > 0;
   const refNote = hasRefs
     ? '\n- You will receive the English source plus translations in other languages for cross-reference, each with its character count. Use them to verify meaning and calibrate length — always base your translation on the English.'
@@ -2093,11 +2110,12 @@ async function callClaude(apiKey, sourceText, targetLanguage, references, plural
 - Use sentence case unless the source uses Title Case`;
 
   const lengthNote = `\n- The source string is ${sourceText.length} characters — aim for similar or shorter; do not exceed it significantly`;
-  const system = `${persona}
+  const styleGuideBlock = skills.styleGuide ? `\n\n${skills.styleGuide}` : '';
+  const system = `${persona}${styleGuideBlock}
 
 Translate the given UI string to ${targetLanguage}.
 
-${rulesBlock}${lengthNote}${pluralNote}${tone}${refNote}${buildGlossaryPrompt()}${memNote}`;
+${rulesBlock}${lengthNote}${deNote}${pluralNote}${tone}${refNote}${buildGlossaryPrompt()}${memNote}`;
 
   const model = window.TWEAKS.model === 'quality' ? 'claude-sonnet-4-5-20250929' : 'claude-haiku-4-5-20251001';
 
