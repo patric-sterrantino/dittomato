@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='18' r='12' fill='%23f13b3b'/><ellipse cx='12.5' cy='14' rx='3' ry='4' fill='%23ff7777' opacity='.6'/><path d='M16 8c0-2.4 2.1-3.9 4.5-3.3-.4 2.4-2.2 3.9-4.5 3.3Z' fill='%236dd07f'/><path d='M16 8c.3-2.1-1.4-3.9-3.8-3.8.2 2.2 1.7 3.9 3.8 3.8Z' fill='%2357a666'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Silkscreen:wght@400;700&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
 <style>
 /* ── design tokens ─────────────────────────────────────────────────────────── */
@@ -96,6 +96,74 @@
   --canvas:     #ececed;
 }
 
+/* ════════════ Macintosh — optional theme (System 6/7 tribute) ════════════
+   Rides on the token system: a black-&-white palette, square corners and hard
+   offset shadows transform almost the whole UI. A handful of scoped rules add
+   the signatures tokens can't express (pinstripe title bars, bitmap chrome). */
+[data-theme="mac"]{
+  color-scheme:light;
+  --bg:#ffffff; --surface:#ffffff; --surface2:#ffffff; --surface3:#dcdcdc;
+  --line:#000000; --line2:#000000;
+  --txt:#000000; --txt2:#000000; --txt3:#5a5a5a;
+  --blue:#000000; --blue-dim:#dcdcdc; --green:#000000; --green-dim:#dcdcdc;
+  --amber:#000000; --amber-dim:#dcdcdc; --red:#000000; --red-dim:#dcdcdc;
+  --purple:#000000; --purple-dim:#dcdcdc;
+  --primary:#000000; --primary-fg:#ffffff; --primary-hover:#000000; --ring:#000000;
+  --hover:#ececec; --overlay:rgba(0,0,0,0.5);
+  --selection-bg:#000000; --selection-fg:#ffffff;
+  --scrollbar:#000000; --scrollbar-hover:#000000;
+  --shadow-sm:1px 1px 0 #000; --shadow-md:3px 3px 0 #000; --shadow-lg:4px 4px 0 #000; --shadow-card:2px 2px 0 #000;
+  --canvas:#888888; --logo-ink:#000000;
+  --radius-xs:0px;--radius-sm:0px;--radius-md:0px;--radius-lg:0px;--radius-xl:0px;--radius-2xl:0px;--radius-pill:0px;
+  --font-display:'Silkscreen','Chicago',ui-monospace,monospace;
+  --pinstripe:repeating-linear-gradient(#000 0 1px,#fff 1px 3px);
+  --mac-dither:repeating-conic-gradient(#000 0% 25%,#fff 0% 50%) 0 0 / 4px 4px;
+}
+/* bitmap "Chicago" font on the most visible chrome */
+html[data-theme="mac"] .brand-name h1,
+html[data-theme="mac"] .btn,
+html[data-theme="mac"] .left-tab,
+html[data-theme="mac"] .editor-head .eh-label,
+html[data-theme="mac"] .ve-head .ve-title,
+html[data-theme="mac"] .modal-title,
+html[data-theme="mac"] .results-head .rh-title,
+html[data-theme="mac"] .vcol-lang{font-family:var(--font-display);font-weight:400;letter-spacing:0}
+html[data-theme="mac"] .btn{font-size:11px}
+html[data-theme="mac"] .brand-name h1{font-size:15px}
+/* heavier window frames */
+html[data-theme="mac"] .topbar{border-bottom:2px solid #000}
+html[data-theme="mac"] .left{border-right:2px solid #000}
+/* pinstripe title bars: close box at the left, title in a white cartouche */
+html[data-theme="mac"] .editor-head,
+html[data-theme="mac"] .ve-head{background:var(--pinstripe);border-bottom:2px solid #000;gap:8px;padding-left:12px;padding-right:12px}
+html[data-theme="mac"] .editor-head::before,
+html[data-theme="mac"] .ve-head::before{content:'';width:13px;height:13px;border:1px solid #000;background:#fff;flex-shrink:0;align-self:center}
+html[data-theme="mac"] .editor-head .eh-info{flex:0 1 auto;align-self:stretch;justify-content:center;background:#fff;padding:0 12px;box-shadow:-1px 0 0 #000,1px 0 0 #000}
+html[data-theme="mac"] .editor-head .eh-actions{margin-left:auto;align-self:stretch;display:flex;align-items:center;background:#fff;padding:0 8px;box-shadow:-1px 0 0 #000}
+html[data-theme="mac"] .ve-head .ve-title{flex:0 1 auto;align-self:stretch;display:flex;align-items:center;background:#fff;padding:0 12px;box-shadow:-1px 0 0 #000,1px 0 0 #000}
+/* segmented tabs: active inverted, inactive recessed */
+html[data-theme="mac"] .left-tab.active{background:#000;color:#fff}
+html[data-theme="mac"] .left-tab:not(.active){background:#d4d4d4}
+/* inverted selection on list cards */
+html[data-theme="mac"] .result-item.selected,
+html[data-theme="mac"] .comp-item.selected{background:#000;border-color:#000}
+html[data-theme="mac"] .result-item.selected,html[data-theme="mac"] .result-item.selected *,
+html[data-theme="mac"] .comp-item.selected,html[data-theme="mac"] .comp-item.selected *{color:#fff !important}
+/* the one sanctioned tint — IDs in subtle blue */
+html[data-theme="mac"] .result-id,
+html[data-theme="mac"] .eh-id,
+html[data-theme="mac"] .vcol-id{color:#2f6fe0}
+html[data-theme="mac"] .result-item.selected .result-id{color:#fff !important}
+/* desktop dither behind the empty state + dimmed dialogs */
+html[data-theme="mac"] .editor-empty{background:var(--mac-dither)}
+html[data-theme="mac"] .modal-overlay{background:var(--mac-dither);backdrop-filter:none}
+html[data-theme="mac"] .editor-empty .ee-badge{border:2px solid #000;box-shadow:var(--shadow-card)}
+/* classic wide, black-framed scrollbars */
+html[data-theme="mac"] ::-webkit-scrollbar{width:15px;height:15px}
+html[data-theme="mac"] ::-webkit-scrollbar-track{background:var(--mac-dither);box-shadow:inset 1px 0 0 #000}
+html[data-theme="mac"] ::-webkit-scrollbar-thumb{background:#fff;border:1px solid #000;border-radius:0}
+html[data-theme="mac"] ::-webkit-scrollbar-thumb:hover{background:#ececec}
+
 /* ── base ─────────────────────────────────────────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -112,9 +180,8 @@ html,body{transition:background-color 200ms ease}
 /* ── topbar ─────────────────────────────────────────────────────────────── */
 .topbar{height:52px;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;box-shadow:0 1px 12px rgba(0,0,0,0.25)}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
-.brand-logo{height:20px;display:block}
-.brand-logo [fill="#222D39"],.brand-logo [fill="#222d39"]{fill:var(--logo-ink)}
-.brand-div{width:1px;height:20px;background:var(--line2)}
+.brand-logo{display:none}
+.brand-div{display:none}
 .brand-version{font-size:10px;font-weight:600;color:var(--txt3);letter-spacing:.02em;align-self:flex-end;padding-bottom:2px}
 .brand-name{display:flex;align-items:center;gap:7px}
 .brand-name h1{font-size:18px;font-weight:700;letter-spacing:-.3px;color:var(--txt)}
@@ -172,10 +239,10 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .theme-toggle{width:30px;height:30px;border-radius:var(--radius-md);border:1px solid var(--line2);background:var(--surface2);color:var(--txt2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background 150ms,color 150ms,border-color 150ms}
 .theme-toggle:hover{background:var(--surface3);color:var(--txt)}
 .theme-toggle.active{background:var(--blue-dim);color:var(--blue);border-color:color-mix(in srgb,var(--blue) 40%,transparent)}
-.theme-toggle .ti-moon{display:none}
-.theme-toggle .ti-sun{display:block}
-[data-theme="light"] .theme-toggle .ti-sun{display:none}
-[data-theme="light"] .theme-toggle .ti-moon{display:block}
+.theme-toggle .ti-sun,.theme-toggle .ti-moon,.theme-toggle .ti-mac{display:none}
+[data-theme="light"] .theme-toggle .ti-sun{display:block}
+[data-theme="dark"] .theme-toggle .ti-moon{display:block}
+[data-theme="mac"] .theme-toggle .ti-mac{display:block}
 /* top-right control row — uniform height + Phosphor icon sizing */
 .topbar .btn-sm{height:30px}
 .topbar .ph{font-size:17px;line-height:1}
@@ -431,9 +498,9 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .ws-field textarea{background:transparent !important}
 .ws-backdrop{position:absolute;inset:0;margin:0;pointer-events:none;z-index:0;color:transparent;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;overflow:hidden;box-sizing:border-box}
 .ws-field textarea{position:relative;z-index:1}
-.ws-backdrop .ws-dot{background:radial-gradient(circle at 50% 56%, #e5409a 0 1.6px, transparent 2px)}
-.ws-backdrop .ws-tab{color:#e5409a;opacity:.9}
-.ws-backdrop .ws-nl{display:inline-block;width:0;overflow:visible;color:#e5409a;font-weight:700}
+.ws-backdrop .ws-dot{background:radial-gradient(circle at 50% 56%, #2f6fe0 0 2px, transparent 2.5px)}
+.ws-backdrop .ws-tab{color:#2f6fe0;opacity:1}
+.ws-backdrop .ws-nl{display:inline-block;width:0;overflow:visible;color:#2f6fe0;font-weight:700}
 .tk-var{font-family:var(--font-mono);font-size:.88em;color:var(--blue);background:var(--blue-dim);border:1px solid color-mix(in srgb,var(--blue) 24%,transparent);border-radius:3px;padding:0 3px;white-space:nowrap}
 .tk-plural{font-family:var(--font-mono);font-size:.88em;color:var(--purple);background:var(--purple-dim);border:1px solid color-mix(in srgb,var(--purple) 28%,transparent);border-radius:3px;padding:0 3px;white-space:nowrap}
 
@@ -565,7 +632,7 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
 (function(){
   try {
     var saved = localStorage.getItem('dittomato.theme');
-    if (saved !== 'light' && saved !== 'dark') {
+    if (saved !== 'light' && saved !== 'dark' && saved !== 'mac') {
       saved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
     }
     document.documentElement.dataset.theme = saved;
@@ -613,9 +680,10 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
 
   <div class="topbar-spacer"></div>
 
-  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light / dark theme" aria-label="Toggle theme">
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Switch theme — Light · Dark · Macintosh" aria-label="Switch theme">
     <i class="ph ph-sun ti-sun"></i>
     <i class="ph ph-moon ti-moon"></i>
+    <i class="ph ph-desktop ti-mac"></i>
   </button>
 
   <button class="btn btn-ghost btn-sm" id="vocabBtn" onclick="openVocab()">
@@ -987,7 +1055,8 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
 <script>
 /* ── theme ── */
 function toggleTheme() {
-  const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+  const order = ['light', 'dark', 'mac'];
+  const next = order[(order.indexOf(document.documentElement.dataset.theme) + 1) % order.length];
   document.documentElement.dataset.theme = next;
   try { localStorage.setItem('dittomato.theme', next); } catch(e) {}
 }
