@@ -194,3 +194,33 @@ Dittomato uses three levels of matching to avoid creating duplicates:
 3. **Component ID** — `"exportxls"` matches an existing component whose developer ID is `exportxls`
 
 Near matches are shown interactively so you can confirm before anything is pushed.
+
+---
+
+## Headroom — context compression for agents
+
+Dittomato depends on [`headroom-ai`](https://github.com/headroomlabs-ai/headroom), a context-compression layer that shrinks the messages sent to an LLM. It's wired up **for the AI agents that work on this repo** (Claude Code, etc.) — the shipped tools (`harvest.js` and the browser app) don't call it.
+
+The `headroom-ai` npm package is only a *client*: it forwards messages to a Headroom **proxy** and returns the compressed result (with `fallback: true`, it returns them uncompressed if no proxy is running). The `proxy` and `wrap` commands themselves ship with Headroom's Python/Docker distribution, not the npm package:
+
+```bash
+pip install "headroom-ai[all]"
+# or: docker pull ghcr.io/chopratejas/headroom:latest
+```
+
+Then either run a local proxy and point your tooling at it:
+
+```bash
+npm run headroom:proxy                       # headroom proxy --port 8787
+export ANTHROPIC_BASE_URL=http://localhost:8787
+```
+
+…or wrap an agent directly:
+
+```bash
+npm run headroom:wrap                        # headroom wrap claude
+```
+
+Use the **local proxy**, not Headroom Cloud — it keeps your repo context on your machine and only forwards the normal provider call.
+
+> The `headroom-ai` dependency in `package.json` is reserved for a future in-tool LLM step (e.g. compressing a request before `harvest.js` or the browser app calls Claude). Until such a call exists, it isn't imported anywhere in the source.
