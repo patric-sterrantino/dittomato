@@ -545,7 +545,7 @@ function toggleTheme() {
 }
 
 const API = 'https://api.dittowords.com/v2';
-const VERSION = '1.20.10';
+const VERSION = '1.20.13';
 let _key  = ''; // loaded from figma.clientStorage via code.js
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -557,6 +557,12 @@ let st = {
 };
 let _newPrefix = ''; // folder prefix for all new IDs
 let _silentRescan = false; // suppress loading spinner on post-push auto-rescan
+// Node IDs the user explicitly detached via "Create new" / "Link to existing" on a
+// drifted match. Text-based auto-matching (exact/near) would otherwise immediately
+// re-claim these on the next rescan since the underlying text still resembles an
+// existing component — this set overrides that until the user finishes (pushed,
+// linked) or the layers are ignored.
+let _forcedNewNodeIds = new Set();
 let _allComps = []; // real Ditto components (no variant/plural rows) — for ID detection
 let _justPushed = new Set(); // ids created this session — plural authoring is offered post-push
 let _compVariantCoverage = { requiredForms: new Map(), got: new Map() }; // plural-aware coverage
@@ -658,6 +664,16 @@ function suggestId(text) {
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
   return sanitizeIdFinal(spaced.replace(/\s+/g, '-')).slice(0, 60) || 'new-string';
+}
+
+// A layer may already be named with an ID-looking string (e.g. someone pre-typed
+// "screens.hero.cta") that just isn't a registered Ditto component yet. Prefer that
+// over a text-derived suggestion whenever a new ID needs to be chosen for a layer.
+function idLikeLayerName(layerNames) {
+  for (var li = 0; li < (layerNames || []).length; li++) {
+    if (/^[a-z][a-z0-9]*(?:[.\-][a-z0-9]+)+$/.test(layerNames[li])) return layerNames[li];
+  }
+  return null;
 }
 
 function getDittoKey() { return _key; }
@@ -909,6 +925,7 @@ function applyExisting(i, id) {
   item._applying = true;
   item.picking = false;
   renderResults();
+  item.nodeIds.forEach(function(nid) { _forcedNewNodeIds.delete(nid); });
   var renames = item.nodeIds.map(function(nid) { return { nodeId: nid, newName: id }; });
   _silentRescan = true;
   parent.postMessage({ pluginMessage: { type: 'rename-and-rescan', renames: renames } }, '*');
@@ -982,6 +999,7 @@ function ignoreNew(i, btn) {
   _disableItemBtns(btn);
   var item = st.newItems[i];
   if (!item) return;
+  item.nodeIds.forEach(function(nid) { _forcedNewNodeIds.delete(nid); });
   var renames = item.nodeIds.map(function(nid, li) {
     return { nodeId: nid, newName: '//' + (item.layerNames[li] || 'layer') };
   });
@@ -1276,10 +1294,7 @@ function matchNodes(nodes, comps, variantRows) {
     }
     const close = byNorm.get(n) || byId.get(n);
     if (close)  { near.push({ text, nodeIds, layerNames, comp: close, decision: null }); continue; }
-    var _lnId = null;
-    for (var _lni = 0; _lni < layerNames.length; _lni++) {
-      if (/^[a-z][a-z0-9]*(?:[.\-][a-z0-9]+)+$/.test(layerNames[_lni])) { _lnId = layerNames[_lni]; break; }
-    }
+    var _lnId = idLikeLayerName(layerNames);
     newItems.push({ text, nodeIds, layerNames, id: _lnId || suggestId(text), fromLayerName: _lnId || null });
   }
   return { matched, near, newItems };
@@ -1472,16 +1487,13 @@ function renderResults() {
         itemBadges(m) +
       '</div>');
 
-    // Text synced, layer name needs renaming
-    var idPart;
-    if (m.candidates.length > 1) {
-      var opts = m.candidates.map(function(c, ci) {
-        return '<option value="' + ci + '"' + (c.id === m.comp.id ? ' selected' : '') + '>' + esc(c.id) + '</option>';
-      }).join('');
-      idPart = '<div class="item-id">→ <select class="id-select" onchange="selectMatchedComp(' + i + ',this.selectedIndex)">' + opts + '</select></div>';
-    } else {
-      idPart = '<div class="item-id">→ ' + esc(m.comp.id) + '</div>';
-    }
+    // Text synced, layer name needs renaming — offer the matched candidate(s) plus
+    // an escape hatch to create a fresh ID even when there's only one candidate.
+    var opts = m.candidates.map(function(c, ci) {
+      return '<option value="' + ci + '"' + (c.id === m.comp.id ? ' selected' : '') + '>' + esc(c.id) + '</option>';
+    }).join('');
+    opts += '<option value="__new__">+ Create new…</option>';
+    var idPart = '<div class="item-id">→ <select class="id-select" onchange="onMatchedIdSelect(' + i + ',this)">' + opts + '</select></div>';
     return (
       '<div class="item item-matched">' +
         '<div class="item-top">' +
@@ -1706,6 +1718,13 @@ function selectMatchedComp(i, idx) {
   st.matched[i].comp = st.matched[i].candidates[idx];
 }
 
+// Candidate dropdown also offers "+ Create new…" for when none of the existing
+// IDs sharing this text are actually the right one.
+function onMatchedIdSelect(i, sel) {
+  if (sel.value === '__new__') { detachMatched(i, 'new'); return; }
+  selectMatchedComp(i, sel.selectedIndex);
+}
+
 function updateNewPrefix(val) {
   _newPrefix = val;
   renderResults(); // newPrefixInp is static HTML, not affected by re-render
@@ -1785,6 +1804,7 @@ async function confirmPush(type, i, developerId) {
     const s2 = document.getElementById(`ts-${type}-${i}`);
     if (s2) { s2.innerHTML = '<i class="ph ph-check-circle"></i>'; s2.className = 'item-status ok'; }
     _justPushed.add(developerId); // enables the Plurals button on this component post-push
+    item.nodeIds.forEach(nid => _forcedNewNodeIds.delete(nid));
     const renames = item.nodeIds.map(nid => ({ nodeId: nid, newName: developerId }));
     setTimeout(() => {
       if (type === 'new') st.newItems.splice(i, 1);
@@ -1823,14 +1843,17 @@ function renameNear(i) {
 // away from the old comp ID so the next scan doesn't re-match it.
 function detachMatched(i, mode) {
   const m = st.matched[i];
+  const lnId = idLikeLayerName(m.layerNames);
   const newItem = {
     text: m.text,
     nodeIds: m.nodeIds,
     layerNames: m.layerNames,
-    id: suggestId(m.text),
+    id: lnId || suggestId(m.text),
+    fromLayerName: lnId || null,
     picking: mode === 'pick',
     pickQuery: mode === 'pick' ? m.text : '',
   };
+  m.nodeIds.forEach(function(nid) { _forcedNewNodeIds.add(nid); });
   st.matched.splice(i, 1);
   st.newItems.unshift(newItem);
   renderResults();
@@ -2244,6 +2267,21 @@ window.onmessage = async (event) => {
 
       // Pass base rows + variant rows so translated (non-base) text also matches
       const result = matchNodes(msg.nodes, allRows, variantRows);
+      // Layers the user explicitly detached (Create new / Link to existing) must stay
+      // in "New" even if their text still exactly/nearly matches some other existing
+      // component — otherwise auto-matching immediately reclaims them mid-edit.
+      if (_forcedNewNodeIds.size) {
+        ['matched', 'near'].forEach(function(bucket) {
+          for (var bi = result[bucket].length - 1; bi >= 0; bi--) {
+            var entry = result[bucket][bi];
+            if (entry.nodeIds.some(function(nid) { return _forcedNewNodeIds.has(nid); })) {
+              result[bucket].splice(bi, 1);
+              var _fnLnId = idLikeLayerName(entry.layerNames);
+              result.newItems.unshift({ text: entry.text, nodeIds: entry.nodeIds, layerNames: entry.layerNames, id: _fnLnId || suggestId(entry.text), fromLayerName: _fnLnId || null });
+            }
+          }
+        });
+      }
       st.matched  = result.matched;
       st.near     = result.near;
       st.newItems = result.newItems;
