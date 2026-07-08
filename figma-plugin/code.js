@@ -105,7 +105,8 @@ function nodeAnnotationId(node) {
   return null;
 }
 
-function scan() {
+function scan(opts) {
+  var silent = !!(opts && opts.silent);
   const sel = figma.currentPage.selection;
   if (!sel.length) {
     figma.ui.postMessage({ type: 'no-selection' });
@@ -126,16 +127,47 @@ function scan() {
     }
     collectTextNodes(sel[si], nodes, ancestorHidden, ignoredNodes);
   }
-  figma.ui.postMessage({ type: 'scan-result', nodes, ignored: ignoredNodes, suggestedPrefix: suggestPrefix(sel) });
+  figma.ui.postMessage({ type: 'scan-result', nodes, ignored: ignoredNodes, suggestedPrefix: suggestPrefix(sel), silent: silent });
 }
 
-// Load stored key and send to UI, then trigger first scan
-figma.clientStorage.getAsync('dittoKey').then(val => {
-  figma.ui.postMessage({ type: 'key-loaded', value: val || '' });
+// Load stored keys and send to UI, then trigger first scan
+Promise.all([
+  figma.clientStorage.getAsync('dittoKey'),
+  figma.clientStorage.getAsync('anthropicKey'),
+]).then(([dittoVal, anthropicVal]) => {
+  figma.ui.postMessage({ type: 'key-loaded', value: dittoVal || '', anthropicValue: anthropicVal || '' });
   scan();
 });
 
 figma.on('selectionchange', () => { if (scanOptions.autoScan) scan(); });
+
+// A selected text layer's own edits don't change the selection, so
+// selectionchange never fires while typing. Watch for character edits on
+// nodes inside the current selection and debounce a rescan for those.
+var _scanDebounce = null;
+function nodeInsideSelection(node) {
+  var sel = figma.currentPage.selection;
+  for (var si = 0; si < sel.length; si++) {
+    var cur = node;
+    while (cur) {
+      if (cur.id === sel[si].id) return true;
+      cur = cur.parent;
+    }
+  }
+  return false;
+}
+figma.on('documentchange', (event) => {
+  if (!scanOptions.autoScan) return;
+  var relevant = false;
+  for (var ci = 0; ci < event.documentChanges.length; ci++) {
+    var ch = event.documentChanges[ci];
+    if (ch.type !== 'PROPERTY_CHANGE' || !ch.properties || ch.properties.indexOf('characters') === -1) continue;
+    if (ch.node && nodeInsideSelection(ch.node)) { relevant = true; break; }
+  }
+  if (!relevant) return;
+  clearTimeout(_scanDebounce);
+  _scanDebounce = setTimeout(() => scan({ silent: true }), 300);
+});
 
 // Load all fonts used by a text node then swap its characters.
 async function applyText(tnode, newText) {
@@ -158,6 +190,11 @@ async function applyText(tnode, newText) {
 figma.ui.onmessage = async (msg) => {
   if (msg.type === 'save-key') {
     await figma.clientStorage.setAsync('dittoKey', msg.value);
+    return;
+  }
+
+  if (msg.type === 'save-anthropic-key') {
+    await figma.clientStorage.setAsync('anthropicKey', msg.value);
     return;
   }
 
