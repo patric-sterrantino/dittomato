@@ -1064,6 +1064,47 @@ function toggleTheme() {
 const API_DITTO     = 'https://api.dittowords.com/v2';
 const API_ANTHROPIC = 'https://api.anthropic.com/v1/messages';
 
+// ── Transition sync ──────────────────────────────────────────────────────────
+// While we migrate off Ditto, every change pushed to Ditto is also mirrored into
+// src/ditto/*.json by the local companion server (npm run dev). Same-origin when
+// the app is served by it; falls back to localhost when opened as a file.
+const SYNC_URL = (location.protocol === 'http:' || location.protocol === 'https:')
+  ? `${location.origin}/sync`
+  : 'http://localhost:4747/sync';
+let _syncWarned = false;
+
+/**
+ * Best-effort mirror of Ditto writes into the JSON files. Never throws — a
+ * failed mirror must not break the Ditto save that already succeeded, but it is
+ * surfaced once so the transition doesn't silently drift.
+ * ops: [{op:'upsert'|'remove'|'removeAll', variant, key, text}]
+ */
+async function syncToJson(ops) {
+  const list = Array.isArray(ops) ? ops : [ops];
+  if (!list.length) return { ok: true };
+  try {
+    const res = await fetch(SYNC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ops: list }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      warnSyncOnce(data.error || data.results?.find(r => !r.ok)?.error || `HTTP ${res.status}`);
+      return { ok: false };
+    }
+    return { ok: true };
+  } catch (e) {
+    warnSyncOnce(e.message);
+    return { ok: false };
+  }
+}
+function warnSyncOnce(msg) {
+  if (_syncWarned) return;
+  _syncWarned = true;
+  toast(`Saved to Ditto, but JSON sync failed (${msg}). Start it with "npm run dev".`, 'error');
+}
+
 const LANG_NAMES = { de: 'German', fr: 'French', es: 'Spanish', it: 'Italian', nl: 'Dutch' };
 
 let GLOSSARY = [
@@ -1555,6 +1596,7 @@ async function submitNewComp() {
     });
     if (res.status === 201 || res.status === 200) {
       _ncCreatedId = devId;
+      await syncToJson({ op: 'upsert', variant: 'base', key: devId, text });
       toast(`Created "${devId}"`, 'success');
       // Move to step 2 — translations
       await ensureVariants();
@@ -1601,7 +1643,10 @@ async function saveNewCompTranslations() {
         body: JSON.stringify({ updates: [{ developerId: _ncCreatedId, text }], variantId: v.id }),
       });
       const data = await res.json().catch(() => ({}));
-      if (res.ok && data.success) saved++; else failed++;
+      if (res.ok && data.success) {
+        saved++;
+        await syncToJson({ op: 'upsert', variant: v.id, key: _ncCreatedId, text });
+      } else failed++;
     } catch { failed++; }
   }
   if (saved > 0) toast(`Saved ${saved} translation${saved > 1 ? 's' : ''}`, 'success');
@@ -2324,6 +2369,7 @@ async function patchDitto(vid, text) {
   });
   const data = await res.json().catch(()=>({}));
   if (!res.ok || !data.success) throw new Error(data.message || `HTTP ${res.status}`);
+  await syncToJson({ op: 'upsert', variant: vid, key: selectedComp.id, text });
 }
 
 function resetAll() {
@@ -2651,6 +2697,7 @@ async function applyDeleteComponent() {
   btn.innerHTML = '<span class="spinner"></span> Deleting…';
   const result = await deleteComponent(id, k);
   if (result.ok) {
+    await syncToJson({ op: 'removeAll', key: id });
     closeDeleteConfirm();
     toast(`Deleted "${id}"`, 'success');
     // Clear the editor and refresh the browse list
@@ -2837,17 +2884,24 @@ async function savePlurals() {
       .map(f => ({ form: f, text: _pl.cells[plCellKey(f, c.key)] ?? '' }))
       .filter(u => u.text.trim() !== '');
     const userRemoved = (c.isBase && _pl.removed.size) ? [..._pl.removed] : [];
+    // JSON stores plural forms as `{id}_{form}` keys; order is irrelevant there,
+    // so a reorder needs no mirror — only the net upserts and user removals.
+    const variant = c.key; // 'base' | variantId
+    const syncOps = [
+      ...upsert.map(u => ({ op: 'upsert', variant, key: `${_pl.id}_${u.form}`, text: u.text })),
+      ...userRemoved.map(f => ({ op: 'remove', variant, key: `${_pl.id}_${f}` })),
+    ];
     if (reordered && upsert.length) {
       // 1) clear the forms we're about to re-add (+ any user-removed), 2) re-add in order
       const toRemove = upsert.map(u => u.form).concat(userRemoved);
-      reqs.push({ label: c.label + ' (clear)', body: withVariant({ updates: [{ developerId: _pl.id, plurals: { remove: toRemove } }] }, c) });
-      reqs.push({ label: c.label, body: withVariant({ updates: [{ developerId: _pl.id, plurals: { upsert } }] }, c) });
+      reqs.push({ label: c.label + ' (clear)', body: withVariant({ updates: [{ developerId: _pl.id, plurals: { remove: toRemove } }] }, c), sync: [] });
+      reqs.push({ label: c.label, body: withVariant({ updates: [{ developerId: _pl.id, plurals: { upsert } }] }, c), sync: syncOps });
     } else {
       const plurals = {};
       if (upsert.length) plurals.upsert = upsert;
       if (userRemoved.length) plurals.remove = userRemoved;
       if (!plurals.upsert && !plurals.remove) continue;
-      reqs.push({ label: c.label, body: withVariant({ updates: [{ developerId: _pl.id, plurals }] }, c) });
+      reqs.push({ label: c.label, body: withVariant({ updates: [{ developerId: _pl.id, plurals }] }, c), sync: syncOps });
     }
   }
   let ok = 0; const errors = [];
@@ -2858,7 +2912,7 @@ async function savePlurals() {
         body: JSON.stringify(r.body),
       });
       const data = await res.json().catch(() => ({}));
-      if (res.ok && data.success !== false) ok++;
+      if (res.ok && data.success !== false) { ok++; if (r.sync && r.sync.length) await syncToJson(r.sync); }
       else errors.push(`${r.label}: ${data.message || 'HTTP ' + res.status}`);
     } catch(e) { errors.push(`${r.label}: ${e.message}`); }
   }

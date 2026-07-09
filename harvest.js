@@ -6,6 +6,7 @@ const path = require('path');
 const https = require('https');
 const readline = require('readline');
 const os   = require('os');
+const dittoSync = require('./ditto-sync'); // transition: mirror pushes into src/ditto/*.json
 
 const VERSION = (() => {
   try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version; } catch { return '?'; }
@@ -663,6 +664,13 @@ async function runPushFlow(unmatched, { matched, dittoByText, dittoByNorm, ditto
     if (res.status === 201 || res.status === 200) {
       process.stdout.write(c.green(`✅ created`) + c.dim(`   (${usedId})\n`));
       pushed.push({ string: u.string, developerId: usedId, file: u.file, line: u.line });
+      // Transition: mirror the new component into src/ditto/*.json (base variant).
+      try {
+        const { file } = dittoSync.upsert('base', usedId, u.string);
+        process.stdout.write(c.dim(`     ↳ written to src/ditto/${file}\n`));
+      } catch (e) {
+        process.stdout.write(c.yellow(`     ⚠ JSON sync failed: ${e.message}\n`));
+      }
     } else {
       let errMsg;
       try {

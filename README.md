@@ -7,6 +7,25 @@ A two-part tool for managing Ditto UI strings:
 
 ---
 
+## Transition sync (Ditto → JSON)
+
+We're migrating off Ditto onto our own servers. During the transition, **every change is written to `src/ditto/*.json` as well as pushed to Ditto**, so those JSON files become the source of truth we can eventually cut over to.
+
+- The **CLI** (`harvest.js`) writes new pushed components into `src/ditto/harvested___base.json` automatically.
+- The **browser app** mirrors edits, new components, translations, plural forms, and deletions through a small local companion server. Because a browser page can't write local files on its own, **you must run the app through the server** instead of opening `index.html` directly:
+
+  ```bash
+  npm run dev            # serves the app + sync endpoint on http://localhost:4747
+  ```
+
+  Open http://localhost:4747 and use the app as normal. On every save it calls Ditto **and** `POST /sync`, which writes the change into the correct `src/ditto/{folder}___{variant}.json` file. If the server isn't running you'll get a one-time warning and only Ditto is updated.
+
+**Where changes land:** edits to an existing component update it in its current file; brand-new components go to `harvested___{variant}.json`; new translations of an existing component land next to its base file (e.g. `signs___de.json`), created if needed. `src/ditto/index.js` is regenerated with static `require`s so new files are picked up automatically.
+
+The mapping logic is shared between both tools in `ditto-sync.js`. Override the target directory with `DITTO_JSON_DIR` if needed (defaults to this repo's `src/ditto`).
+
+---
+
 ## Install
 
 ```bash

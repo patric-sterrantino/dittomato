@@ -1,0 +1,319 @@
+{
+    "AppVersion": {
+        "example": "4.4.1",
+        "fallback": "4.4.1"
+    },
+    "AppVersionPublishedDate": {
+        "example": "30.03.2023"
+    },
+    "assettype": ["tree"],
+    "ID": {
+        "example": 70
+    },
+    "AmountOfAssetsSelected": {
+        "example": "27"
+    },
+    "PropertyPlaceholder": {
+        "example": "Property Placeholder"
+    },
+    "Size": {
+        "example": "2.0"
+    },
+    "Unit": ["m"],
+    "Assignee": {
+        "example": "Daniel Moz"
+    },
+    "Amount_Images": {
+        "example": 10
+    },
+    "EmailSubject": {
+        "example": "Cut tree"
+    },
+    "EmailRecipient": {
+        "example": "m.weidemueller@externalagency.com"
+    },
+    "Amount_filters_set": {
+        "example": 2
+    },
+    "Number_1": {
+        "example": 1,
+        "fallback": ""
+    },
+    "RoadClassificationName": {
+        "example": "Arterial"
+    },
+    "PlainPassword": {
+        "example": "HXN/!=AM"
+    },
+    "WebSystemURL": {
+        "text": "https://app.vialytics.com",
+        "url": "https://app.vialytics.com"
+    },
+    "SelectedResults": {
+        "example": 2,
+        "fallback": 2
+    },
+    "count": {
+        "example": 3,
+        "fallback": 4
+    },
+    "Version": {
+        "example": 2.1,
+        "fallback": 2.2
+    },
+    "Grade_GradingLogic": {
+        "example": 3,
+        "fallback": 3.5
+    },
+    "Kilometer": {
+        "example": 15,
+        "fallback": ""
+    },
+    "Percentage": {
+        "example": "0",
+        "fallback": "0"
+    },
+    "Municipality": {
+        "example": "Karlsruhe",
+        "fallback": "Karlsruhe"
+    },
+    "Username": {
+        "example": "Patric Sterrantino",
+        "fallback": "Daniel Moz"
+    },
+    "OverallKM": {
+        "example": 320,
+        "fallback": ""
+    },
+    "Amount": {
+        "example": 1
+    },
+    "Pagination": {
+        "example": 1,
+        "fallback": 11
+    },
+    "Pagination10": {
+        "example": 10,
+        "fallback": 20
+    },
+    "PaginationResult": {
+        "example": 123,
+        "fallback": 32
+    },
+    "LayerName": {
+        "example": "Asset"
+    },
+    "TaskTitle": {
+        "example": "Cut tree"
+    },
+    "AssetTitle": {
+        "example": "Parkbench"
+    },
+    "SSOProvider": {
+        "example": "Microsoft",
+        "fallback": "[Name des SSO-Anbieters]"
+    },
+    "TeamAccount": {
+        "example": "Möglingen",
+        "fallback": "Asperg"
+    },
+    "UserRole": {
+        "example": "Viewer",
+        "fallback": "Editor"
+    },
+    "MapZoomState": {
+        "example": 150,
+        "fallback": 150
+    },
+    "TaskStatus": ["Open", "In Progress", "Done"],
+    "Month": {
+        "example": "February",
+        "fallback": ""
+    },
+    "Year": {
+        "example": 2022,
+        "fallback": 2021
+    },
+    "UserAssigning": {
+        "example": "Patric Sterrantino"
+    },
+    "UserTaskDone": {
+        "example": "Christian Wehle"
+    },
+    "StrasseNummer": {
+        "example": "Birkenwaldstraße 34",
+        "fallback": "Silberburgstraße 187"
+    },
+    "PlaceholderStreetParlerstrasse": {
+        "example": "Parlerstraße"
+    },
+    "PlaceHolderHouseNumber": {
+        "example": 45
+    },
+    "NextRepearingTaskDate": {
+        "example": "13.06.2024"
+    },
+    "Area": {
+        "example": 1.543,
+        "fallback": 1.234
+    },
+    "PrintPage": {
+        "example": "1"
+    },
+    "PrintPageTotal": {
+        "example": "2"
+    },
+    "DateTime": {
+        "example": "14.09.2023, 13:83"
+    },
+    "width": {
+        "example": "8"
+    },
+    "PhoneNumber": {
+        "example": "+491705688911"
+    },
+    "UserInvitationLink": {
+        "example": "https://app.vialytics.de/join/c2f686887521db0bb5c0d6faa9693e568d0491b7ad96ed19b8afacb548700ac1"
+    },
+    "MailDomain": {
+        "example": "@city.gov"
+    },
+    "TotalTimeSpentHours": {
+        "example": "4"
+    },
+    "TotalTimeSpentMinutes": {
+        "example": "7"
+    },
+    "AmountOfTasksSelected": {
+        "example": "27"
+    },
+    "RepeatingOnTheXDay": {
+        "example": 6
+    },
+    "AmountOfTasksSelectedToConvertToAssets": {
+        "example": "32"
+    },
+    "HalfYear": {
+        "example": 1,
+        "fallback": 2
+    },
+    "Days": {
+        "example": 7
+    },
+    "Months": {
+        "example": 12
+    },
+    "FileName": {
+        "example": "big_image.jpg",
+        "fallback": "bigger_image.jpg"
+    },
+    "Upload_Maximum_Size": {
+        "example": "50 MB",
+        "fallback": "5 MB"
+    },
+    "RSL49KM": {
+        "example": "0",
+        "fallback": ""
+    },
+    "RSL52KM": {
+        "example": "0",
+        "fallback": ""
+    },
+    "RSL50KM": {
+        "example": "0",
+        "fallback": ""
+    },
+    "LeftRSLKM": {
+        "example": "0",
+        "fallback": ""
+    },
+    "TrackControlID": {
+        "example": "786"
+    },
+    "VoiceRecordingDuration": {
+        "example": "00:12"
+    },
+    "VoiceRecordingDurationTotal": {
+        "example": "01:20"
+    },
+    "VoiceRecordingDurationPlayed": {
+        "example": "00:57"
+    },
+    "AmountOfOfflineSavedTasks": {
+        "example": "4"
+    },
+    "MarkersAttachedToTrackControl": {
+        "example": 3,
+        "fallback": 2
+    },
+    "AmountOfConditionAssessmentImagesLeftToSync": {
+        "example": "16087"
+    },
+    "UnsyncedChanges": {
+        "example": "15"
+    },
+    "currentAccuracyMeters": {
+        "example": "50",
+        "fallback": ""
+    },
+    "requiredAccuracyMeters": {
+        "example": "50",
+        "fallback": ""
+    },
+    "AmountOfConditionAssessmentImages": {
+        "example": "476"
+    },
+    "AvailableStorage": {
+        "example": "500"
+    },
+    "RequiredStorage": {
+        "example": "800"
+    },
+    "DownloadingDataRemainingTimeXHYMin": {
+        "example": "1 h 2 min"
+    },
+    "DownloadingDataGlobalPercentage": {
+        "example": "90"
+    },
+    "LoginExpiringDays": {
+        "example": "28"
+    },
+    "SynchronizingProgressPercentage": {
+        "example": "3",
+        "fallback": "3"
+    },
+    "URL": {
+        "text": "URL",
+        "url": "https://vialytics.com"
+    },
+    "AmountOfWorkOrdersAssigned": {
+        "example": "3"
+    },
+    "AmountOfWorkOrdersMarkedAsDone": {
+        "example": "3"
+    },
+    "AmountOfWorkOrdersDueToday": {
+        "example": "3"
+    },
+    "UserEmail": {
+        "example": "c.wehle@vialytics.de"
+    },
+    "UserId": {
+        "example": "af7f6e8d-18a7-4967-b54b-d1d824e5377e"
+    },
+    "AmountOfResultsDynamic": {
+        "example": "560"
+    },
+    "WorkOrderID": {
+        "example": "1239501"
+    },
+    "CostProperty": {
+        "example": "Equipment"
+    },
+    "Currency": {
+        "example": "$"
+    },
+    "CustomProperty": {
+        "example": "Custom Property"
+    }
+}

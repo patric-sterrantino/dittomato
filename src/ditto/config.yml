@@ -1,0 +1,11 @@
+projects: []
+variants:
+    - id: base
+    - id: de
+    - id: fr
+statuses: []
+components:
+    folders: []
+outputs:
+    - format: json
+      framework: i18next

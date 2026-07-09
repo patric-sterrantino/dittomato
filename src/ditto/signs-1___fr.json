@@ -1,0 +1,10 @@
+{
+    "automation-original": "Automatisation",
+    "tooltip.workorderautomation.buttontext-original": "Répondre au sondage",
+    "tooltip.workorderautomation.content-original": "L’automatisation ne fait que commencer ! Elle est maintenant disponible pour les panneaux de signalisation associés. Vous avez des idées ? Partagez-les et contribuez à définir la suite !",
+    "tooltip.workorderautomation.header-original": "Automatisation des tâches",
+    "tooltip.workorderautomation.link-original": "https://docs.google.com/forms/d/e/1FAIpQLSezLp-sTm4hBdXP6zswU7nPF33wqccf6VFJ1xYEu2qqNxP9_g/viewform?usp=header",
+    "trafficsigns.resetsigncondition-original": "Réinitialiser l’état du panneau de signalisation",
+    "trafficsigns.resetsigncondition.content1-original": "Lorsque l’état de cette tâche est",
+    "trafficsigns.resetsigncondition.content2-original": "définissez l’état du panneau de signalisation associé sur"
+}

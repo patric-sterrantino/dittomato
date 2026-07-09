@@ -1,11 +1,12 @@
 {
   "name": "dittomato",
-  "version": "1.33.1",
+  "version": "1.34.0",
   "description": "🍅 Saucy Ditto string editor and JSX string harvester",
   "bin": {
     "dittomato": "./harvest.js"
   },
   "scripts": {
+    "dev": "node sync-server.js",
     "harvest": "node harvest.js",
     "headroom:proxy": "headroom proxy --port 8787",
     "headroom:wrap": "headroom wrap claude"
