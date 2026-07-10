@@ -1,0 +1,49 @@
+rules_version = '2';
+
+// Auth + role model:
+//  - Users sign in with Google (app restricts to the vialytics.de domain).
+//  - Roles live in `acl/{email}` docs: { role: "viewer" | "editor" | "admin" }.
+//      viewer → read      editor → read + write + delete      admin → editor + manage users
+//  - Admins manage roles from the app (Users panel). Bootstrap the FIRST admin in
+//    the Firebase console (or set-role.js); everyone else can be managed in-app.
+//  - A signed-in user with no role may file an `access_requests/{email}` doc; an
+//    admin approves it (which creates their acl doc) or denies it.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn()  { return request.auth != null; }
+    function email()     { return request.auth.token.email; }
+    function vialytics()  { return signedIn() && email().matches('.*@vialytics[.]de$'); }
+    function aclPath()   { return /databases/$(database)/documents/acl/$(email()); }
+    function hasAcl()    { return signedIn() && exists(aclPath()); }
+    function roleOf()    { return get(aclPath()).data.role; }
+    function isViewer()  { return hasAcl() && roleOf() in ['viewer', 'editor', 'admin']; }
+    function isEditor()  { return hasAcl() && roleOf() in ['editor', 'admin']; }
+    function isAdmin()   { return hasAcl() && roleOf() == 'admin'; }
+
+    // v2 chunked index: strings/meta, strings/index_*, strings/variables
+    match /strings/{doc} {
+      allow read:  if isViewer();
+      allow write: if isEditor();
+    }
+    // append-only audit log
+    match /changelog/{doc} {
+      allow read:   if isViewer();
+      allow create: if isEditor();
+      allow update, delete: if false;
+    }
+    // role allowlist — read your own; admins read all and manage
+    match /acl/{userEmail} {
+      allow get:  if signedIn() && (email() == userEmail || isAdmin());
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+    // self-service access requests — user files own; admin reviews
+    match /access_requests/{reqEmail} {
+      allow create, update: if vialytics() && email() == reqEmail;
+      allow get, list, delete: if isAdmin();
+    }
+    // legacy pre-v2 docs — inert; purge with `node migrate.js --purge-old` (admin SDK)
+    match /components/{id} { allow read, write: if false; }
+    match /config/{doc}    { allow read, write: if false; }
+  }
+}

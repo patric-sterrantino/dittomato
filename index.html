@@ -471,6 +471,24 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .save-ind.error{color:var(--red)}
 .char-count,.folder-count,.bfilt-count,.vtpill-count,.usages-badge,.rh-count,.brand-version{font-variant-numeric:tabular-nums}
 .char-count{font-size:10px;color:var(--txt3)}
+/* changelog */
+.cl-list{display:flex;flex-direction:column;gap:1px;max-height:60vh;overflow:auto}
+.cl-empty{padding:24px;text-align:center;color:var(--txt3);font-size:13px}
+.cl-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--radius-sm);font-size:12px;line-height:1.4}
+.cl-row:hover{background:var(--surface2)}
+.cl-time{color:var(--txt3);font-variant-numeric:tabular-nums;white-space:nowrap;flex-shrink:0;font-size:11px}
+.cl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--txt3)}
+.cl-dot.cl-created{background:var(--green)}
+.cl-dot.cl-deleted{background:var(--red)}
+.cl-dot.cl-updated{background:var(--blue,#3b82f6)}
+.cl-id{font-family:var(--font-mono);color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;flex-shrink:0}
+.cl-var{font-size:10px;font-weight:600;color:var(--txt2);background:var(--surface2);border-radius:4px;padding:1px 5px;flex-shrink:0}
+.cl-change{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--txt2)}
+.cl-from{color:var(--txt3);text-decoration:line-through}
+.cl-to{color:var(--txt)}
+.cl-arrow{color:var(--txt3);margin:0 2px}
+.cl-tag{font-size:10px;font-weight:600;color:var(--txt2)}
+.cl-user{color:var(--txt3);font-size:10px;flex-shrink:0}
 .char-warn{color:var(--amber)}
 .char-warn-high{color:var(--red)}
 
@@ -566,6 +584,35 @@ input:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--blue-dim)}
 .nc-field label{font-size:11px;font-weight:500;color:var(--txt2)}
 .nc-field input{font-size:12.5px}
 .nc-field .nc-hint{font-size:10px;color:var(--txt3);margin-top:2px}
+.nc-field .nc-hint.err{color:var(--red)}
+.eh-id-rename{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-left:5px;border:none;background:transparent;color:var(--txt3);border-radius:5px;cursor:pointer;vertical-align:middle;transition:background 120ms,color 120ms}
+.eh-id-rename:hover{background:var(--surface2);color:var(--txt)}
+/* auth gate */
+.auth-gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--bg,#0f1115)}
+.auth-card{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 44px;background:var(--surface,#1a1d24);border:1px solid var(--line2,#2a2e37);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.35);max-width:340px;text-align:center}
+.auth-logo{font-size:42px;line-height:1}
+.auth-title{font-size:20px;font-weight:700;margin:0;color:var(--txt)}
+.auth-msg{font-size:13px;color:var(--txt2);margin:0 0 6px;line-height:1.5}
+.auth-btn{display:inline-flex;align-items:center;gap:10px;padding:10px 18px;background:#fff;color:#3c4043;border:1px solid #dadce0;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:box-shadow 120ms}
+.auth-btn:hover{box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.auth-signout{background:none;border:none;color:var(--txt3);font-size:12px;cursor:pointer;text-decoration:underline}
+.auth-hint{font-size:11px;color:var(--txt3);margin:4px 0 0}
+.role-badge{font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 7px;border-radius:6px;margin-left:6px}
+.role-badge.viewer{background:color-mix(in srgb,var(--amber,#f59e0b) 20%,transparent);color:var(--amber,#f59e0b)}
+.role-badge.editor{background:color-mix(in srgb,var(--green,#22c55e) 20%,transparent);color:var(--green,#22c55e)}
+.role-badge.admin{background:color-mix(in srgb,var(--purple,#8b5cf6) 22%,transparent);color:var(--purple,#8b5cf6)}
+/* users admin panel */
+.usr-sec{margin-bottom:16px}
+.usr-sec h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--txt3);margin:0 0 8px}
+.usr-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--radius-sm);font-size:12.5px}
+.usr-row:hover{background:var(--surface2)}
+.usr-email{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);font-size:12px}
+.usr-row select{height:28px;font-size:12px;background:var(--surface2);border:1px solid var(--line2);border-radius:6px;color:var(--txt);padding:0 6px}
+.usr-req{background:color-mix(in srgb,var(--amber,#f59e0b) 10%,transparent)}
+.usr-add{display:flex;gap:8px;margin-top:8px}
+.usr-add input{flex:1}
+.usr-empty{color:var(--txt3);font-size:12px;padding:6px 8px}
+body.read-only .needs-editor{display:none !important}
 .nc-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
 
 /* editor footer */
@@ -691,10 +738,20 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
     Vocabulary
   </button>
 
+  <button class="btn btn-ghost btn-sm" id="changelogBtn" onclick="openChangelog()">
+    <i class="ph ph-clock-counter-clockwise"></i>
+    Changelog
+  </button>
+
+  <button class="btn btn-ghost btn-sm" id="usersBtn" onclick="openUsers()" style="display:none">
+    <i class="ph ph-users"></i>
+    Users
+  </button>
+
   <div class="keys-wrap">
     <button class="btn btn-ghost btn-sm attn" id="keysBtn" onclick="toggleKeysPop()">
       <span class="key-dots" aria-hidden="true">
-        <span class="conn-dot" id="connDitto" title="Ditto"></span>
+        <span class="conn-dot" id="connDitto" title="Firebase"></span>
         <span class="conn-dot" id="connAnthropic" title="Anthropic"></span>
         <span class="conn-dot" id="connGithub" title="GitHub"></span>
       </span>
@@ -704,13 +761,11 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
     <div class="keys-pop" id="keysPop">
       <h2>API keys</h2>
       <p class="kp-sub">Stored only in this browser. Required to search and save strings.</p>
-      <div class="kp-field">
-        <label>Ditto API key</label>
-        <div class="kp-row">
-          <input type="password" id="dittoKey" placeholder="Ditto key" oninput="persistKey('ditto')" />
-          <button class="btn btn-ghost btn-sm" onclick="toggleKeyVis('dittoKey',this)">Show</button>
-        </div>
-        <div class="kp-hint">Search &amp; save · <code>api.dittowords.com</code></div>
+      <!-- Firebase project is baked in (see FIREBASE_CONFIG); this field is an optional override, hidden by default. -->
+      <div class="kp-field" style="display:none">
+        <label>Firebase config <span class="magic-tag">override</span></label>
+        <textarea id="firebaseConfig" rows="3" placeholder='{"projectId":"my-app","apiKey":"AIza..."}' oninput="persistFirebase()" style="width:100%;box-sizing:border-box;resize:vertical;font-family:var(--font-mono);font-size:11.5px;min-height:52px;background:var(--surface2);border:1px solid var(--line2);border-radius:var(--radius-md);color:var(--txt);padding:8px 11px;outline:none"></textarea>
+        <div class="kp-hint">Overrides the built-in project · <code>firestore.googleapis.com</code></div>
       </div>
       <div class="kp-field">
         <label>Anthropic API key <span class="magic-tag">AI translate</span></label>
@@ -846,6 +901,7 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
           <span class="eh-label" id="editorLabel">Component</span>
           <div class="eh-id-wrap">
             <span class="eh-id" id="editorId" role="button" title="Click to copy ID" onclick="copyId(this.textContent.trim())"></span>
+            <button class="eh-id-rename" id="renameCompBtn" title="Rename ID" onclick="openRename()"><i class="ph ph-pencil-simple" style="font-size:13px"></i></button>
           </div>
         </div>
         <div class="eh-actions">
@@ -907,7 +963,7 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
         <i class="ph ph-x" style="font-size:20px"></i>
       </button>
     </div>
-    <div class="modal-sub" id="ncSub">Creates a new component in Ditto.</div>
+    <div class="modal-sub" id="ncSub">Creates a new string.</div>
     <div class="modal-body">
       <!-- step 1: text + ID -->
       <div id="ncStep1">
@@ -932,6 +988,33 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
           <button class="btn btn-ghost btn-sm" onclick="closeNewComp()">Skip</button>
           <button class="btn btn-primary btn-sm" id="ncSaveTransBtn" onclick="saveNewCompTranslations()">Save translations</button>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- rename component ID modal -->
+<div class="modal-overlay" id="renameModal" onclick="if(event.target===this) closeRename()">
+  <div class="modal" role="dialog" style="max-width:420px" aria-label="Rename component ID">
+    <div class="modal-head">
+      <div class="modal-title">
+        <span class="gl-ico"><i class="ph ph-pencil-simple" style="font-size:18px"></i></span>
+        Rename ID
+      </div>
+      <button class="icon-btn" onclick="closeRename()" aria-label="Close">
+        <i class="ph ph-x" style="font-size:20px"></i>
+      </button>
+    </div>
+    <div class="modal-sub">Renames the key everywhere (all languages + plural forms move with it).</div>
+    <div class="modal-body">
+      <div class="nc-field">
+        <label for="renameId">New component ID</label>
+        <input type="text" id="renameId" placeholder="e.g. settings.save.changes" oninput="var v=sanitizeId(this.value);this.value=v;renameCheck()" onkeydown="if(event.key==='Enter'&&!document.getElementById('renameSaveBtn').disabled)applyRenameComponent()" />
+        <span class="nc-hint" id="renameHint"></span>
+      </div>
+      <div class="nc-foot">
+        <button class="btn btn-ghost btn-sm" onclick="closeRename()">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="renameSaveBtn" onclick="applyRenameComponent()">Rename</button>
       </div>
     </div>
   </div>
@@ -1050,8 +1133,65 @@ body[data-spacing="cozy"] .result-item,body[data-spacing="cozy"] .comp-item{padd
   </div>
 </div>
 
+<div class="modal-overlay" id="changelogModal" onclick="if(event.target===this) closeChangelog()">
+  <div class="modal" role="dialog" aria-label="Changelog">
+    <div class="modal-head">
+      <div class="modal-title">
+        <span class="gl-ico"><i class="ph ph-clock-counter-clockwise" style="font-size:18px"></i></span>
+        Changelog
+        <span class="gl-pill" id="changelogCount"></span>
+      </div>
+      <button class="icon-btn" onclick="closeChangelog()" aria-label="Close">
+        <i class="ph ph-x" style="font-size:20px"></i>
+      </button>
+    </div>
+    <div class="modal-sub">The 50 most recent string changes.</div>
+    <div class="modal-body">
+      <div id="changelogList" class="cl-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="usersModal" onclick="if(event.target===this) closeUsers()">
+  <div class="modal" role="dialog" aria-label="Manage users">
+    <div class="modal-head">
+      <div class="modal-title">
+        <span class="gl-ico"><i class="ph ph-users" style="font-size:18px"></i></span>
+        Users
+      </div>
+      <button class="icon-btn" onclick="closeUsers()" aria-label="Close">
+        <i class="ph ph-x" style="font-size:20px"></i>
+      </button>
+    </div>
+    <div class="modal-sub">Approve access requests and set roles. Changes take effect on the user's next sign-in or reload.</div>
+    <div class="modal-body">
+      <div id="usersBody"><div class="browse-loading"><span class="spinner spinner-dark"></span> Loading…</div></div>
+    </div>
+  </div>
+</div>
+
 <div id="tweaks-root"></div>
 
+<!-- auth gate -->
+<div id="authGate" class="auth-gate" style="display:none">
+  <div class="auth-card">
+    <div class="auth-logo">🍅</div>
+    <h1 class="auth-title">Dittomato</h1>
+    <p class="auth-msg" id="authMsg">Sign in to manage strings.</p>
+    <button class="auth-btn" id="authSignInBtn" onclick="signIn()">
+      <svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+      Sign in with Google
+    </button>
+    <button class="auth-btn" id="authRequestBtn" onclick="requestAccess()" style="display:none">Request access</button>
+    <button class="auth-signout" id="authSignOutBtn" onclick="signOut()" style="display:none">Sign out &amp; try another account</button>
+    <p class="auth-hint">Access is restricted to vialytics.de accounts.</p>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="firestore-rest.js"></script>
 <script>
 /* ── theme ── */
 function toggleTheme() {
@@ -1061,48 +1201,386 @@ function toggleTheme() {
   try { localStorage.setItem('dittomato.theme', next); } catch(e) {}
 }
 
-const API_DITTO     = 'https://api.dittowords.com/v2';
 const API_ANTHROPIC = 'https://api.anthropic.com/v1/messages';
 
-// ── Transition sync ──────────────────────────────────────────────────────────
-// While we migrate off Ditto, every change pushed to Ditto is also mirrored into
-// src/ditto/*.json by the local companion server (npm run dev). Same-origin when
-// the app is served by it; falls back to localhost when opened as a file.
-const SYNC_URL = (location.protocol === 'http:' || location.protocol === 'https:')
-  ? `${location.origin}/sync`
-  : 'http://localhost:4747/sync';
-let _syncWarned = false;
+// ── Firebase (Firestore) — chunked aggregate index, the single source of truth ──
+// All strings live in a few `strings/index_*` docs (built by migrate.js). We
+// load them into memory once (~N reads), search/open entirely in memory, and on
+// save write only the changed field. No Ditto. See firestore-rest.js for helpers.
+const FB = window.FirestoreREST;
+let _db = null;            // firebase.firestore()
+let _dbSig = '';           // config signature the app was initialised for
+let stringsIndex = {};     // key -> entry { base, de, fr,…: string|{form:text}, _master?, name? }
+let _meta = null;          // strings/meta : { chunks, splits, variants, … }
+let _variables = null;     // strings/variables content
+let _stringsLoaded = false;
 
-/**
- * Best-effort mirror of Ditto writes into the JSON files. Never throws — a
- * failed mirror must not break the Ditto save that already succeeded, but it is
- * surfaced once so the transition doesn't silently drift.
- * ops: [{op:'upsert'|'remove'|'removeAll', variant, key, text}]
- */
-async function syncToJson(ops) {
-  const list = Array.isArray(ops) ? ops : [ops];
-  if (!list.length) return { ok: true };
+// The Firebase web config is NOT a secret — it only identifies the project.
+// Data is protected by Auth + Firestore rules (sign-in + acl role), so it's safe
+// to bake in. Users just sign in; no config to paste.
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyB8YvpGO8FLQCd2X2lqLeGgoFNDeZrNVQU',
+  authDomain: 'dittomato-dev.firebaseapp.com',
+  projectId: 'dittomato-dev',
+};
+function getFirebaseConfig() {
+  // An entry in the (hidden) config field overrides the baked-in project.
+  const raw = (document.getElementById('firebaseConfig')?.value || '').trim();
+  if (raw) { try { const cfg = JSON.parse(raw); if (cfg.projectId) return cfg; } catch {} }
+  return FIREBASE_CONFIG;
+}
+function fbDb() {
+  const cfg = getFirebaseConfig();
+  if (!cfg || !window.firebase) return null;
+  const sig = cfg.projectId + '|' + (cfg.apiKey || '');
+  if (!_db || _dbSig !== sig) {
+    try {
+      const app = firebase.apps.length ? firebase.app() : firebase.initializeApp({
+        apiKey: cfg.apiKey, projectId: cfg.projectId,
+        authDomain: cfg.authDomain || `${cfg.projectId}.firebaseapp.com`,
+      });
+      _db = firebase.firestore(app); _dbSig = sig;
+    } catch { _db = null; }
+  }
+  return _db;
+}
+function _fbInvalidate() { _stringsLoaded = false; stringsIndex = {}; _meta = null; _variables = null; }
+
+// ── Auth + roles (Google sign-in, vialytics.de only; roles from acl/{email}) ──
+const AUTH_DOMAIN_ALLOW = 'vialytics.de';
+let _user = null;          // firebase.User
+let _role = null;          // 'viewer' | 'editor' | null
+let _authReady = false;
+
+function initFirebase() {
+  const db = fbDb();
+  if (!db) return false;
+  if (!_authReady) {
+    _authReady = true;
+    firebase.auth().onAuthStateChanged(onAuthChanged);
+  }
+  return true;
+}
+
+async function onAuthChanged(user) {
+  _user = user;
+  if (!user) { _role = null; showAuthGate('signin'); return; }
+  const email = (user.email || '').toLowerCase();
+  if (!email.endsWith('@' + AUTH_DOMAIN_ALLOW)) {
+    showAuthGate('denied', `${email} is not a ${AUTH_DOMAIN_ALLOW} account.`, false);
+    try { await firebase.auth().signOut(); } catch {}
+    _user = null;
+    return;
+  }
+  showAuthGate('loading');
   try {
-    const res = await fetch(SYNC_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ops: list }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.ok) {
-      warnSyncOnce(data.error || data.results?.find(r => !r.ok)?.error || `HTTP ${res.status}`);
-      return { ok: false };
-    }
-    return { ok: true };
-  } catch (e) {
-    warnSyncOnce(e.message);
-    return { ok: false };
+    const snap = await fbDb().doc('acl/' + email).get();
+    _role = snap.exists ? (snap.data().role || null) : null;
+  } catch (e) { _role = null; }
+  if (!_role) {
+    showAuthGate('denied', 'You don’t have access yet. Request it below and an admin will approve you.', true);
+    return;
+  }
+  hideAuthGate();
+  applyRoleUI();
+  _browseLoaded = false;
+  showBrowse();
+}
+
+function signIn() {
+  if (!initFirebase()) { toast('Add your Firebase config first', 'error'); toggleKeysPop(true); return; }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ hd: AUTH_DOMAIN_ALLOW }); // hint the workspace domain
+  firebase.auth().signInWithPopup(provider).catch(e => {
+    if (e && e.code !== 'auth/popup-closed-by-user') toast('Sign-in failed: ' + e.message, 'error');
+  });
+}
+function signOut() { if (window.firebase && firebase.apps.length) firebase.auth().signOut(); }
+
+function showAuthGate(mode, msg, canRequest) {
+  const gate = document.getElementById('authGate');
+  if (gate) gate.style.display = 'flex';
+  const m = document.getElementById('authMsg');
+  const signInBtn = document.getElementById('authSignInBtn');
+  const signOutBtn = document.getElementById('authSignOutBtn');
+  const requestBtn = document.getElementById('authRequestBtn');
+  const show = (el, on) => { if (el) el.style.display = on ? '' : 'none'; };
+  if (mode === 'signin') {
+    if (m) m.textContent = 'Sign in to manage strings.';
+    show(signInBtn, true); show(signOutBtn, false); show(requestBtn, false);
+  } else if (mode === 'loading') {
+    if (m) m.textContent = 'Checking access…';
+    show(signInBtn, false); show(signOutBtn, false); show(requestBtn, false);
+  } else if (mode === 'denied') {
+    if (m) m.textContent = msg || 'Access denied.';
+    show(signInBtn, false); show(signOutBtn, true); show(requestBtn, !!canRequest);
   }
 }
-function warnSyncOnce(msg) {
-  if (_syncWarned) return;
-  _syncWarned = true;
-  toast(`Saved to Ditto, but JSON sync failed (${msg}). Start it with "npm run dev".`, 'error');
+function hideAuthGate() { const g = document.getElementById('authGate'); if (g) g.style.display = 'none'; }
+
+async function requestAccess() {
+  const email = (_user && _user.email || '').toLowerCase();
+  if (!email) return;
+  const btn = document.getElementById('authRequestBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Requesting…'; }
+  try {
+    await fbDb().doc('access_requests/' + email).set({
+      email, requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    const m = document.getElementById('authMsg');
+    if (m) m.textContent = 'Access requested ✓ — an admin will approve you. Reload once you’re notified.';
+    if (btn) btn.style.display = 'none';
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Request access'; }
+    toast('Request failed: ' + e.message, 'error');
+  }
+}
+
+// ── Admin: manage users (roles + access requests) ─────────────────────────────
+function closeUsers() { document.getElementById('usersModal').classList.remove('open'); }
+async function openUsers() {
+  if (!isAdminRole()) return;
+  document.getElementById('usersModal').classList.add('open');
+  await loadUsers();
+}
+async function loadUsers() {
+  const body = document.getElementById('usersBody');
+  const db = fbDb();
+  try {
+    const [aclSnap, reqSnap] = await Promise.all([
+      db.collection('acl').get(),
+      db.collection('access_requests').get().catch(() => ({ docs: [] })),
+    ]);
+    const users = aclSnap.docs.map(d => ({ email: d.id, role: d.data().role || 'viewer' }))
+      .sort((a, b) => a.email.localeCompare(b.email));
+    const known = new Set(users.map(u => u.email));
+    const reqs = (reqSnap.docs || []).map(d => d.id).filter(e => !known.has(e)).sort();
+    const roleSel = (email, role) => `<select onchange="setUserRole('${esc(email)}',this.value)">` +
+      ['viewer', 'editor', 'admin'].map(r => `<option value="${r}"${r === role ? ' selected' : ''}>${r}</option>`).join('') + '</select>';
+
+    let html = '<div class="usr-sec"><h3>Pending requests</h3>';
+    html += reqs.length ? reqs.map(e => `<div class="usr-row usr-req">
+        <span class="usr-email">${esc(e)}</span>
+        <button class="btn btn-ghost btn-sm" onclick="approveRequest('${esc(e)}','viewer')">Approve · viewer</button>
+        <button class="btn btn-ghost btn-sm" onclick="approveRequest('${esc(e)}','editor')">editor</button>
+        <button class="icon-btn danger" title="Deny" onclick="denyRequest('${esc(e)}')"><i class="ph ph-x" style="font-size:15px"></i></button>
+      </div>`).join('') : '<div class="usr-empty">No pending requests.</div>';
+    html += '</div>';
+
+    html += `<div class="usr-sec"><h3>Users (${users.length})</h3>`;
+    html += users.map(u => `<div class="usr-row">
+        <span class="usr-email">${esc(u.email)}</span>
+        ${roleSel(u.email, u.role)}
+        <button class="icon-btn danger" title="Remove" onclick="removeUser('${esc(u.email)}')"><i class="ph ph-trash" style="font-size:15px"></i></button>
+      </div>`).join('');
+    html += `<div class="usr-add">
+        <input type="text" id="usrAddEmail" placeholder="name@${AUTH_DOMAIN_ALLOW}" onkeydown="if(event.key==='Enter')addUser()" />
+        <select id="usrAddRole"><option value="viewer">viewer</option><option value="editor">editor</option><option value="admin">admin</option></select>
+        <button class="btn btn-primary btn-sm" onclick="addUser()">Add</button>
+      </div></div>`;
+    body.innerHTML = html;
+  } catch (e) {
+    body.innerHTML = `<div class="usr-empty">Couldn’t load users: ${esc(e.message)}</div>`;
+  }
+}
+async function setUserRole(email, role) {
+  try {
+    await fbDb().doc('acl/' + email).set({ role, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    toast(`${email} → ${role}`, 'success');
+    if (email === (_user && _user.email || '').toLowerCase()) { _role = role; applyRoleUI(); } // changed own role
+    loadUsers();
+  } catch (e) { toast('Failed: ' + e.message, 'error'); }
+}
+async function removeUser(email) {
+  try { await fbDb().doc('acl/' + email).delete(); toast(`Removed ${email}`, 'success'); loadUsers(); }
+  catch (e) { toast('Failed: ' + e.message, 'error'); }
+}
+async function approveRequest(email, role) {
+  try {
+    await fbDb().doc('acl/' + email).set({ role, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    await fbDb().doc('access_requests/' + email).delete();
+    toast(`Approved ${email} as ${role}`, 'success');
+    loadUsers();
+  } catch (e) { toast('Failed: ' + e.message, 'error'); }
+}
+async function denyRequest(email) {
+  try { await fbDb().doc('access_requests/' + email).delete(); toast(`Denied ${email}`, 'info'); loadUsers(); }
+  catch (e) { toast('Failed: ' + e.message, 'error'); }
+}
+async function addUser() {
+  const email = (document.getElementById('usrAddEmail').value || '').trim().toLowerCase();
+  const role = document.getElementById('usrAddRole').value;
+  if (!email) return;
+  if (!email.endsWith('@' + AUTH_DOMAIN_ALLOW)) { toast(`Must be a ${AUTH_DOMAIN_ALLOW} address`, 'error'); return; }
+  await setUserRole(email, role);
+  const inp = document.getElementById('usrAddEmail'); if (inp) inp.value = '';
+}
+
+function isEditorRole() { return _role === 'editor' || _role === 'admin'; }
+function isAdminRole() { return _role === 'admin'; }
+function requireEditor() { if (!isEditorRole()) throw new Error('You have read-only access.'); }
+
+function applyRoleUI() {
+  const editor = isEditorRole();
+  document.body.classList.toggle('read-only', !editor);
+  // role badge in the topbar
+  let badge = document.getElementById('roleBadge');
+  if (!badge) {
+    const anchor = document.getElementById('keysBtn');
+    if (anchor && anchor.parentElement) {
+      badge = document.createElement('span');
+      badge.id = 'roleBadge';
+      anchor.parentElement.insertBefore ? anchor.parentElement.insertBefore(badge, anchor) : anchor.parentElement.prepend(badge);
+    }
+  }
+  if (badge) {
+    badge.className = 'role-badge ' + (_role || 'viewer');
+    badge.textContent = isAdminRole() ? 'admin' : (editor ? 'editor' : 'read-only');
+    badge.title = _user ? _user.email : '';
+  }
+  // hide the obvious write entry points for viewers
+  ['renameCompBtn', 'deleteCompBtn', 'pluralsBtn', 'newCompBtn'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = editor ? '' : 'none';
+  });
+  const foot = document.getElementById('editorFoot');
+  if (foot && !editor) foot.style.display = 'none';
+  const usersBtn = document.getElementById('usersBtn');
+  if (usersBtn) usersBtn.style.display = isAdminRole() ? '' : 'none';
+}
+
+// Which chunk doc owns a key (routing shared with the CLI via firestore-rest.js).
+function chunkDocId(key) {
+  if (!_meta || !_meta.chunks || !_meta.chunks.length) return null;
+  const idx = FB.chunkIndexForKey(key, _meta.splits || []);
+  return _meta.chunks[Math.min(idx, _meta.chunks.length - 1)];
+}
+function baseTextOf(entry) {
+  if (!entry) return null;
+  const b = entry.base;
+  if (typeof b === 'string') return b;
+  if (b && typeof b === 'object') return b[entry._master] || b.other || Object.values(b)[0] || '';
+  return '';
+}
+
+// Load the chunked index into memory once per session.
+async function ensureStrings(force) {
+  const db = fbDb();
+  if (!db) throw new Error('Add your Firebase config first (API keys → Firebase).');
+  if (_stringsLoaded && !force) return stringsIndex;
+  const metaSnap = await db.doc('strings/meta').get();
+  if (!metaSnap.exists) throw new Error('No strings/meta found — run the migration (node migrate.js).');
+  _meta = metaSnap.data();
+  const snaps = await Promise.all((_meta.chunks || []).map(id => db.doc('strings/' + id).get()));
+  stringsIndex = {};
+  for (const s of snaps) Object.assign(stringsIndex, s.data() || {});
+  _stringsLoaded = true;
+  const reads = 1 + (_meta.chunks ? _meta.chunks.length : 0);
+  toast(`✅ ${Object.keys(stringsIndex).length.toLocaleString()} strings loaded (${reads} reads)`, 'success');
+  return stringsIndex;
+}
+
+// One entry → Ditto `?filter=all`-shaped rows, so browse/search/editor code is reused.
+function entryToRows(key, entry) {
+  const rows = [];
+  const meta = entry.name ? { name: entry.name } : {};
+  rows.push({ id: key, text: baseTextOf(entry) || '', ...meta }); // base component row (always)
+  const b = entry.base;
+  if (b && typeof b === 'object') for (const f of Object.keys(b)) rows.push({ id: `${key}_${f}`, pluralForm: f, text: b[f], ...meta });
+  for (const loc of Object.keys(entry)) {
+    if (loc === 'base' || loc === '_master' || loc === 'name') continue;
+    const v = entry[loc];
+    if (v && typeof v === 'object') for (const f of Object.keys(v)) rows.push({ id: `${key}_${f}`, pluralForm: f, variantId: loc, text: v[f] });
+    else if (v != null && v !== '') rows.push({ id: key, variantId: loc, text: v });
+  }
+  return rows;
+}
+async function getFbRows(force) {
+  await ensureStrings(force);
+  const rows = [];
+  for (const key of Object.keys(stringsIndex)) rows.push(...entryToRows(key, stringsIndex[key]));
+  return rows;
+}
+
+/**
+ * Apply write ops to Firestore with PARTIAL field updates (one field per op → 1
+ * write op, tiny payload, no cross-key clobber), update the in-memory index, and
+ * append a changelog entry per change. Throws on failure so the caller can react.
+ * ops: [{op:'upsert'|'remove'|'removeAll', variant, key, text}]
+ *   key '{id}_{form}' targets a plural form; variant '_master' sets the form order.
+ */
+async function fbWrite(ops) {
+  const list = Array.isArray(ops) ? ops : [ops];
+  if (!list.length) return;
+  requireEditor();
+  const db = fbDb();
+  if (!db) throw new Error('No Firebase config');
+  if (!_meta) await ensureStrings();
+  const FieldPath = firebase.firestore.FieldPath;
+  const FieldValue = firebase.firestore.FieldValue;
+  const existed = new Set(Object.keys(stringsIndex));
+  const logs = [];
+
+  for (const op of list) {
+    if (op.op === 'removeAll') {
+      const id = op.key, chunkId = chunkDocId(id);
+      const before = stringsIndex[id];
+      if (chunkId) await db.doc('strings/' + chunkId).update(new FieldPath(id), FieldValue.delete());
+      delete stringsIndex[id];
+      logs.push({ action: 'deleted', id, variant: null, from: baseTextOf(before), to: null });
+      continue;
+    }
+    const m = op.key.match(FB.PLURAL_RE);
+    const id = m ? m[1] : op.key;
+    const form = m ? m[2] : null;
+    const variant = op.variant;
+    const chunkId = chunkDocId(id);
+    if (!chunkId) throw new Error('String index not loaded');
+    const ref = db.doc('strings/' + chunkId);
+    const entry = stringsIndex[id] || (stringsIndex[id] = { base: '' });
+
+    if (variant === '_master') { // plural form ordering
+      await ref.update(new FieldPath(id, '_master'), op.text);
+      entry._master = op.text;
+      continue;
+    }
+    if (op.op === 'remove') {
+      if (form) {
+        await ref.update(new FieldPath(id, variant, form), FieldValue.delete());
+        if (entry[variant] && typeof entry[variant] === 'object') delete entry[variant][form];
+      } else {
+        await ref.update(new FieldPath(id, variant), FieldValue.delete());
+        delete entry[variant];
+      }
+      logs.push({ action: 'updated', id, variant, from: null, to: null });
+      continue;
+    }
+    // upsert
+    let from;
+    if (form) {
+      if (entry[variant] && typeof entry[variant] === 'object') {
+        from = entry[variant][form];
+        await ref.update(new FieldPath(id, variant, form), op.text);
+        entry[variant][form] = op.text;
+      } else { // scalar/missing → replace the variant with a fresh forms-map
+        from = undefined;
+        const map = { [form]: op.text };
+        await ref.update(new FieldPath(id, variant), map);
+        entry[variant] = map;
+      }
+    } else {
+      from = typeof entry[variant] === 'string' ? entry[variant] : undefined;
+      await ref.update(new FieldPath(id, variant), op.text);
+      entry[variant] = op.text;
+    }
+    logs.push({ action: existed.has(id) ? 'updated' : 'created', id, variant, from: from == null ? null : String(from), to: op.text });
+  }
+
+  // Changelog is best-effort — never fail a successful save because logging failed.
+  try {
+    await Promise.all(logs.map(l => db.collection('changelog').add({
+      ts: firebase.firestore.FieldValue.serverTimestamp(), user: 'unknown', ...l,
+    })));
+  } catch (e) { /* ignore */ }
 }
 
 const LANG_NAMES = { de: 'German', fr: 'French', es: 'Spanish', it: 'Italian', nl: 'Dutch' };
@@ -1159,10 +1637,10 @@ function sparkle(size = 16) {
 }
 
 /* ── keys ── */
-const LS = { ditto: 'dittomato.dittoKey', anthropic: 'dittomato.anthropicKey',
-             github: 'dittomato.githubKey', githubRepos: 'dittomato.githubRepos' };
+const LS = { anthropic: 'dittomato.anthropicKey',
+             github: 'dittomato.githubKey', githubRepos: 'dittomato.githubRepos',
+             firebase: 'dittomato.firebase' };
 const DEFAULT_GITHUB_REPOS = 'vialytics/milky-way-ui, vialytics/ui-components, vialytics/ios-app-e2e-tests, vialytics/ios_app, vialytics/planning-tool, vialytics/streetart, vialytics/admin-backend-wui, vialytics/road-safety, vialytics/core-api';
-function getDittoKey()     { return document.getElementById('dittoKey').value.trim(); }
 function getAnthropicKey() { return document.getElementById('anthropicKey').value.trim(); }
 function getGithubKey()    { return (document.getElementById('githubKey')?.value || '').trim(); }
 function getGithubRepos()  {
@@ -1172,11 +1650,12 @@ function getGithubRepos()  {
 
 function loadKeys() {
   try {
-    const d = localStorage.getItem(LS.ditto), a = localStorage.getItem(LS.anthropic);
+    const a = localStorage.getItem(LS.anthropic);
     const g = localStorage.getItem(LS.github), gr = localStorage.getItem(LS.githubRepos);
-    if (d)  document.getElementById('dittoKey').value     = d;
+    const fb = localStorage.getItem(LS.firebase);
     if (a)  document.getElementById('anthropicKey').value  = a;
     if (g)  document.getElementById('githubKey').value     = g;
+    if (fb) document.getElementById('firebaseConfig').value = fb;
     // Default the usage-search repos to the vialytics set until the user customises them.
     if (gr) {
       document.getElementById('githubRepos').value = gr;
@@ -1188,12 +1667,20 @@ function loadKeys() {
 }
 function persistKey(which) {
   try {
-    const id  = which === 'ditto' ? 'dittoKey' : 'anthropicKey';
-    const val = document.getElementById(id).value.trim();
-    if (val) localStorage.setItem(LS[which], val); else localStorage.removeItem(LS[which]);
+    const val = document.getElementById('anthropicKey').value.trim();
+    if (val) localStorage.setItem(LS.anthropic, val); else localStorage.removeItem(LS.anthropic);
   } catch(e) {}
   updateConnStatus();
-  if (which === 'ditto' && getDittoKey()) { _browseLoaded = false; showBrowse(); }
+}
+function persistFirebase() {
+  try {
+    const val = (document.getElementById('firebaseConfig')?.value || '').trim();
+    if (val) localStorage.setItem(LS.firebase, val); else localStorage.removeItem(LS.firebase);
+  } catch(e) {}
+  _db = null; _fbInvalidate();
+  updateConnStatus();
+  // (Re)initialise Firebase + auth; onAuthChanged drives the gate and the load.
+  if (getFirebaseConfig()) initFirebase();
 }
 function persistGithub(which) {
   try {
@@ -1206,16 +1693,18 @@ function persistGithub(which) {
   showUsagesSection();
 }
 function updateConnStatus() {
-  const d = !!getDittoKey(), a = !!getAnthropicKey(), g = !!getGithubKey();
+  const a = !!getAnthropicKey(), g = !!getGithubKey();
+  const f = !!getFirebaseConfig();
   const dEl = document.getElementById('connDitto'), aEl = document.getElementById('connAnthropic');
   const gEl = document.getElementById('connGithub');
-  if (dEl) dEl.classList.toggle('on', d);
+  if (dEl) dEl.classList.toggle('on', f); // the primary connection is now Firebase
   if (aEl) aEl.classList.toggle('on', a);
   if (gEl) gEl.classList.toggle('on', g);
+  // Firebase is the source of truth; Anthropic is optional (Magic Translate).
   const kb = document.getElementById('keysBtnLabel');
-  if (kb) kb.textContent = (d && a) ? 'Keys connected' : (d || a) ? 'Finish setup' : 'Add API keys';
+  if (kb) kb.textContent = f ? 'Keys connected' : 'Add Firebase config';
   const kbBtn = document.getElementById('keysBtn');
-  if (kbBtn) kbBtn.classList.toggle('attn', !(d && a));
+  if (kbBtn) kbBtn.classList.toggle('attn', !f);
 }
 function toggleKeyVis(id, btn) {
   const inp = document.getElementById(id);
@@ -1284,6 +1773,47 @@ function buildVocab() {
 }
 function openVocab()  { document.getElementById('vocabModal').classList.add('open'); const inp = document.getElementById('vocabSearch'); if (inp) { inp.value = ''; filterGlossary(''); setTimeout(() => inp.focus(), 50); } }
 function closeVocab() { document.getElementById('vocabModal').classList.remove('open'); }
+
+// ── Changelog ───────────────────────────────────────────────────────────────
+function closeChangelog() { document.getElementById('changelogModal').classList.remove('open'); }
+async function openChangelog() {
+  const modal = document.getElementById('changelogModal');
+  const list = document.getElementById('changelogList');
+  const count = document.getElementById('changelogCount');
+  modal.classList.add('open');
+  list.innerHTML = '<div class="browse-loading"><span class="spinner spinner-dark"></span> Loading…</div>';
+  if (count) count.textContent = '';
+  const db = fbDb();
+  if (!db) { list.innerHTML = '<div class="cl-empty">Add your Firebase config first.</div>'; return; }
+  try {
+    const snap = await db.collection('changelog').orderBy('ts', 'desc').limit(50).get();
+    if (snap.empty) { list.innerHTML = '<div class="cl-empty">No changes recorded yet.</div>'; return; }
+    if (count) count.textContent = `${snap.size} recent`;
+    const rows = snap.docs.map(d => {
+      const c = d.data();
+      const t = c.ts && c.ts.toDate ? c.ts.toDate() : null;
+      const time = t ? t.toLocaleString([], { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+      const badge = { created: 'cl-created', deleted: 'cl-deleted', updated: 'cl-updated' }[c.action] || 'cl-updated';
+      const vlabel = c.variant && c.variant !== 'base' ? `<span class="cl-var">${esc(c.variant)}</span>` : (c.variant === 'base' ? '<span class="cl-var">base</span>' : '');
+      let change;
+      if (c.action === 'created') change = `<span class="cl-to">${esc(trunc(c.to || '', 60))}</span> <span class="cl-tag">created</span>`;
+      else if (c.action === 'deleted') change = `<span class="cl-tag">deleted</span> <span class="cl-from">${esc(trunc(c.from || '', 60))}</span>`;
+      else change = `<span class="cl-from">${esc(trunc(c.from || '', 40))}</span> <span class="cl-arrow">→</span> <span class="cl-to">${esc(trunc(c.to || '', 40))}</span>`;
+      return `<div class="cl-row">
+        <span class="cl-time">${esc(time)}</span>
+        <span class="cl-dot ${badge}"></span>
+        <span class="cl-id" title="${esc(c.id || '')}">${esc(c.id || '')}</span>
+        ${vlabel}
+        <span class="cl-change">${change}</span>
+        <span class="cl-user">${esc(c.user || '')}</span>
+      </div>`;
+    }).join('');
+    list.innerHTML = rows;
+  } catch (e) {
+    list.innerHTML = `<div class="cl-empty">Couldn’t load changelog: ${esc(e.message)}</div>`;
+  }
+}
+function trunc(s, n) { s = String(s); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
 
 // ── Left panel unified search + browse ────────────────────────────────────
 let _browseLoaded = false;
@@ -1371,20 +1901,14 @@ function missingVariantsFor(baseId, cov) {
 
 let _browseData = [];
 async function loadBrowse() {
-  const k = getDittoKey();
-  if (!k) { toast('Add your Ditto API key first', 'error'); switchLeftTab('search'); return; }
+  if (!getFirebaseConfig()) { toast('Add your Firebase config first', 'error'); toggleKeysPop(true); return; }
   document.getElementById('browseList').innerHTML = '<div class="browse-loading"><span class="spinner spinner-dark"></span> Loading…</div>';
   try {
     await ensureVariants();
-    const covFilter = encodeURIComponent(JSON.stringify({ variants: [{ id: 'all' }] }));
-    const [res, covRes] = await Promise.all([
-      fetch(`${API_DITTO}/components`, { headers: { Authorization: k } }),
-      allVariants.length ? fetch(`${API_DITTO}/components?filter=${covFilter}`, { headers: { Authorization: k } }) : Promise.resolve(null)
-    ]);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const rows = await res.json();
-    // Build plural-aware variant coverage from the all-variants fetch.
-    const cov = (covRes && covRes.ok) ? buildCoverage(await covRes.json()) : { requiredForms: new Map(), got: new Map() };
+    // Firestore is the source of truth — one adapter yields Ditto-shaped rows.
+    const rows = await getFbRows(true);
+    // Build plural-aware variant coverage from the full row set.
+    const cov = buildCoverage(rows);
     // Real components only: no variant rows, no plural-form rows; deduped by id.
     const seen = new Set();
     _browseData = rows.filter(c => !c.variantId && !isPluralRow(c) && !seen.has(c.id) && seen.add(c.id));
@@ -1505,18 +2029,12 @@ function renderBrowse(selectedId) {
 // scroll position and selection — used after a change so the tree stays current.
 async function refreshBrowse() {
   if (!_browseLoaded) return;
-  const k = getDittoKey();
-  if (!k) return;
+  if (!getFirebaseConfig()) return;
   try {
     await ensureVariants();
-    const covFilter = encodeURIComponent(JSON.stringify({ variants: [{ id: 'all' }] }));
-    const [res, covRes] = await Promise.all([
-      fetch(`${API_DITTO}/components`, { headers: { Authorization: k } }),
-      allVariants.length ? fetch(`${API_DITTO}/components?filter=${covFilter}`, { headers: { Authorization: k } }) : Promise.resolve(null)
-    ]);
-    if (!res.ok) return;
-    const rows = await res.json();
-    const cov = (covRes && covRes.ok) ? buildCoverage(await covRes.json()) : { requiredForms: new Map(), got: new Map() };
+    // Rebuild from the in-memory cache (writes keep it fresh) — no re-list needed.
+    const rows = await getFbRows();
+    const cov = buildCoverage(rows);
     const seen = new Set();
     _browseData = rows.filter(c => !c.variantId && !isPluralRow(c) && !seen.has(c.id) && seen.add(c.id));
     for (const comp of _browseData) comp._missingVariants = missingVariantsFor(comp.id, cov);
@@ -1546,8 +2064,7 @@ function selectBrowseComp(idx) {
 
 
 function openNewComp() {
-  const k = getDittoKey();
-  if (!k) { toast('Add your Ditto API key first', 'error'); toggleKeysPop(true); return; }
+  if (!getFirebaseConfig()) { toast('Add your Firebase config first', 'error'); toggleKeysPop(true); return; }
   document.getElementById('ncText').value = '';
   document.getElementById('ncId').value = '';
   document.getElementById('ncSubmitBtn').disabled = false;
@@ -1581,46 +2098,34 @@ async function submitNewComp() {
   const devId = document.getElementById('ncId').value.trim();
   if (!text) { document.getElementById('ncText').focus(); return; }
   if (!devId) { document.getElementById('ncId').focus(); return; }
-  const k = getDittoKey();
-  if (!k) { toast('Add your Ditto API key first', 'error'); return; }
+  if (!getFirebaseConfig()) { toast('Add your Firebase config first', 'error'); return; }
+  if (stringsIndex[devId]) { toast(`"${devId}" already exists`, 'error'); document.getElementById('ncId').focus(); return; }
 
   const btn = document.getElementById('ncSubmitBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>';
 
   try {
-    const res = await fetch(`${API_DITTO}/components`, {
-      method: 'POST',
-      headers: { Authorization: k, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ components: [{ name: text, text, developerId: devId }] }),
-    });
-    if (res.status === 201 || res.status === 200) {
-      _ncCreatedId = devId;
-      await syncToJson({ op: 'upsert', variant: 'base', key: devId, text });
-      toast(`Created "${devId}"`, 'success');
-      // Move to step 2 — translations
-      await ensureVariants();
-      if (!allVariants || allVariants.length === 0) { closeNewComp(); return; }
-      document.getElementById('ncStep1').style.display = 'none';
-      document.getElementById('ncSub').textContent = 'Optionally add translations for the new component.';
-      const fields = allVariants.map(v =>
-        `<div class="nc-field">
-          <label>${langName(v) || v.name || v.id}</label>
-          <input type="text" id="nct-${v.id}" placeholder="Translation…" />
-        </div>`
-      ).join('');
-      document.getElementById('ncTransFields').innerHTML = fields;
-      document.getElementById('ncStep2').style.display = '';
-      document.getElementById('ncTransFields').querySelector('input')?.focus();
-    } else {
-      const err = await res.json().catch(() => ({}));
-      const msg = err.message || err.error || `HTTP ${res.status}`;
-      toast(`Failed: ${msg}`, 'error');
-      btn.disabled = false;
-      btn.textContent = 'Create component';
-    }
+    await fbWrite({ op: 'upsert', variant: 'base', key: devId, text });
+    _ncCreatedId = devId;
+    toast(`Created "${devId}"`, 'success');
+    refreshBrowse();
+    // Move to step 2 — translations
+    await ensureVariants();
+    if (!allVariants || allVariants.length === 0) { closeNewComp(); return; }
+    document.getElementById('ncStep1').style.display = 'none';
+    document.getElementById('ncSub').textContent = 'Optionally add translations for the new component.';
+    const fields = allVariants.map(v =>
+      `<div class="nc-field">
+        <label>${langName(v) || v.name || v.id}</label>
+        <input type="text" id="nct-${v.id}" placeholder="Translation…" />
+      </div>`
+    ).join('');
+    document.getElementById('ncTransFields').innerHTML = fields;
+    document.getElementById('ncStep2').style.display = '';
+    document.getElementById('ncTransFields').querySelector('input')?.focus();
   } catch (e) {
-    toast(`Network error: ${e.message}`, 'error');
+    toast(`Failed: ${e.message}`, 'error');
     btn.disabled = false;
     btn.textContent = 'Create component';
   }
@@ -1628,7 +2133,6 @@ async function submitNewComp() {
 
 async function saveNewCompTranslations() {
   if (!_ncCreatedId) { closeNewComp(); return; }
-  const k = getDittoKey();
   const btn = document.getElementById('ncSaveTransBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>';
@@ -1637,19 +2141,11 @@ async function saveNewCompTranslations() {
     const text = document.getElementById(`nct-${v.id}`)?.value.trim();
     if (!text) continue;
     try {
-      const res = await fetch(`${API_DITTO}/components`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: k },
-        body: JSON.stringify({ updates: [{ developerId: _ncCreatedId, text }], variantId: v.id }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.success) {
-        saved++;
-        await syncToJson({ op: 'upsert', variant: v.id, key: _ncCreatedId, text });
-      } else failed++;
+      await fbWrite({ op: 'upsert', variant: v.id, key: _ncCreatedId, text });
+      saved++;
     } catch { failed++; }
   }
-  if (saved > 0) toast(`Saved ${saved} translation${saved > 1 ? 's' : ''}`, 'success');
+  if (saved > 0) { toast(`Saved ${saved} translation${saved > 1 ? 's' : ''}`, 'success'); refreshBrowse(); }
   if (failed > 0) toast(`${failed} translation${failed > 1 ? 's' : ''} failed to save`, 'error');
   closeNewComp();
 }
@@ -1671,16 +2167,15 @@ function buildGlossaryPrompt() {
 /* ── Ditto fetch ── */
 async function ensureVariants() {
   if (allVariants.length) return;
-  const res = await fetch(`${API_DITTO}/variants`, { headers: { Authorization: getDittoKey() } });
-  if (!res.ok) throw new Error('Could not fetch variants');
-  allVariants = await res.json();
+  if (!_meta) { try { await ensureStrings(); } catch { /* fall through to default */ } }
+  if (_meta && Array.isArray(_meta.variants) && _meta.variants.length) { allVariants = _meta.variants; return; }
+  allVariants = [{ id: 'de', name: 'German' }, { id: 'fr', name: 'French' }];
 }
 
 async function doSearch() {
   const q = document.getElementById('searchQuery').value.trim().toLowerCase();
   if (!q) return;
-  const k = getDittoKey();
-  if (!k) { toast('Add your Ditto API key first', 'error'); toggleKeysPop(true); return; }
+  if (!getFirebaseConfig()) { toast('Add your Firebase config first', 'error'); toggleKeysPop(true); return; }
 
   const btn = document.getElementById('searchBtn');
   btn.innerHTML = '<span class="spinner"></span>';
@@ -1689,10 +2184,7 @@ async function doSearch() {
 
   try {
     await ensureVariants();
-    const filter = encodeURIComponent(JSON.stringify({ variants: [{ id: 'all' }] }));
-    const res = await fetch(`${API_DITTO}/components?filter=${filter}`, { headers: { Authorization: k } });
-    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message||`HTTP ${res.status}`); }
-    const rows = await res.json();
+    const rows = await getFbRows();
     const cov = buildCoverage(rows);
 
     // Group by base id so plural forms fold into their component (never standalone).
@@ -1782,31 +2274,33 @@ async function _doSelectItem(i) {
   ed.style.display = 'flex';
   document.getElementById('editorLabel').textContent = selectedComp.name || selectedComp.id;
   document.getElementById('editorId').textContent = selectedComp.id;
-  // Delete only exists for deletable text items — hide it for library components.
   const delBtn = document.getElementById('deleteCompBtn');
-  if (delBtn) delBtn.style.display = componentKind(selectedComp).deletable ? '' : 'none';
+  if (delBtn) delBtn.style.display = ''; // we own the data — every string is deletable
   document.getElementById('variantEditor').innerHTML =
     '<div class="loading-variants"><span class="spinner spinner-dark"></span> Loading variants…</div>';
   document.getElementById('editorFoot').style.display = 'none';
 
   try {
     await ensureVariants();
-    const filter = encodeURIComponent(JSON.stringify({ variants: [{ id: 'all' }] }));
-    const res = await fetch(`${API_DITTO}/components?filter=${filter}`, { headers: { Authorization: getDittoKey() } });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const all = await res.json();
+    // Read the entry straight from the in-memory index — no network call.
+    const entry = stringsIndex[selectedComp.id] || {};
     variantData = {};
-    all.filter(c => c.id === selectedComp.id).forEach(c => {
-      const vid = c.variantId ?? 'base';
-      variantData[vid] = { text: c.text ?? '', originalText: c.text ?? '', status: c.status };
-    });
-    // Plural-form count for this component (button badge)
     const plForms = new Set();
-    all.forEach(c => { if (c.pluralForm && baseIdOf(c) === selectedComp.id) plForms.add(c.pluralForm); });
+    for (const loc of Object.keys(entry)) {
+      if (loc === '_master' || loc === 'name') continue;
+      const v = entry[loc];
+      if (v && typeof v === 'object') {
+        Object.keys(v).forEach(f => plForms.add(f));
+        variantData[loc] = { text: '', originalText: '', status: undefined, plurals: v };
+      } else {
+        variantData[loc] = { text: v ?? '', originalText: v ?? '', status: undefined };
+      }
+    }
+    if (!variantData.base) variantData.base = { text: '', originalText: '', status: undefined };
     const plCount = document.getElementById('pluralsBtnCount');
     if (plCount) plCount.textContent = plForms.size ? ` · ${plForms.size}` : '';
     renderVariantEditor();
-    document.getElementById('editorFoot').style.display = 'flex';
+    if (isEditorRole()) document.getElementById('editorFoot').style.display = 'flex';
     if (window.TWEAKS.autofill && getAnthropicKey()) {
       const anyMissing = allVariants.some(v => !variantData[v.id]?.text);
       if (anyMissing) setTimeout(() => translateAll(), 150);
@@ -1850,6 +2344,12 @@ function renderVariantEditor() {
   Object.keys(pendingChanges).forEach(vid => setIndicator(vid, 'unsaved', 'Unsaved'));
   updateTranslateAllBtn();
   updateChangesSummary();
+  // Viewers get a read-only editor: no editing, no save/translate affordances.
+  if (!isEditorRole()) {
+    document.querySelectorAll('#variantEditor .variant-textarea').forEach(t => { t.readOnly = true; });
+    document.querySelectorAll('#variantEditor .magic').forEach(b => { b.style.display = 'none'; });
+    const foot = document.getElementById('editorFoot'); if (foot) foot.style.display = 'none';
+  }
 }
 
 function isFilled(vid) {
@@ -2163,22 +2663,16 @@ var _txMemory = new Map(); // vid -> [{base, trans}] sorted shortest-first
 
 async function buildTranslationMemory(vid) {
   if (_txMemory.has(vid)) return _txMemory.get(vid);
-  const k = getDittoKey();
-  if (!k) { _txMemory.set(vid, []); return []; }
+  if (!getFirebaseConfig()) { _txMemory.set(vid, []); return []; }
   try {
-    const res = await fetch(`${API_DITTO}/components?filter=${encodeURIComponent(vid)}`, { headers: { Authorization: k } });
-    if (!res.ok) { _txMemory.set(vid, []); return []; }
-    const rows = await res.json();
-    // Base texts from already-fetched browse data; fetch fresh only if empty
+    // base→translation pairs for this variant, straight from the Firebase rows.
+    const rows = await getFbRows();
     const baseMap = new Map();
-    for (const c of (_browseData || [])) { if (c.id && c.text) baseMap.set(c.id, c.text); }
-    if (!baseMap.size) {
-      const br = await fetch(`${API_DITTO}/components`, { headers: { Authorization: k } }).catch(() => null);
-      if (br?.ok) { for (const c of await br.json()) { if (c.id && c.text) baseMap.set(c.id, c.text); } }
-    }
+    for (const c of rows) { if (!c.variantId && c.id && c.text) baseMap.set(c.id, c.text); }
     const pairs = [];
     for (const row of rows) {
-      const base = baseMap.get(row.id || row.developerId);
+      if (row.variantId !== vid) continue;
+      const base = baseMap.get(row.id);
       if (base && row.text) pairs.push({ base, trans: row.text });
     }
     pairs.sort((a, b) => a.base.length - b.base.length); // UI labels first
@@ -2360,16 +2854,8 @@ async function saveAll() {
 }
 
 async function patchDitto(vid, text) {
-  const isBase = vid === 'base';
-  const body = { updates: [{ developerId: selectedComp.id, text }], ...(!isBase ? { variantId: vid } : {}) };
-  const res = await fetch(`${API_DITTO}/components`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', Authorization: getDittoKey() },
-    body: JSON.stringify(body)
-  });
-  const data = await res.json().catch(()=>({}));
-  if (!res.ok || !data.success) throw new Error(data.message || `HTTP ${res.status}`);
-  await syncToJson({ op: 'upsert', variant: vid, key: selectedComp.id, text });
+  // Name kept for its callers (saveVariant/saveAll); now writes the changed field to Firestore.
+  await fbWrite({ op: 'upsert', variant: vid, key: selectedComp.id, text });
 }
 
 function resetAll() {
@@ -2552,54 +3038,16 @@ function setDeleteUsageStatus(cls, html) {
   if (el) { el.className = 'del-status ' + cls; el.innerHTML = html; }
 }
 
-// Ditto distinguishes library components (have folderId, returned by /v2/components)
-// from project text items (have projectId). Only non-library text items are
-// deletable via the API, so this decides whether a real delete is even possible.
+// We own the data in Firestore, so every string is deletable.
 function componentKind(comp) {
-  if (comp && comp.projectId) return { deletable: true, label: 'Project text item — deletable via the API.' };
-  return { deletable: false, label: 'Library component — Ditto’s API has no delete for these. Remove it in the Ditto web app instead.' };
+  return { deletable: true, label: 'Editable string — deletes remove it from Firestore.' };
 }
 
-// Console helper: dittomatoInspect() dumps the selected item's raw fields so the
-// component-vs-text-item determination can be confirmed against real data.
+// Console helper: dump the selected item's raw fields.
 window.dittomatoInspect = function() {
-  console.log('[dittomato] selected item raw fields:', selectedComp);
-  console.log('[dittomato] keys:', selectedComp ? Object.keys(selectedComp) : '(none)');
-  console.log('[dittomato] projectId:', selectedComp?.projectId, '| folderId:', selectedComp?.folderId,
-    '→', componentKind(selectedComp).deletable ? 'deletable text item' : 'library component (not deletable via API)');
+  console.log('[dittomato] selected item:', selectedComp);
+  console.log('[dittomato] entry:', selectedComp ? stringsIndex[selectedComp.id] : '(none)');
   return selectedComp;
-};
-
-// Diagnose how plural components are represented in the API so the missing-only
-// detection can be fixed. Run dittomatoDebugPlurals() in the console.
-const PLURAL_SUFFIX_RE = /_(one|two|few|many|zero|other)$/;
-window.dittomatoDebugPlurals = async function() {
-  const k = getDittoKey();
-  if (!k) { console.warn('[dittomato] add a Ditto API key first'); return; }
-  const base = await (await fetch(`${API_DITTO}/components`, { headers: { Authorization: k } })).json();
-  const all  = await (await fetch(`${API_DITTO}/components?filter=${encodeURIComponent(JSON.stringify({ variants: [{ id: 'all' }] }))}`, { headers: { Authorization: k } })).json();
-  const summarise = (rows, label) => {
-    const withPluralField = rows.filter(r => r.pluralForm != null);
-    const withSuffix = rows.filter(r => PLURAL_SUFFIX_RE.test(r.id || ''));
-    console.log(`\n[${label}] total rows: ${rows.length}`);
-    console.log(`  rows with pluralForm field set: ${withPluralField.length}`);
-    console.log(`  rows whose id ends in _one/_two/_few/_many/_zero/_other: ${withSuffix.length}`);
-    const sample = [...new Set([...withPluralField, ...withSuffix])].slice(0, 12)
-      .map(r => ({ id: r.id, pluralForm: r.pluralForm ?? null, variantId: r.variantId ?? null, text: String(r.text || '').slice(0, 40) }));
-    if (sample.length) console.table(sample);
-    // Does the stripped base id exist as its own row?
-    withSuffix.slice(0, 8).forEach(r => {
-      const baseId = r.id.replace(PLURAL_SUFFIX_RE, '');
-      const exists = rows.some(x => x.id === baseId);
-      console.log(`  "${r.id}" → base "${baseId}" exists as its own row? ${exists}`);
-    });
-  };
-  summarise(base, 'GET /components (base fetch → _browseData)');
-  summarise(all,  'GET /components?variants=all (coverage fetch)');
-  const missingSuffix = (_browseData || []).filter(c => c._missingVariants?.length && PLURAL_SUFFIX_RE.test(c.id));
-  console.log(`\n[dittomato] "missing-only" entries whose id has a plural suffix: ${missingSuffix.length}`,
-    missingSuffix.slice(0, 10).map(c => c.id));
-  return { base, all };
 };
 
 async function deleteComponentPrompt() {
@@ -2670,34 +3118,84 @@ function closeDeleteConfirm() {
   document.getElementById('deleteConfirmModal').classList.remove('open');
 }
 
-// Ditto has no delete endpoint for library components — the only deletion API is
-// DELETE /v2/textItems (keyed by developerId), which cannot remove library instances.
-async function deleteComponent(id, key) {
+// ── Rename a component ID (moves the whole entry, possibly across chunks) ─────
+function openRename() {
+  if (!selectedComp) return;
+  const inp = document.getElementById('renameId');
+  inp.value = selectedComp.id;
+  document.getElementById('renameModal').classList.add('open');
+  renameCheck();
+  setTimeout(() => { inp.focus(); inp.select(); }, 50);
+}
+function closeRename() { document.getElementById('renameModal').classList.remove('open'); }
+function renameCheck() {
+  const v = document.getElementById('renameId').value.trim();
+  const hint = document.getElementById('renameHint');
+  const btn = document.getElementById('renameSaveBtn');
+  let msg = '', ok = true;
+  if (!v) { ok = false; msg = 'Enter a new ID.'; }
+  else if (v === selectedComp?.id) { ok = false; msg = 'Same as the current ID.'; }
+  else if (stringsIndex[v]) { ok = false; msg = `"${v}" already exists.`; }
+  else { msg = `Moves to chunk ${chunkDocId(v) || '—'}.`; }
+  hint.textContent = msg;
+  hint.className = 'nc-hint' + (ok || !v ? '' : ' err');
+  btn.disabled = !ok;
+}
+
+async function fbRename(oldId, newId) {
+  requireEditor();
+  const db = fbDb();
+  if (!db) throw new Error('No Firebase config');
+  if (!_meta) await ensureStrings();
+  const entry = stringsIndex[oldId];
+  if (!entry) throw new Error('Component not found');
+  if (stringsIndex[newId]) throw new Error(`"${newId}" already exists`);
+  const FieldPath = firebase.firestore.FieldPath;
+  const FieldValue = firebase.firestore.FieldValue;
+  const oldChunk = chunkDocId(oldId), newChunk = chunkDocId(newId);
+  // Write the whole entry under the new key, then drop the old key.
+  await db.doc('strings/' + newChunk).update(new FieldPath(newId), entry);
+  await db.doc('strings/' + oldChunk).update(new FieldPath(oldId), FieldValue.delete());
+  stringsIndex[newId] = entry;
+  delete stringsIndex[oldId];
   try {
-    const res = await fetch(`${API_DITTO}/textItems`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json', Authorization: key },
-      body: JSON.stringify({ developerIds: [id] }),
+    await db.collection('changelog').add({
+      ts: firebase.firestore.FieldValue.serverTimestamp(), user: 'unknown',
+      action: 'renamed', id: newId, variant: null, from: oldId, to: newId,
     });
-    const data = await res.json().catch(() => ({}));
-    if (res.ok && data.success) return { ok: true };
-    if (res.ok) return { ok: false, message: 'Ditto rejected the deletion — this is likely a library component, which the API cannot delete (only non-library text items can be removed).' };
-    return { ok: false, status: res.status, message: data.message || `HTTP ${res.status}` };
-  } catch(e) {
-    return { ok: false, status: 0, message: e.message };
+  } catch (e) { /* best-effort */ }
+}
+
+async function applyRenameComponent() {
+  const oldId = selectedComp?.id;
+  const newId = document.getElementById('renameId').value.trim();
+  if (!oldId || !newId || newId === oldId) return;
+  const btn = document.getElementById('renameSaveBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Renaming…';
+  try {
+    await fbRename(oldId, newId);
+    closeRename();
+    toast(`Renamed to "${newId}"`, 'success');
+    // Point the editor + result list at the new id and refresh the tree.
+    selectedComp = { ...selectedComp, id: newId };
+    document.getElementById('editorId').textContent = newId;
+    if (!variantData.base || !variantData.base.text) document.getElementById('editorLabel').textContent = newId;
+    if (window._results) { const r = window._results.find(c => c.id === oldId); if (r) r.id = newId; }
+    refreshBrowse();
+  } catch (e) {
+    toast('Rename failed: ' + e.message, 'error');
+    btn.disabled = false; btn.innerHTML = 'Rename';
   }
 }
 
 async function applyDeleteComponent() {
   const id = selectedComp?.id;
-  const k = getDittoKey();
-  if (!id || !k) return;
+  if (!id) return;
   const btn = document.getElementById('delConfirmBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Deleting…';
-  const result = await deleteComponent(id, k);
-  if (result.ok) {
-    await syncToJson({ op: 'removeAll', key: id });
+  try {
+    await fbWrite({ op: 'removeAll', key: id });
     closeDeleteConfirm();
     toast(`Deleted "${id}"`, 'success');
     // Clear the editor and refresh the browse list
@@ -2708,8 +3206,8 @@ async function applyDeleteComponent() {
     document.getElementById('editorEmpty').style.display = 'flex';
     if (window._results) window._results = window._results.filter(c => c.id !== id);
     refreshBrowse();
-  } else {
-    toast('Delete failed: ' + (result.message || 'unknown error') + (result.status ? ` (HTTP ${result.status})` : ''), 'error');
+  } catch (e) {
+    toast('Delete failed: ' + e.message, 'error');
     btn.innerHTML = '<i class="ph ph-trash ico" style="font-size:15px"></i> Delete permanently';
     updateDeleteConfirmState();
   }
@@ -2736,23 +3234,24 @@ async function openPluralEditor() {
   document.getElementById('plSaveBtn').disabled = true;
   document.getElementById('pluralModal').classList.add('open');
   try {
-    const filter = encodeURIComponent(JSON.stringify({ variants: [{ id: 'all' }] }));
-    const res = await fetch(`${API_DITTO}/components?filter=${filter}`, { headers: { Authorization: getDittoKey() } });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const rows = (await res.json()).filter(c => baseIdOf(c) === id);
+    await ensureStrings();
+    const entry = stringsIndex[id] || {};
     const cells = {};        // 'form|colKey' -> text
     const seed = {};         // colKey -> current non-plural text (for pluralising)
     const formSet = new Set();
-    let aliasBaseText = '';
-    for (const c of rows) {
-      const colKey = c.variantId || 'base';
-      if (c.pluralForm) { formSet.add(c.pluralForm); cells[plCellKey(c.pluralForm, colKey)] = c.text || ''; }
-      else { seed[colKey] = c.text || ''; if (colKey === 'base') aliasBaseText = c.text || ''; }
+    for (const c of pluralColumns()) {
+      const loc = c.key; // 'base' | variantId
+      const v = entry[loc];
+      if (v && typeof v === 'object') {
+        for (const f of Object.keys(v)) { formSet.add(f); cells[plCellKey(f, loc)] = v[f] || ''; }
+      } else if (v != null) {
+        seed[loc] = v || '';
+      }
     }
     let forms = orderForms(formSet);
-    // Put the master (its base text equals the component's display text) first.
-    const master = forms.find(f => (cells[plCellKey(f, 'base')] || '') === aliasBaseText && aliasBaseText);
-    if (master) forms = [master, ...forms.filter(f => f !== master)];
+    // Master form recorded on the entry; keep it first.
+    const master = entry._master;
+    if (master && forms.includes(master)) forms = [master, ...forms.filter(f => f !== master)];
     _pl = { id, forms, originalForms: forms.slice(), cells, seed, removed: new Set(), dirty: false };
     renderPluralEditor();
   } catch(e) {
@@ -2857,76 +3356,41 @@ function plMoveForm(form, dir) {
   renderPluralEditor();
 }
 
-function withVariant(body, col) { if (col.variantId) body.variantId = col.variantId; return body; }
-
 async function savePlurals() {
   if (!_pl) return;
-  const k = getDittoKey();
-  if (!k) return;
+  if (!getFirebaseConfig()) { toast('Add your Firebase config first', 'error'); return; }
   const cols = pluralColumns();
   const masterForm = _pl.forms[0];
   if (masterForm && !((_pl.cells[plCellKey(masterForm, 'base')] || '').trim())) {
     toast('The master form needs base text', 'error'); return;
   }
-  // Did the order of the still-present forms change? Ditto only reorders forms by
-  // removing and re-adding them in the desired order, so a reorder needs two PATCHes.
-  const curOrder  = _pl.forms.filter(f => _pl.originalForms.includes(f)).join(',');
-  const origOrder = _pl.originalForms.filter(f => _pl.forms.includes(f)).join(',');
-  const reordered = curOrder !== origOrder;
 
   const btn = document.getElementById('plSaveBtn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving…';
-  // Build PATCHes per column (variant). Forms are sent master-first; on reorder we
-  // first remove the forms, then re-add them in the new order.
-  const reqs = [];
+
+  // One op per (form, column) upsert + per user-removed form; plus the master order.
+  const ops = [];
   for (const c of cols) {
-    const upsert = _pl.forms
-      .map(f => ({ form: f, text: _pl.cells[plCellKey(f, c.key)] ?? '' }))
-      .filter(u => u.text.trim() !== '');
-    const userRemoved = (c.isBase && _pl.removed.size) ? [..._pl.removed] : [];
-    // JSON stores plural forms as `{id}_{form}` keys; order is irrelevant there,
-    // so a reorder needs no mirror — only the net upserts and user removals.
-    const variant = c.key; // 'base' | variantId
-    const syncOps = [
-      ...upsert.map(u => ({ op: 'upsert', variant, key: `${_pl.id}_${u.form}`, text: u.text })),
-      ...userRemoved.map(f => ({ op: 'remove', variant, key: `${_pl.id}_${f}` })),
-    ];
-    if (reordered && upsert.length) {
-      // 1) clear the forms we're about to re-add (+ any user-removed), 2) re-add in order
-      const toRemove = upsert.map(u => u.form).concat(userRemoved);
-      reqs.push({ label: c.label + ' (clear)', body: withVariant({ updates: [{ developerId: _pl.id, plurals: { remove: toRemove } }] }, c), sync: [] });
-      reqs.push({ label: c.label, body: withVariant({ updates: [{ developerId: _pl.id, plurals: { upsert } }] }, c), sync: syncOps });
-    } else {
-      const plurals = {};
-      if (upsert.length) plurals.upsert = upsert;
-      if (userRemoved.length) plurals.remove = userRemoved;
-      if (!plurals.upsert && !plurals.remove) continue;
-      reqs.push({ label: c.label, body: withVariant({ updates: [{ developerId: _pl.id, plurals }] }, c), sync: syncOps });
+    const loc = c.key; // 'base' | variantId
+    for (const f of _pl.forms) {
+      const text = _pl.cells[plCellKey(f, loc)] ?? '';
+      if (text.trim() !== '') ops.push({ op: 'upsert', variant: loc, key: `${_pl.id}_${f}`, text });
     }
+    if (c.isBase && _pl.removed.size) for (const f of _pl.removed) ops.push({ op: 'remove', variant: loc, key: `${_pl.id}_${f}` });
   }
-  let ok = 0; const errors = [];
-  for (const r of reqs) {
-    try {
-      const res = await fetch(`${API_DITTO}/components`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: k },
-        body: JSON.stringify(r.body),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.success !== false) { ok++; if (r.sync && r.sync.length) await syncToJson(r.sync); }
-      else errors.push(`${r.label}: ${data.message || 'HTTP ' + res.status}`);
-    } catch(e) { errors.push(`${r.label}: ${e.message}`); }
-  }
-  btn.innerHTML = 'Save plural forms';
-  if (errors.length) {
-    toast(`Saved ${ok}/${reqs.length}. ${errors[0]}${errors.length > 1 ? ` (+${errors.length - 1} more)` : ''}`, 'error');
-    btn.disabled = false;
-  } else {
-    toast(reordered ? 'Saved plural forms · reordered' : 'Saved plural forms', 'success');
+  // Persist the master/first form so ordering survives (Firestore maps are unordered).
+  if (_pl.forms.length) ops.push({ op: 'upsert', variant: '_master', key: _pl.id, text: _pl.forms[0] });
+
+  try {
+    await fbWrite(ops);
+    toast('Saved plural forms', 'success');
     closePluralEditor();
-    // Reload the component (editor + missing detection) and refresh the tree in place.
     const i = (window._results || []).findIndex(c => c.id === selectedComp?.id);
     if (i >= 0) selectItem(i);
     refreshBrowse();
+  } catch (e) {
+    toast('Save failed: ' + e.message, 'error');
+    btn.disabled = false; btn.innerHTML = 'Save plural forms';
   }
 }
 
@@ -3005,20 +3469,33 @@ function showVarEmpty() {
   }
 }
 
+// Firestore stores variables as an object keyed by name (migrated variables.json);
+// the list/editor expect an array of { name, type, … }.
+function varsObjToArray(obj) {
+  return Object.keys(obj || {}).sort().map(name => {
+    const v = obj[name];
+    if (Array.isArray(v)) return { name, type: 'list', values: v.slice() };
+    if (v && typeof v === 'object') return { name, type: typeof v.example === 'number' ? 'number' : 'string', ...v };
+    return { name, type: 'string', example: v };
+  });
+}
+
 // ── Load & render vars list ────────────────────────────────────────────────
 async function loadVars() {
-  const k = getDittoKey();
-  if (!k) {
+  if (!getFirebaseConfig()) {
     document.getElementById('varList').innerHTML =
-      '<div class="var-list-error"><i class="ph ph-warning" style="font-size:16px"></i> Add your Ditto API key first.</div>';
+      '<div class="var-list-error"><i class="ph ph-warning" style="font-size:16px"></i> Add your Firebase config first.</div>';
     return;
   }
   document.getElementById('varList').innerHTML =
     '<div class="browse-loading"><span class="spinner spinner-dark"></span> Loading variables…</div>';
   try {
-    const res = await fetch(`${API_DITTO}/variables`, { headers: { Authorization: k } });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    _varsData = await res.json();
+    const db = fbDb();
+    if (_variables == null) {
+      const snap = await db.doc('strings/variables').get();
+      _variables = snap.exists ? snap.data() : {};
+    }
+    _varsData = varsObjToArray(_variables);
     _varsLoaded = true;
     renderVarTypePills();
     renderVarsList();
@@ -3480,10 +3957,10 @@ function init() {
   updateConnStatus();
   buildVocab();
   syncBodyAttrs();
-  if (!getDittoKey() || !getAnthropicKey()) setTimeout(() => toggleKeysPop(true), 350);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeVocab(); closeDeleteConfirm(); closeUnsavedModal(); closePluralEditor(); } });
+  if (!getFirebaseConfig()) setTimeout(() => toggleKeysPop(true), 350);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeVocab(); closeChangelog(); closeUsers(); closeDeleteConfirm(); closeRename(); closeUnsavedModal(); closePluralEditor(); } });
   document.getElementById('searchQuery').focus();
-  if (getDittoKey()) showBrowse();
+  if (getFirebaseConfig()) initFirebase(); // → auth gate → (on authorize) showBrowse()
 }
 document.addEventListener('DOMContentLoaded', init);
 </script>

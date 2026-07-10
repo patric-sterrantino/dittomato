@@ -1,2 +1,6 @@
 .env
 node_modules/
+firebase.config.json
+serviceAccount.json
+strings-backup.json
+dist/

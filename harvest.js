@@ -3,10 +3,9 @@
 
 const fs   = require('fs');
 const path = require('path');
-const https = require('https');
 const readline = require('readline');
 const os   = require('os');
-const dittoSync = require('./ditto-sync'); // transition: mirror pushes into src/ditto/*.json
+const FB = require('./firestore-rest'); // shared chunk-routing + model helpers
 
 const VERSION = (() => {
   try { return JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version; } catch { return '?'; }
@@ -76,13 +75,27 @@ function findEnv() {
 
 const envFile = findEnv();
 const envVars = envFile ? parseEnv(fs.readFileSync(envFile, 'utf8')) : {};
-const DITTO_KEY = process.env.DITTO_API_KEY || envVars.DITTO_API_KEY || '';
+const FB_PROJECT = process.env.FIREBASE_PROJECT_ID || envVars.FIREBASE_PROJECT_ID || '';
+const FB_SVC = process.env.FIREBASE_SERVICE_ACCOUNT_PATH || envVars.FIREBASE_SERVICE_ACCOUNT_PATH || './serviceAccount.json';
 
-if (!DITTO_KEY) {
-  console.error(c.red('❌  DITTO_API_KEY not found.'));
-  console.error('    Add it to .env in this project or to ~/.env for global use.');
-  console.error('    See .env.example for reference.');
+if (!FB_PROJECT) {
+  console.error(c.red('❌  FIREBASE_PROJECT_ID not found.'));
+  console.error('    Add it (and FIREBASE_SERVICE_ACCOUNT_PATH) to .env — see .env.example.');
   process.exit(1);
+}
+
+// ── Firestore (firebase-admin) — the chunked string index ────────────────────
+let _db = null;
+function fbDb() {
+  if (_db) return _db;
+  let admin;
+  try { admin = require('firebase-admin'); }
+  catch { console.error(c.red('❌  firebase-admin not installed. Run `npm install`.')); process.exit(1); }
+  const svc = JSON.parse(fs.readFileSync(path.resolve(__dirname, FB_SVC), 'utf8'));
+  if (!admin.apps.length) admin.initializeApp({ credential: admin.credential.cert(svc) });
+  _db = admin.firestore();
+  _db._admin = admin;
+  return _db;
 }
 
 // ── File collection ────────────────────────────────────────────────────────
@@ -271,45 +284,66 @@ function extractStrings(file, content) {
   return results;
 }
 
-// ── HTTPS helpers ──────────────────────────────────────────────────────────
-function httpsRequest(options, body) {
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, res => {
-      let data = '';
-      res.on('data', d => data += d);
-      res.on('end', () => resolve({ status: res.statusCode, body: data }));
-    });
-    req.on('error', reject);
-    if (body) req.write(body);
-    req.end();
+// ── Firestore index (chunked) ────────────────────────────────────────────────
+// Loaded once; mutated in memory during push; changed chunks written back at end.
+let _index = null; // { meta, chunks: {id: mapObj}, entries: {key: entry} }
+
+async function loadIndex() {
+  if (_index) return _index;
+  const db = fbDb();
+  const metaSnap = await db.doc('strings/meta').get();
+  if (!metaSnap.exists) throw new Error('No strings/meta — run the migration (npm run migrate) first.');
+  const meta = metaSnap.data();
+  const chunks = {};
+  const entries = {};
+  const snaps = await Promise.all((meta.chunks || []).map(id => db.doc('strings/' + id).get()));
+  (meta.chunks || []).forEach((id, i) => {
+    const map = snaps[i].data() || {};
+    chunks[id] = map;
+    Object.assign(entries, map);
   });
+  _index = { meta, chunks, entries, dirty: new Set() };
+  return _index;
 }
 
+// Return catalog rows shaped like the old Ditto fetch: { developerId, id, text }.
 async function fetchComponents() {
-  const res = await httpsRequest({
-    hostname: 'api.dittowords.com',
-    path: '/v2/components',
-    method: 'GET',
-    headers: { Authorization: DITTO_KEY },
+  const { entries } = await loadIndex();
+  return Object.keys(entries).map(id => {
+    const e = entries[id];
+    const b = e && e.base;
+    const text = (b && typeof b === 'object') ? (b[e._master] || b.other || Object.values(b)[0] || '') : (b || '');
+    return { developerId: id, id, text };
   });
-  if (res.status !== 200) throw new Error(`HTTP ${res.status}: ${res.body.slice(0, 200)}`);
-  return JSON.parse(res.body);
 }
 
-async function pushComponent(name, text, developerId) {
-  // Only send name/text/developerId — never include variants; Ditto auto-fills them.
-  const body = JSON.stringify({ components: [{ name, text, developerId }] });
-  const res = await httpsRequest({
-    hostname: 'api.dittowords.com',
-    path: '/v2/components',
-    method: 'POST',
-    headers: {
-      Authorization: DITTO_KEY,
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(body),
-    },
-  }, body);
-  return res;
+// Add a new base string to its routed chunk (in memory); mark chunk dirty.
+function addComponent(developerId, text) {
+  const idx = _index;
+  const chunkIdx = FB.chunkIndexForKey(developerId, idx.meta.splits || []);
+  const chunkId = idx.meta.chunks[Math.min(chunkIdx, idx.meta.chunks.length - 1)];
+  const entry = { base: text };
+  idx.entries[developerId] = entry;
+  idx.chunks[chunkId][developerId] = entry;
+  idx.dirty.add(chunkId);
+  return chunkId;
+}
+
+// Persist dirty chunks + updated meta.totalEntries + one changelog per new key.
+async function commitIndex(createdIds) {
+  const db = fbDb();
+  const admin = db._admin;
+  const idx = _index;
+  const batch = db.batch();
+  for (const chunkId of idx.dirty) batch.set(db.doc('strings/' + chunkId), idx.chunks[chunkId]);
+  batch.update(db.doc('strings/meta'), { totalEntries: Object.keys(idx.entries).length });
+  for (const id of createdIds) {
+    batch.set(db.collection('changelog').doc(), {
+      ts: admin.firestore.FieldValue.serverTimestamp(), user: 'cli',
+      action: 'created', id, variant: 'base', from: null, to: idx.entries[id].base,
+    });
+  }
+  await batch.commit();
 }
 
 // ── ID suggestion ──────────────────────────────────────────────────────────
@@ -365,14 +399,14 @@ async function main() {
   console.log(c.dim(`Scanned ${allFiles.length} files · ${unique.length} strings found · ${alreadyWrapped.length} already wrapped`));
   console.log();
 
-  // Fetch Ditto components
+  // Load the string catalog from Firestore
   let dittoComponents = [];
   try {
-    process.stdout.write(c.dim('Fetching Ditto components… '));
+    process.stdout.write(c.dim('Loading strings from Firestore… '));
     dittoComponents = await fetchComponents();
-    process.stdout.write(c.green(`${dittoComponents.length} components loaded\n`));
+    process.stdout.write(c.green(`${dittoComponents.length} strings loaded\n`));
   } catch (e) {
-    console.error(c.red(`\n❌  Failed to fetch Ditto components: ${e.message}`));
+    console.error(c.red(`\n❌  Failed to load strings: ${e.message}`));
     process.exit(1);
   }
   console.log();
@@ -500,7 +534,7 @@ async function main() {
   console.log();
 
   // Print unmatched
-  console.log(c.yellow(`➕ NEW — not in Ditto yet (${unmatched.length})`));
+  console.log(c.yellow(`➕ NEW — not in the string store yet (${unmatched.length})`));
   console.log(HR);
   for (const u of unmatched) {
     const str = `"${trunc(u.string)}"`;
@@ -542,14 +576,13 @@ async function runPushFlow(unmatched, { matched, dittoByText, dittoByNorm, ditto
   const pushed = [], pushFailed = [];
 
   if (unmatched.length === 0) {
-    console.log(c.green('Nothing to push — all strings are already in Ditto.'));
+    console.log(c.green('Nothing to push — all strings are already in the store.'));
     console.log();
     return { pushed, pushFailed };
   }
 
-  const maskedKey = '****' + DITTO_KEY.slice(-4);
-  console.log(c.yellow(`➕ Ready to push ${unmatched.length} new component${unmatched.length !== 1 ? 's' : ''} to Ditto.`));
-  console.log(c.dim(`   API key: ${maskedKey}   Endpoint: api.dittowords.com`));
+  console.log(c.yellow(`➕ Ready to add ${unmatched.length} new string${unmatched.length !== 1 ? 's' : ''} to Firestore.`));
+  console.log(c.dim(`   Project: ${FB_PROJECT}`));
   console.log();
 
   let doPush = flags.yes;
@@ -636,50 +669,38 @@ async function runPushFlow(unmatched, { matched, dittoByText, dittoByNorm, ditto
     console.log(c.dim(`Pushing ${toPush.length} of ${unmatched.length} strings…\n`));
   }
 
+  const createdIds = [];
   for (const u of toPush) {
     const str = `"${trunc(u.string, 40)}"`;
-    process.stdout.write(`  Pushing ${str}… `);
-    let res;
+    process.stdout.write(`  Adding ${str}… `);
     let usedId = u.suggestedId;
-    try {
-      res = await pushComponent(u.string, u.string, usedId);
-    } catch (e) {
-      process.stdout.write(c.red(`❌ failed`) + c.dim(` (network error: ${e.message})\n`));
-      pushFailed.push({ string: u.string, suggestedId: usedId, error: e.message, file: u.file, line: u.line });
-      continue;
-    }
-
-    if (res.status === 409) {
-      process.stdout.write(c.dim(`(HTTP 409 — ID conflict, retrying…)\n  Pushing ${str}… `));
+    // Resolve id conflicts against the in-memory index.
+    if (_index.entries[usedId]) {
+      const orig = usedId;
       usedId = usedId + '-2';
-      try {
-        res = await pushComponent(u.string, u.string, usedId);
-      } catch (e) {
-        process.stdout.write(c.red(`❌ failed`) + c.dim(` (network error: ${e.message})\n`));
-        pushFailed.push({ string: u.string, suggestedId: usedId, error: e.message, file: u.file, line: u.line });
-        continue;
-      }
+      let n = 2;
+      while (_index.entries[usedId]) { n++; usedId = `${orig}-${n}`; }
     }
-
-    if (res.status === 201 || res.status === 200) {
-      process.stdout.write(c.green(`✅ created`) + c.dim(`   (${usedId})\n`));
+    try {
+      const chunkId = addComponent(usedId, u.string);
+      createdIds.push(usedId);
+      process.stdout.write(c.green(`✅ added`) + c.dim(`   (${usedId} → strings/${chunkId})\n`));
       pushed.push({ string: u.string, developerId: usedId, file: u.file, line: u.line });
-      // Transition: mirror the new component into src/ditto/*.json (base variant).
-      try {
-        const { file } = dittoSync.upsert('base', usedId, u.string);
-        process.stdout.write(c.dim(`     ↳ written to src/ditto/${file}\n`));
-      } catch (e) {
-        process.stdout.write(c.yellow(`     ⚠ JSON sync failed: ${e.message}\n`));
-      }
-    } else {
-      let errMsg;
-      try {
-        const parsed = JSON.parse(res.body);
-        errMsg = parsed.message || parsed.error || parsed.detail || JSON.stringify(parsed);
-      } catch { errMsg = res.body ? res.body.slice(0, 200) : `HTTP ${res.status}`; }
-      if (res.status === 409) errMsg = 'conflict after retry';
-      process.stdout.write(c.red(`❌ failed`) + c.dim(`   (${errMsg})\n`));
-      pushFailed.push({ string: u.string, suggestedId: usedId, error: errMsg, file: u.file, line: u.line });
+    } catch (e) {
+      process.stdout.write(c.red(`❌ failed`) + c.dim(`   (${e.message})\n`));
+      pushFailed.push({ string: u.string, suggestedId: usedId, error: e.message, file: u.file, line: u.line });
+    }
+  }
+
+  // Persist all changed chunks + changelog in one batch.
+  if (createdIds.length) {
+    try {
+      process.stdout.write(c.dim(`\nWriting ${_index.dirty.size} chunk(s) to Firestore… `));
+      await commitIndex(createdIds);
+      process.stdout.write(c.green('done\n'));
+    } catch (e) {
+      console.error(c.red(`\n❌  Firestore write failed: ${e.message}`));
+      pushFailed.push(...pushed.splice(0).map(p => ({ ...p, error: 'write failed: ' + e.message })));
     }
   }
 
@@ -708,7 +729,7 @@ async function whatNextMenu({ matched, unmatched, pushed, paths, dittoByText, di
   if (remaining.length > 0) {
     options.push({
       key: 'p',
-      label: `Push ${remaining.length} new string${remaining.length !== 1 ? 's' : ''} to Ditto`,
+      label: `Push ${remaining.length} new string${remaining.length !== 1 ? 's' : ''} to Firestore`,
     });
   }
 

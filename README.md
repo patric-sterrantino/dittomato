@@ -1,28 +1,92 @@
 # 🍅 Dittomato
 
-A two-part tool for managing Ditto UI strings:
+A two-part tool for managing UI strings, backed by **Firebase (Cloud Firestore)**:
 
-- **Browser app** (`index.html`) — search, edit, and translate Ditto components with Magic Translate powered by Claude
-- **CLI** (`harvest.js`) — scan React JSX/TSX files for hardcoded strings, match them against Ditto, and replace them with `<Ditto />` components
+- **Browser app** (`index.html`) — search, edit, and translate strings with Magic Translate powered by Claude
+- **CLI** (`harvest.js`) — scan React JSX/TSX files for hardcoded strings, match them against the store, and replace them with `<Ditto />` components
 
 ---
 
-## Transition sync (Ditto → JSON)
+## Architecture: chunked Firestore index
 
-We're migrating off Ditto onto our own servers. During the transition, **every change is written to `src/ditto/*.json` as well as pushed to Ditto**, so those JSON files become the source of truth we can eventually cut over to.
+All strings live in a **handful of aggregate documents**, not one doc per string:
 
-- The **CLI** (`harvest.js`) writes new pushed components into `src/ditto/harvested___base.json` automatically.
-- The **browser app** mirrors edits, new components, translations, plural forms, and deletions through a small local companion server. Because a browser page can't write local files on its own, **you must run the app through the server** instead of opening `index.html` directly:
+- `strings/meta` — `{ chunks, splits, totalEntries, variants, schema }`
+- `strings/index_0 … index_N` — each a `{ key: entry }` map, ~500 KB, sorted by key
+- `strings/variables` — the variables catalog
+- `changelog/…` — one auto-id doc per change
 
-  ```bash
-  npm run dev            # serves the app + sync endpoint on http://localhost:4747
-  ```
+An **entry** is `{ base, de, fr, …: string | {form:text}, _master?, name? }` — a variant value is a plain string, or a map of plural forms. Folders in the browse tree are derived from the dotted key.
 
-  Open http://localhost:4747 and use the app as normal. On every save it calls Ditto **and** `POST /sync`, which writes the change into the correct `src/ditto/{folder}___{variant}.json` file. If the server isn't running you'll get a one-time warning and only Ditto is updated.
+The app loads all chunks into memory once (**~N reads per load**, not 20k), searches/opens entirely in memory, and on save writes **only the changed field** (`update(FieldPath(key, variant), …)` — one write op, no cross-key clobber) plus a changelog entry. This keeps usage far inside the Firestore free tier.
 
-**Where changes land:** edits to an existing component update it in its current file; brand-new components go to `harvested___{variant}.json`; new translations of an existing component land next to its base file (e.g. `signs___de.json`), created if needed. `src/ditto/index.js` is regenerated with static `require`s so new files are picked up automatically.
+The data model + chunk routing (`chunkIndexForKey`, `packEntries`, `entriesFromFlatMaps`) live in [`firestore-rest.js`](firestore-rest.js), shared by the app (browser), `migrate.js`, and `harvest.js`.
 
-The mapping logic is shared between both tools in `ditto-sync.js`. Override the target directory with `DITTO_JSON_DIR` if needed (defaults to this repo's `src/ditto`).
+---
+
+## Migrating from Ditto
+
+1. `npm install` (pulls `firebase-admin`).
+2. Create a Firebase project, enable **Cloud Firestore**, and publish [`firestore.rules`](firestore.rules).
+3. Put your Firebase **service-account** JSON at the repo root as `serviceAccount.json` (git-ignored).
+4. Fill in `.env` (see [`.env.example`](.env.example)).
+5. Run the migration:
+   ```bash
+   node migrate.js --dry-run     # build + print the chunk plan, write nothing
+   node migrate.js               # migrate from the Ditto API
+   node migrate.js --from-json   # …or migrate from the local src/ditto/*.json
+   ```
+   It folds plural `id_<form>` keys into plural maps, drops Ditto's duplicate `-original` snapshots, writes a local `strings-backup.json` first, then batch-writes the chunks + `meta` + `variables`.
+6. Open `index.html`, paste your Firebase **web config** JSON (`{"projectId":"…","apiKey":"…"}`) into the **API keys** panel (stored in your browser only), and verify the banner shows `✅ N strings loaded (K reads)`.
+7. Cancel your Ditto subscription 🍅
+
+**Maintenance:** `node migrate.js --rebalance` re-packs chunks if one grows near the 1 MiB limit; `node migrate.js --purge-old` deletes the inert pre-v2 `components` docs once you're confident.
+
+---
+
+## Users & access control
+
+The editor uses **Google sign-in** (restricted to `vialytics.de`) with three roles enforced by Firestore security rules:
+
+| Role | Access |
+|---|---|
+| `viewer` | read only — browse, search, view (edit/delete/rename UI hidden, textareas locked) |
+| `editor` | read + write + delete + rename |
+| `admin`  | editor **+ manage users** (the in-app **Users** panel) |
+
+Roles live in **`acl/{email}`** docs (`{ role: "viewer" | "editor" | "admin" }`). A signed-in user with no acl doc has no access — they can tap **Request access** on the sign-in screen, which files an `access_requests/{email}` doc for an admin to approve.
+
+### Managing users in the app (admins)
+
+Admins get a **Users** button in the top bar that opens a panel to:
+- **approve / deny** pending access requests (approve as viewer or editor),
+- **change** anyone's role (viewer / editor / admin),
+- **add** a user by email, or **remove** one.
+
+No one needs to open the Firebase console for day-to-day user management. Clients can read only their **own** acl doc and can't write acl unless they're an admin (rules enforced) — so there's no self-escalation.
+
+### Setup (one-time)
+
+1. Firebase console → **Authentication** → enable **Google**; under **Settings → Authorized domains** add wherever you host the app (+ `localhost`).
+2. **Bootstrap the first admin** (before publishing the rules, so you don't lock yourself out): create `acl/<you>@vialytics.de` with `role: admin` — Firestore console → `acl` collection → add document (ID = email, field `role` = `admin`), or `node set-role.js <you>@vialytics.de admin` (needs `serviceAccount.json`).
+3. Publish the updated [`firestore.rules`](firestore.rules).
+4. From then on, manage everyone else from the **Users** panel in the app.
+
+`set-role.js` still works from the CLI: `node set-role.js <email> <viewer|editor|admin|remove>` · `node set-role.js --list`.
+
+> The rules are the real enforcement (a viewer physically cannot write, a non-admin cannot touch acl); the app UI just mirrors that.
+
+---
+
+## Exporting JSON for other apps
+
+`node build-json.js` (aka `npm run build-json`) reads the Firestore index and writes flat i18next JSON to `dist/`:
+
+- `dist/base.json`, `dist/de.json`, `dist/fr.json` — one flat map per locale, plurals unfolded to `id_one` / `id_other`
+- `dist/strings.json` — combined `{ base, de, fr }`
+- `dist/variables.json`
+
+Read-only (web apiKey, no service account). Point your other web apps at these files (copy them in, publish them, or wire it into their build). `--out <dir>` changes the output location.
 
 ---
 
@@ -34,17 +98,16 @@ cd dittomato
 npm install -g .
 ```
 
-## API key
+## Configuration
 
-Dittomato needs your Ditto API key. It looks for it in a `.env` file, walking up the directory tree from wherever you run it.
-
-Create `~/.env` for global use:
+The CLI reads Firebase config from a `.env` file (walking up the directory tree from where you run it, then `~/.env`), plus a `serviceAccount.json`:
 
 ```
-DITTO_API_KEY=your_key_here
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_SERVICE_ACCOUNT_PATH=./serviceAccount.json
 ```
 
-Or add a `.env` at the root of a specific project — that takes precedence.
+The browser app instead takes your Firebase **web config** in its API-keys panel (stored in localStorage). See [`.env.example`](.env.example).
 
 ---
 
@@ -66,7 +129,7 @@ dittomato src/screens/Home.tsx   # scan a single file
 
 | Flag | Description |
 |---|---|
-| `--push` | Push unmatched strings to Ditto as new components |
+| `--push` | Push unmatched strings to Firestore as new strings |
 | `--yes` | Skip all confirmation prompts (CI mode) |
 | `--ext jsx,tsx` | File extensions to scan (default: `jsx,tsx`) |
 | `--ignore stories,e2e` | Extra folder names to skip |
@@ -115,16 +178,16 @@ This fetches your Ditto components and shows three sections:
 
 - **✅ MATCHED** — strings already in Ditto, with their component IDs
 - **🔍 NEAR MATCH** — strings not in Ditto by exact text, but a similar component exists (different capitalisation, punctuation, etc.) — you choose whether to link them or treat them as new
-- **➕ NEW** — strings with no match in Ditto, with a suggested component ID
+- **➕ NEW** — strings with no match in the store, with a suggested component ID
 
-### 2. Push new strings to Ditto
+### 2. Push new strings to Firestore
 
 From the **What's next?** menu, choose `[p]`:
 
 ```
 What's next?
 ──────────────────────────────────────────────────────────────
-  [p]  Push 5 new strings to Ditto
+  [p]  Push 5 new strings to Firestore
   [w]  Replace strings in source files with Ditto components
   [q]  Quit
 ```
@@ -213,33 +276,3 @@ Dittomato uses three levels of matching to avoid creating duplicates:
 3. **Component ID** — `"exportxls"` matches an existing component whose developer ID is `exportxls`
 
 Near matches are shown interactively so you can confirm before anything is pushed.
-
----
-
-## Headroom — context compression for agents
-
-Dittomato depends on [`headroom-ai`](https://github.com/headroomlabs-ai/headroom), a context-compression layer that shrinks the messages sent to an LLM. It's wired up **for the AI agents that work on this repo** (Claude Code, etc.) — the shipped tools (`harvest.js` and the browser app) don't call it.
-
-The `headroom-ai` npm package is only a *client*: it forwards messages to a Headroom **proxy** and returns the compressed result (with `fallback: true`, it returns them uncompressed if no proxy is running). The `proxy` and `wrap` commands themselves ship with Headroom's Python/Docker distribution, not the npm package:
-
-```bash
-pip install "headroom-ai[all]"
-# or: docker pull ghcr.io/chopratejas/headroom:latest
-```
-
-Then either run a local proxy and point your tooling at it:
-
-```bash
-npm run headroom:proxy                       # headroom proxy --port 8787
-export ANTHROPIC_BASE_URL=http://localhost:8787
-```
-
-…or wrap an agent directly:
-
-```bash
-npm run headroom:wrap                        # headroom wrap claude
-```
-
-Use the **local proxy**, not Headroom Cloud — it keeps your repo context on your machine and only forwards the normal provider call.
-
-> The `headroom-ai` dependency in `package.json` is reserved for a future in-tool LLM step (e.g. compressing a request before `harvest.js` or the browser app calls Claude). Until such a call exists, it isn't imported anywhere in the source.
