@@ -39,6 +39,20 @@ function loadConfig() {
   return { projectId, apiKey };
 }
 
+// Prefer the service account (admin SDK) so this keeps working even when the web
+// apiKey is referrer-restricted; fall back to the web apiKey via REST otherwise.
+function makeReader() {
+  const svcPath = path.resolve(__dirname, process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './serviceAccount.json');
+  if (fs.existsSync(svcPath)) {
+    const admin = require('firebase-admin');
+    if (!admin.apps.length) admin.initializeApp({ credential: admin.credential.cert(JSON.parse(fs.readFileSync(svcPath, 'utf8'))) });
+    const db = admin.firestore();
+    return { via: 'service account', getDoc: async (col, id) => { const s = await db.doc(`${col}/${id}`).get(); return s.exists ? s.data() : null; } };
+  }
+  const client = FR.createClient(loadConfig());
+  return { via: 'web apiKey (REST)', getDoc: (col, id) => client.getDoc(col, id) };
+}
+
 // entries { key: {base, de, …: string|{form}} } -> { locale: { flatKey: text } }
 function flatten(entries) {
   const out = {};
@@ -56,13 +70,13 @@ function flatten(entries) {
 }
 
 async function main() {
-  const client = FR.createClient(loadConfig());
-  process.stdout.write('Loading index…  ');
-  const meta = await client.getDoc('strings', 'meta');
+  const { via, getDoc } = makeReader();
+  process.stdout.write(`Loading index (${via})…  `);
+  const meta = await getDoc('strings', 'meta');
   if (!meta) throw new Error('No strings/meta — run the migration first.');
   const entries = {};
-  for (const id of meta.chunks || []) Object.assign(entries, await client.getDoc('strings', id));
-  const variables = (await client.getDoc('strings', 'variables')) || {};
+  for (const id of meta.chunks || []) Object.assign(entries, await getDoc('strings', id));
+  const variables = (await getDoc('strings', 'variables')) || {};
   console.log(`${Object.keys(entries).length} entries · ${(meta.chunks || []).length} chunks`);
 
   const byLocale = flatten(entries);
@@ -81,4 +95,8 @@ async function main() {
   console.log(`✅ Wrote to ${OUT}`);
 }
 
-main().catch(e => { console.error(`❌ ${e.message}`); process.exit(1); });
+main().catch(e => {
+  console.error(`❌ ${e.message}`);
+  if (/permission/i.test(e.message)) console.error('   Your Firestore rules require auth — add serviceAccount.json (Firebase console → Project settings → Service accounts) so this reads as admin.');
+  process.exit(1);
+});
