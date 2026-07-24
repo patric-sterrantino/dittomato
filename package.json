@@ -1,7 +1,7 @@
 {
   "name": "dittomato",
-  "version": "2.0.0",
-  "description": "🍅 Saucy string editor — now Firebase-backed",
+  "version": "3.0.0",
+  "description": "🍅 Deprecated — redirects to the new internal tool",
   "bin": {
     "dittomato": "./harvest.js"
   },
